@@ -1,5 +1,8 @@
+# enables some development features
+# if set to true then you can access via route /swagger the api docs
 development: false
 database:
+  #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
   use: "sqlite"
   sqlite:
     database: "./db.sql"
@@ -10,4 +13,5 @@ database:
     password: ""
     database: "battlefield"
 webserver:
+  #port which the webserver listens to
   listenport: 8000
