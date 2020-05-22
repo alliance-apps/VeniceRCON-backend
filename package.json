@@ -34,7 +34,7 @@
     "socketio-jwt-auth": "^0.1.0",
     "sqlite3": "^4.2.0",
     "typeorm": "^0.2.24",
-    "vu-rcon": "file:../vu-rcon",
+    "vu-rcon": "git+https://github.com/Multivit4min/vu-rcon.git",
     "yaml": "^1.10.0"
   }
 }
