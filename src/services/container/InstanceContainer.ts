@@ -1,0 +1,80 @@
+import { Instance } from "../battlefield/Instance"
+import { Container } from "./Container"
+import { Instance as InstanceEntity } from "@entity/Instance"
+import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity"
+import { Battlefield } from "vu-rcon"
+
+export class InstanceContainer extends Container<InstanceContainer.StateProps> {
+
+  readonly namespace = "Instance"
+  readonly id: number
+
+  constructor(props: InstanceContainer.IProps) {
+    super({
+      host: props.entity.host,
+      port: props.entity.port,
+      serverinfo: <Battlefield.ServerInfo><unknown>{},
+      state: Instance.State.DISCONNECTED
+    })
+    this.id = props.entity.id
+  }
+
+  /**
+   * updates the database object
+   * @param props
+   */
+  private updateEntity(props: QueryDeepPartialEntity<InstanceEntity>) {
+    return InstanceEntity
+      .createQueryBuilder()
+      .update()
+      .set(props)
+      .where({ id: this.id })
+      .execute()
+  }
+
+  /**
+   * updates serverinfo data
+   * @param info
+   */
+  async updateServerInfo(info: Battlefield.ServerInfo) {
+    this.set("serverinfo", info)
+    await this.updateEntity({ name: info.name })
+    return this
+  }
+
+  /**
+   * updates the connection
+   * @param host 
+   * @param port 
+   */
+  async updateConnection(host: string, port: number) {
+    this.set("host", host)
+    this.set("port", port)
+    await this.updateEntity({ host, port })
+    return this
+  }
+
+  /**
+   * updates the battlefield instance current connection state
+   * @param state state to set instance to
+   */
+  async updateState(state: Instance.State) {
+    this.set("state", state)
+    return this
+  }
+
+}
+
+export namespace InstanceContainer {
+
+  export interface StateProps {
+    host: string
+    port: number
+    state: Instance.State
+    serverinfo: Battlefield.ServerInfo
+  }
+
+  export interface IProps {
+    entity: InstanceEntity
+  }
+}

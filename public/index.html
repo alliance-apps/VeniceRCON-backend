@@ -1,0 +1,8 @@
+<html>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0._FS8JJ9kFaikmaKoXPCnkhUr-O-IQPHY4mxf7-EWYGM"
+    console.log("connect...")
+    const socket = io.connect(undefined, { query: `auth_token=${token}`})    
+  </script>
+</html>

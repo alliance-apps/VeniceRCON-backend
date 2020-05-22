@@ -1,0 +1,10 @@
+@url=http://127.0.0.1:8000
+
+### login to a specific account
+POST {{url}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username1": "admin",
+  "password": "V6AEM+jz/M7jGYiu3y1x"
+}
