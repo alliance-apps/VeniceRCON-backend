@@ -1,0 +1,156 @@
+openapi: 3.0.0
+info:
+  title: VU RCON API
+  description: API Routes for Venice Unleashed RCON Tool
+  version: 0.1.9
+tags:
+  - name: auth
+    description: routes which handle authentication stuff
+  - name: instance
+    description: instance related routes
+schemes:
+  - https
+paths:
+
+  /api/auth/login:
+    post:
+      summary: tries to login to an account
+      description: |
+        Tries to login to an account with given credentials |
+        on success it will yield an json web token
+      tags:
+        - "auth"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: retrieves a jwt
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /api/instances:
+    get:
+      summary: retrieve all available instances
+      description: |
+        retrieve a list of instances you have access to
+      tags:
+        - "instance"
+      responses:
+        '200':
+          description: array of instances
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  host:
+                    type: string
+                  port:
+                    type: number
+                  serverinfo:
+                    type: object
+                  state:
+                    type: number
+
+    post:
+      summary: creates a rcon instance
+      description: |
+        creates a new rcon instance and tries to connect to it
+      tags:
+        - "instance"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                host:
+                  type: string
+                port:
+                  type: number
+                password:
+                  type: string
+      responses:
+        '200':
+          description: instance has been created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    description: id of the created instance
+
+  /api/instances/{id}/start:
+    patch:
+      summary: starts an rcon connection
+      description: |
+        starts an already created rcon connection
+        if the instance is already started it will throw an error
+      tags:
+        - "instance"      
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: id of the instance to start
+      responses:
+        '200':
+          description: instance has been started successfully
+
+  /api/instances/{id}/stop:
+    patch:
+      summary: creates a rcon instance
+      description: |
+        stops a started rcon connection
+        if the instance is already stopped it will throw an error
+      tags:
+        - "instance"      
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: id of the instance to start
+      responses:
+        '200':
+          description: instance has been started successfully
+
+  /api/instances/{id}:
+    delete:
+      summary: removes an instance
+      description: |
+        removes an instance completely
+      tags:
+        - "instance"      
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: id of the instance to remove
+      responses:
+        '200':
+          description: instance has been removed successfully

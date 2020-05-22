@@ -1,0 +1,25 @@
+@url=http://127.0.0.1:8000
+@id = 1
+
+### create a new instance
+POST {{url}}/api/instances
+Content-Type: application/json
+
+{
+  "host": "10.10.12.120",
+  "port": 47200,
+  "password": "saft"
+}
+
+### lists all available instances
+GET {{url}}/api/instances
+
+
+### stops an instance by its id
+PATCH {{url}}/api/instances/{{id}}/stop
+
+### starts an instance by its id
+PATCH {{url}}/api/instances/{{id}}/start
+
+### deletes an instance
+DELETE {{url}}/api/instances/{{id}}

@@ -13,14 +13,13 @@ export class Instance {
     this.container = createInstanceContainer({ entity })
     this.bf3 = bf3
     this.bf3.on("close", async () => {
-      this.startUpdateInterval()
+      this.stopUpdateInterval()
       if (this.requestStop) return
       await this.container.updateState(Instance.State.RECONNECTING)
       await this.bf3.reconnect()
       this.container.updateState(Instance.State.CONNECTED)
       this.startUpdateInterval()
     })
-    this.start()
   }
 
   private async updateInterval() {
@@ -42,7 +41,12 @@ export class Instance {
       throw new Error("instance is not in state disconnected")
     this.requestStop = false
     await this.container.updateState(Instance.State.CONNECTING)
-    await this.bf3.connect()
+    try {
+      await this.bf3.connect()
+    } catch (e) {
+      await this.container.updateState(Instance.State.DISCONNECTED)
+      throw e
+    }
     await this.container.updateState(Instance.State.CONNECTED)
     this.startUpdateInterval()
     return this
@@ -73,14 +77,16 @@ export class Instance {
     return info
   }
 
-  static async from(props: Instance.IProps) {
-    return new Instance(
+  static async from(props: Instance.IProps, start: boolean = true) {
+    const instance = new Instance(
       new Battlefield({
         ...props.entity,
         autoconnect: false
       }),
       props.entity
     )
+    if (start) await instance.start()
+    return instance
   }
 
 }

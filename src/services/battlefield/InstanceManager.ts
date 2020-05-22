@@ -25,7 +25,9 @@ export class InstanceManager {
   async addInstance(props: Battlefield.Options) {
     const entity = await InstanceEntity.from(props)
     try {
-      return await Instance.from({ entity })
+      const instance = await Instance.from({ entity })
+      this.instances.push(instance)
+      return instance
     } catch (e) {
       await entity.remove()
       throw e

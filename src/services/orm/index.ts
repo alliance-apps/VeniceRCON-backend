@@ -4,19 +4,16 @@ import { createConnection, Connection } from "typeorm"
 import { Instance } from "@entity/Instance"
 import { User, UserType } from "@entity/User"
 import { Config } from "@entity/Config"
+import { config } from "@service/config"
 
 export let connection: Connection
 
 export async function connect() {
   connection = await createConnection({
-    type: "mariadb",
+    type: config.database.use,
     synchronize: true,
     maxQueryExecutionTime: 200,
-    host: process.env.TYPEORM_HOST || "127.0.0.1",
-    port: parseInt(process.env.TYPEORM_PORT||"") || 3306,
-    username: process.env.TYPEORM_USERNAME || "battlefield",
-    password: process.env.TYPEORM_PASSWORD,
-    database: process.env.TYPEORM_DATABASE || "battlefield",
+    ...config.database[config.database.use] as any,
     entities: [
       Instance,
       User,

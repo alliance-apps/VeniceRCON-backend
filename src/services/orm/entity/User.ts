@@ -22,7 +22,7 @@ export class User extends AbstractEntity<User> {
   permissions!: number
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: UserType,
     default: UserType.DEFAULT
   })

@@ -28,55 +28,6 @@ export async function initialize(server: Server) {
       socket.emit(`${ns}#initial`, getContainerState(ns))
     })
 
-    socket.on("Instance#create", async (props, cb) => {
-      if (!props.host || !props.port || !props.password)
-        return cb({ _error: "missing property" })
-      try {
-        await instanceManager.addInstance({
-          host: props.host,
-          port: props.port,
-          password: props.password
-        })
-        cb({ props })
-      } catch (e) {
-        cb({ _error: e.message })
-      }
-    })
-
-    socket.on("Instance#delete", async (props, cb) => {
-      if (!props.id) return cb({ _error: "missing property" })
-      try {
-        await instanceManager.removeInstance(props.id)
-        cb()
-      } catch (e) {
-        cb({ _error: e.message })
-      }
-    })
-
-    socket.on("Instance#stop", async (props, cb) => {
-      if (!props.id) return cb({ _error: "missing property" })
-      try {
-        const instance = instanceManager.getInstanceById(props.id)
-        if (!instance) return cb({ _error: "instance not found" })
-        await instance.stop()
-        cb()
-      } catch (e) {
-        cb({ _error: e.message })
-      }
-    })
-
-    socket.on("Instance#start", async (props, cb) => {
-      if (!props.id) return cb({ _error: "missing property" })
-      try {
-        const instance = instanceManager.getInstanceById(props.id)
-        if (!instance) return cb({ _error: "instance not found" })
-        await instance.start()
-        cb()
-      } catch (e) {
-        cb({ _error: e.message })
-      }
-    })
-
   })
 
 }

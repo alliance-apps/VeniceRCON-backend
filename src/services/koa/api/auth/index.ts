@@ -5,6 +5,7 @@ import { createToken } from "@service/koa/jwt"
 const { Joi } = Router
 const router = Router()
 
+
 router.route({
   method: "POST",
   path: "/login",

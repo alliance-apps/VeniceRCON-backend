@@ -28,10 +28,13 @@
     "koa-bodyparser": "^4.3.0",
     "koa-joi-router": "^6.0.2",
     "koa-json": "^2.0.2",
+    "koa2-swagger-ui": "^3.0.0",
     "mysql": "^2.18.1",
     "socket.io": "^2.3.0",
     "socketio-jwt-auth": "^0.1.0",
+    "sqlite3": "^4.2.0",
     "typeorm": "^0.2.24",
-    "vu-rcon": "file:../vu-rcon"
+    "vu-rcon": "file:../vu-rcon",
+    "yaml": "^1.10.0"
   }
 }
