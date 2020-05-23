@@ -2,6 +2,9 @@ import Router from "koa-joi-router"
 import { instanceManager } from "@service/battlefield"
 import instanceRouter from "./instance"
 import { getContainerState } from "@service/container"
+import { perm } from "@service/koa/permission"
+import { Permission } from "@entity/Permission"
+
 
 const { Joi } = Router
 const api = Router()
@@ -17,6 +20,7 @@ api.route({
       password: Joi.string()
     })
   },
+  pre: perm(Permission.Instance.CREATE),
   handler: async ctx => {
     try {
       const instance = await instanceManager.addInstance({
@@ -25,7 +29,7 @@ api.route({
         password: ctx.request.body.password
       })
       ctx.status = 200
-      ctx.body = { id: instance.container.id }
+      ctx.body = { id: instance.container }
     } catch (e) {
       ctx.status = 500
       ctx.body = { message: e.message }
@@ -33,15 +37,25 @@ api.route({
   }
 })
 
-api.get("/", ctx => {
-  ctx.body = getContainerState("Instance")
+api.get("/", async ctx => {
+  let isRoot = false
+  const instances = (await ctx.state.getUserPermissions()).map(p => {
+    if (p.root) {
+      isRoot = true
+      return 0
+    } else {
+      p.instance
+    }    
+  })
+  const states = getContainerState("Instance")
+  if (isRoot) return ctx.body = states
+  ctx.body = states.filter(state => instances.includes(state.id))
 })
 
 api.param("id", async (id, ctx, next) => {
   const instance = instanceManager.getInstanceById(parseInt(id))
   if (!instance) return ctx.status = 404
-  //@ts-ignore
-  ctx.instance = instance
+  ctx.state.instance = instance
   await next()
 })
 

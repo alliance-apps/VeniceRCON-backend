@@ -1,16 +1,12 @@
-import { connect } from "@service/orm"
-import { initialize as initInstanceManager } from "@service/battlefield"
-import { initialize as initKoa } from "@service/koa"
-import { initialize as initConfig } from "@service/config"
-
-;(async () => {
+(async () => {
   console.log("initializing config...")
-  await initConfig()
+  await require("@service/config").initialize()
   console.log("initializing database...")
-  await connect()
+  await require("@service/orm").connect()
   console.log("initializing koa webserver...")
-  await initKoa() 
+  await require("@service/koa/permission").initialize()
+  await require("@service/koa").initialize()
   console.log("initializing instance manager...")
-  await initInstanceManager() 
+  await require("@service/battlefield").initialize()
   console.log("initialization done!")
 })()

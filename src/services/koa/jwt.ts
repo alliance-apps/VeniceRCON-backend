@@ -1,17 +1,21 @@
 import jwt from "jsonwebtoken"
 import { User } from "@entity/User"
 import { Config } from "@entity/Config"
+import { PermissionRepository } from "@repository/PermissionRepository"
+import { getCustomRepository } from "typeorm"
 
 /**
  * creates a new token from given properties
  * @param props properties to create the token for
  */
 export async function createToken(props: CreateTokenProps) {
-  return jwt.sign({
+  const token: Partial<JsonWebToken> = {
     id: props.user.id,
-    username: props.user.username,
-    permissions: props.user.permissions
-  } as JsonWebToken, await getSecret())
+    username: props.user.username
+  }
+  token.permissions = (await getCustomRepository(PermissionRepository).getPermissions(props.user))
+    .map(p => ({ instance: p.instanceId, root: p.root, permission: p.mask }))
+  return jwt.sign(token, await getSecret())
 }
 
 /** retrieves the secret */
@@ -29,5 +33,9 @@ export interface CreateTokenProps {
 export interface JsonWebToken {
   id: number
   username: string
-  permissions: number
+  permissions?: {
+    instance?: number,
+    root: boolean,
+    permission: string
+  }[]
 }

@@ -1,7 +1,6 @@
-import { Entity, Column } from "typeorm"
+import { Entity, Column, OneToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
-
-
+import { Permission } from "./Permission"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -19,6 +18,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @Column({ default: "" })
   name!: string
+
+  @OneToMany(type => Permission, perm => perm.instance)
+  permissions!: Promise<Permission[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

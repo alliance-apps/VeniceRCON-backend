@@ -2,9 +2,11 @@ import "reflect-metadata"
 import { randomBytes } from "crypto"
 import { createConnection, Connection } from "typeorm"
 import { Instance } from "@entity/Instance"
-import { User, UserType } from "@entity/User"
+import { User } from "@entity/User"
 import { Config } from "@entity/Config"
 import { config } from "@service/config"
+import { Permission } from "@entity/Permission"
+import { createToken } from "@service/koa/jwt"
 
 export let connection: Connection
 
@@ -12,32 +14,34 @@ export async function connect() {
   connection = await createConnection({
     type: config.database.use,
     synchronize: true,
+    logging: config.development,
     maxQueryExecutionTime: 200,
     ...config.database[config.database.use] as any,
     entities: [
       Instance,
       User,
-      Config
+      Config,
+      Permission
     ]
   })
 
-  //create default user
-  if (!await User.findOne({ username: "admin" })) {
-    const password = randomBytes(15).toString("base64")
-    await User.from({
-      username: "admin",
-      password,
-      permissions: 0xFFFFFFFF,
-      type: UserType.PROTECTED
-    })
-    console.log(`created default user "admin" with password "${password}"`)
-  }
-
-  //create 
+  //create default configuration
   const configs = await Config.find()
   await Promise.all(
     Config.DEFAULTS
       .filter(({ name }) => !configs.map(c => c.name).includes(name))
       .map(c => Config.from(c))
   )
+
+  //create default user
+  if (!await User.findOne({ username: "admin" })) {
+    const password = randomBytes(15).toString("base64")
+    const user = await User.from({ username: "admin", password })
+    await user.save()
+    await Permission.from({
+      user, root: true, mask: Array(32).fill("ff").join(":")
+    })
+    console.log(`created default user "admin" with password "${password}"`)
+    console.log(`jwt token: ${await createToken({ user })}`)
+  }
 }
