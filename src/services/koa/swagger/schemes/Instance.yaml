@@ -1,0 +1,24 @@
+Instances:
+  type: array
+  items:
+    $ref: "#/Instance"
+Instance:
+  type: object
+  properties:
+    id:
+      type: number
+    host:
+      type: string
+    port:
+      type: number
+    serverinfo:
+      $ref: "ServerInfo.yaml#/ServerInfo"
+    state:
+      type: number
+      enum:
+        - UNKNOWN
+        - CONNECTING
+        - CONNECTED
+        - DISCONNECTING
+        - DISCONNECTED
+        - RECONNECTING

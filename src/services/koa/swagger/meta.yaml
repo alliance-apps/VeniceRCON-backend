@@ -3,15 +3,18 @@ info:
   title: VU RCON API
   description: API Routes for Venice Unleashed RCON Tool
   version: 0.1.9
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: jwt
 tags:
   - name: auth
     description: routes which handle authentication stuff
   - name: instance
     description: instance related routes
-schemes:
-  - https
 paths:
-
   /api/auth/login:
     post:
       summary: tries to login to an account
@@ -49,31 +52,23 @@ paths:
         retrieve a list of instances you have access to
       tags:
         - "instance"
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: array of instances
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  host:
-                    type: string
-                  port:
-                    type: number
-                  serverinfo:
-                    type: object
-                  state:
-                    type: number
-
+                $ref: "schemes/Instance.yaml#/Instances"
     post:
       summary: creates a rcon instance
       description: |
         creates a new rcon instance and tries to connect to it
       tags:
         - "instance"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -93,11 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                    description: id of the created instance
+                $ref: "schemes/Instance.yaml#/Instance"
 
   /api/instances/{id}/start:
     patch:
@@ -106,7 +97,9 @@ paths:
         starts an already created rcon connection
         if the instance is already started it will throw an error
       tags:
-        - "instance"      
+        - "instance"
+      security:
+        - bearerAuth: []    
       parameters:
         - in: path
           name: id
@@ -125,7 +118,9 @@ paths:
         stops a started rcon connection
         if the instance is already stopped it will throw an error
       tags:
-        - "instance"      
+        - "instance"
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -136,14 +131,37 @@ paths:
       responses:
         '200':
           description: instance has been started successfully
-
   /api/instances/{id}:
+    get:
+      summary: retrieves info about a single instance
+      description: |
+        gets the informations from a single instance
+      tags:
+        - "instance"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: id of the instance to remove
+      responses:
+        '200':
+          description: instance has been removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "schemes/Instance.yaml#/Instance"
     delete:
       summary: removes an instance
       description: |
         removes an instance completely
       tags:
-        - "instance"      
+        - "instance"
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
