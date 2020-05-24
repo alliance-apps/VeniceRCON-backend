@@ -6,7 +6,6 @@ import { createServer } from "http"
 import apiRouter from "./api"
 import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
-import yaml from "yaml"
 import { promises as fs } from "fs"
 
 export const app = new Koa()
