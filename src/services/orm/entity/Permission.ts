@@ -122,9 +122,10 @@ export namespace Permission {
   export type Type = Instance | User
 
   export enum Instance {
-    CREATE = 0x01,
-    UPDATE = 0x02,
-    DELETE = 0x04
+    ACCESS = 0x01,
+    CREATE = 0x02,
+    UPDATE = 0x04,
+    DELETE = 0x08
   }
   
   export enum User {

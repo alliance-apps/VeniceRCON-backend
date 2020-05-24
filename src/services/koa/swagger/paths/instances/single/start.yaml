@@ -1,0 +1,19 @@
+patch:
+  summary: starts an rcon connection
+  description: |
+    starts an already created rcon connection
+    if the instance is already started it will throw an error
+  tags:
+    - "instance"
+  security:
+    - bearerAuth: ["INSTANCE#UPDATE"]    
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: integer
+      required: true
+      description: id of the instance to start
+  responses:
+    '200':
+      description: instance has been started successfully

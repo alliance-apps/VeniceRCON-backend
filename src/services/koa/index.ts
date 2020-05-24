@@ -3,7 +3,7 @@ import koaSend from "koa-send"
 import Router from "koa-joi-router"
 import swagger from "koa2-swagger-ui"
 import { createServer } from "http"
-import apiRouter from "./api"
+import { createRoute as createApiRoute } from "./api"
 import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
 import { promises as fs } from "fs"
@@ -34,7 +34,7 @@ export async function initialize() {
 
   }
 
-  router.use("/api", apiRouter.middleware())
+  router.use("/api", (await createApiRoute()).middleware())
   await initSocket(io)
 
   app.use(router.middleware())

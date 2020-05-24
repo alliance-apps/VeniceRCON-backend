@@ -40,12 +40,9 @@ api.route({
 api.get("/", async ctx => {
   let isRoot = false
   const instances = (await ctx.state.getUserPermissions()).map(p => {
-    if (p.root) {
-      isRoot = true
-      return 0
-    } else {
-      p.instance
-    }    
+    if (!p.hasPermission(Permission.Instance.ACCESS)) return 0
+    if (p.root) return (isRoot = true, 0)
+    return p.instance
   })
   const states = getContainerState("Instance")
   if (isRoot) return ctx.body = states
@@ -59,6 +56,6 @@ api.param("id", async (id, ctx, next) => {
   await next()
 })
 
-api.use("/:id", instanceRouter.middleware())
+api.use("/:id", perm(Permission.Instance.ACCESS), instanceRouter.middleware())
 
 export default api

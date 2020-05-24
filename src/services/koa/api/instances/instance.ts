@@ -1,9 +1,11 @@
 import Router from "koa-joi-router"
 import { instanceManager } from "@service/battlefield"
+import { perm } from "@service/koa/permission"
+import { Permission } from "@entity/Permission"
 
 const api = Router()
 
-api.delete("/", async ctx => {
+api.delete("/", perm(Permission.Instance.DELETE), async ctx => {
   try {
     await instanceManager.removeInstance(ctx.state.instance!.container.id)
     ctx.status = 200
@@ -17,7 +19,7 @@ api.get("/", async ctx => {
   ctx.body = ctx.state.instance!.container.getStateClone()
 })
 
-api.patch("/start", async ctx => {
+api.patch("/start", perm(Permission.Instance.UPDATE), async ctx => {
   try {
     await ctx.state.instance!.start()
     ctx.status = 200
@@ -27,7 +29,7 @@ api.patch("/start", async ctx => {
   }
 })
 
-api.patch("/stop", async ctx => {
+api.patch("/stop", perm(Permission.Instance.UPDATE), async ctx => {
   try {
     await ctx.state.instance!.stop()
     ctx.status = 200
