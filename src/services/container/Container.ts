@@ -1,6 +1,7 @@
 import { EventEmitter } from "events"
 import { io } from "@service/koa/socket"
 import { deepStrictEqual } from "assert"
+import { Socket } from "socket.io"
 
 export interface Container<T extends {}> {
   on(event: "update", cb: (data: Container.UpdateEvent<T>) => void): this
@@ -17,19 +18,20 @@ export abstract class Container<T extends {}> extends EventEmitter {
     this.state = initial
   }
 
+  /**
+   * checks if messages are allowed to get emitted to the specified socket
+   * @param socket socket to check for permissions
+   */
+  abstract isAllowed(socket: Socket): Promise<boolean>
+
   /** retrieves a clone from the current state */
-  getStateClone(): { id: number } & T {
-    //@ts-ignore
+  getStateClone(): { id: number } {
     return {
       id: this.id,
       //@ts-ignore
       ...Object.fromEntries(Object.keys(this.state).map((k: keyof T) => {
-        if (this.state[k] instanceof Container) {
-          //@ts-ignore
-          return [k, this.state[k].getStateClone()]
-        } else {
-          return [k, this.state[k]]
-        }
+        const v = this.state[k]
+        return [k, v instanceof Container ? v.getStateClone() : v]
       }))
     }
   }
@@ -57,10 +59,11 @@ export abstract class Container<T extends {}> extends EventEmitter {
 
   private emitSocket(name: keyof T) {
     if (!io) return
-    io.emit(`${this.namespace}#update`, {
-      id: this.id,
-      name,
-      value: this.state[name]
+    Object.values(io.sockets.sockets).forEach(async socket => {
+      if (!await this.isAllowed(socket)) return
+      socket.emit(`${this.namespace}#update`, {
+        id: this.id, name, value: this.state[name]
+      })
     })
   }
 

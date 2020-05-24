@@ -24,5 +24,6 @@ export interface Configuration {
   }
   webserver: {
     listenport: number
+    cors: Record<string, string|string[]>
   }
 }

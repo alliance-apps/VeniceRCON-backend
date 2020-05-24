@@ -4,6 +4,9 @@ import { Instance as InstanceEntity } from "@entity/Instance"
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity"
 import { Battlefield } from "vu-rcon"
 import { ServerInfoContainer } from "./ServerInfoContainer"
+import { Socket } from "socket.io"
+import { permissionManager } from "@service/permissions"
+import { Permission } from "@entity/Permission"
 
 export class InstanceContainer extends Container<InstanceContainer.StateProps> {
 
@@ -20,6 +23,15 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
       }),
     })
     this.id = props.entity.id
+  }
+
+  async isAllowed(socket: Socket) {
+    if (!socket.request.user || !socket.request.user.logged_in) return false
+    return permissionManager.hasPermission({
+      user: socket.request.user.user.id,
+      instance: this.id,
+      scope: Permission.Instance.ACCESS
+    })
   }
 
   /**

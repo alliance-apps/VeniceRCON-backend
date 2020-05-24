@@ -1,5 +1,8 @@
 import { Container } from "./Container"
 import { Battlefield } from "vu-rcon"
+import { Socket } from "socket.io"
+import { permissionManager } from "@service/permissions"
+import { Permission } from "@entity/Permission"
 
 export class ServerInfoContainer extends Container<ServerInfoContainer.State> {
 
@@ -9,6 +12,15 @@ export class ServerInfoContainer extends Container<ServerInfoContainer.State> {
   constructor(props: ServerInfoContainer.IProps) {
     super(props.state)
     this.id = props.parentId
+  }
+
+  async isAllowed(socket: Socket) {
+    if (!socket.request.user || !socket.request.user.logged_in) return false
+    return permissionManager.hasPermission({
+      user: socket.request.user.user.id,
+      instance: this.id,
+      scope: Permission.Instance.ACCESS
+    })
   }
 
   /**
