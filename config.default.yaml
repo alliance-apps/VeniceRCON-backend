@@ -5,7 +5,7 @@ database:
   #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
   use: "sqlite"
   sqlite:
-    database: "./db.sql"
+    database: "./rcon.db"
   mariadb:
     host: "127.0.0.1"
     port: 3306

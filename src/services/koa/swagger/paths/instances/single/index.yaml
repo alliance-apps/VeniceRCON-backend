@@ -3,7 +3,7 @@ get:
   description: |
     gets the informations from a single instance
   tags:
-    - "instance"
+    - "Instance"
   security:
     - bearerAuth: ["INSTANCE#ACCESS"]
   parameters:
@@ -25,7 +25,7 @@ delete:
   description: |
     removes an instance completely
   tags:
-    - "instance"
+    - "Instance"
   security:
     - bearerAuth: ["INSTANCE#DELETE"]
   parameters:

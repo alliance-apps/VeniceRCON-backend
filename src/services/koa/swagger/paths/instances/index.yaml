@@ -3,7 +3,7 @@ get:
   description: |
     retrieve a list of instances you have access to
   tags:
-    - "instance"
+    - "Instance"
   security:
     - bearerAuth: ["INSTANCE#ACCESS"]
   responses:
@@ -18,7 +18,7 @@ post:
   description: |
     creates a new rcon instance and tries to connect to it
   tags:
-    - "instance"
+    - "Instance"
   security:
     - bearerAuth: ["INSTANCE#CREATE"]
   requestBody:

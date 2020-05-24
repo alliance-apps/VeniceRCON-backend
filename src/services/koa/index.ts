@@ -6,7 +6,6 @@ import { createServer } from "http"
 import { createRoute as createApiRoute } from "./api"
 import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
-import { promises as fs } from "fs"
 import path from "path"
 
 export const app = new Koa()

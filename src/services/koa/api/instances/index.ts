@@ -42,13 +42,13 @@ api.get("/", async ctx => {
   ctx.body = getContainerState("instance", ctx.state.token!.id)
 })
 
-api.param("id", async (id, ctx, next) => {
+api.param("instanceId", async (id, ctx, next) => {
   const instance = instanceManager.getInstanceById(parseInt(id))
   if (!instance) return ctx.status = 404
   ctx.state.instance = instance
   await next()
 })
 
-api.use("/:id", perm(Permission.Instance.ACCESS), instanceRouter.middleware())
+api.use("/:instanceId", perm(Permission.Instance.ACCESS), instanceRouter.middleware())
 
 export default api

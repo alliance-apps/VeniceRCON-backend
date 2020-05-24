@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { hash, compare } from "bcrypt"
 import { Permission } from "./Permission"
+import { Invite } from "./Invite"
 
 @Entity()
 export class User extends AbstractEntity<User> {
@@ -16,6 +17,9 @@ export class User extends AbstractEntity<User> {
 
   @OneToMany(type => Permission, perm => perm.user)
   permissions!: Promise<Permission[]>
+
+  @OneToMany(type => Invite, invite => invite.user)
+  invites!: Promise<Invite[]>
 
   /** checks if the password match */
   validatePassword(password: string) {

@@ -4,7 +4,7 @@ post:
     Tries to login to an account with given credentials |
     on success it will yield an json web token
   tags:
-    - "auth"
+    - "Auth"
   requestBody:
     required: true
     content:

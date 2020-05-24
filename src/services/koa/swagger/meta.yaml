@@ -10,10 +10,12 @@ components:
       scheme: bearer
       bearerFormat: jwt
 tags:
-  - name: auth
+  - name: Auth
     description: routes which handle authentication stuff
-  - name: instance
+  - name: Instance
     description: instance related routes
+  - name: InstanceUser
+    description: instance related user managment routes
 paths:
   /api/auth/login:
     $ref: "paths/auth/login.yaml"
@@ -27,3 +29,7 @@ paths:
     $ref: "paths/instances/single/start.yaml"
   /api/instances/{id}/stop:
     $ref: "paths/instances/single/stop.yaml"
+  /api/instances/{id}/users:
+    $ref: "paths/instances/single/users/index.yaml"
+  /api/instances/{id}/users/invite:
+    $ref: "paths/instances/single/users/invite.yaml"

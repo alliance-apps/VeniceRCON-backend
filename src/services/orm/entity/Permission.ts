@@ -103,10 +103,11 @@ export class Permission extends AbstractEntity<Permission> {
           instance(Permission.Instance.UPDATE)
           return
         case 1:
-          const user = validateScope("USER", Permission.User)
-          user(Permission.User.ADD)
-          user(Permission.User.UPDATE)
-          user(Permission.User.REMOVE)
+          const user = validateScope("INSTANCEUSER", Permission.InstanceUser)
+          user(Permission.InstanceUser.ACCESS)
+          user(Permission.InstanceUser.CREATE)
+          user(Permission.InstanceUser.UPDATE)
+          user(Permission.InstanceUser.REMOVE)
           return
       }
     })
@@ -148,7 +149,7 @@ export namespace Permission {
     mask?: string
   }
 
-  export type Type = Instance | User
+  export type Type = Instance | InstanceUser
 
   export enum Instance {
     ACCESS = 0x01,
@@ -157,10 +158,11 @@ export namespace Permission {
     DELETE = 0x08
   }
   
-  export enum User {
-    ADD = 0x100,
-    UPDATE = 0x200,
-    REMOVE = 0x400,
+  export enum InstanceUser {
+    ACCESS = 0x100,
+    CREATE = 0x200,
+    UPDATE = 0x400,
+    REMOVE = 0x800
   }
 
 }

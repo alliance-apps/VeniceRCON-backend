@@ -3,7 +3,7 @@ get:
   description: |
     gets informations about the current token including permission scopes for each instance
   tags:
-    - "auth"
+    - "Auth"
   security:
     - bearerAuth: []
   responses:

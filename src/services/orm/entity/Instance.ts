@@ -1,6 +1,7 @@
-import { Entity, Column, OneToMany } from "typeorm"
+import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Permission } from "./Permission"
+import { Invite } from "./Invite"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -21,6 +22,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @OneToMany(type => Permission, perm => perm.instance)
   permissions!: Promise<Permission[]>
+
+  @ManyToOne(type => Invite, invite => invite.instance)
+  invites!: Promise<Invite[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

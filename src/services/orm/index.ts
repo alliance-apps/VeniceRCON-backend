@@ -7,6 +7,7 @@ import { Config } from "@entity/Config"
 import { config } from "@service/config"
 import { Permission } from "@entity/Permission"
 import { createToken } from "@service/koa/jwt"
+import { Invite } from "@entity/Invite"
 
 export let connection: Connection
 
@@ -21,7 +22,8 @@ export async function connect() {
       Instance,
       User,
       Config,
-      Permission
+      Permission,
+      Invite
     ]
   })
 

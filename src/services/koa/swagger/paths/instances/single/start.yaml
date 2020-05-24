@@ -4,7 +4,7 @@ patch:
     starts an already created rcon connection
     if the instance is already started it will throw an error
   tags:
-    - "instance"
+    - "Instance"
   security:
     - bearerAuth: ["INSTANCE#UPDATE"]    
   parameters:
