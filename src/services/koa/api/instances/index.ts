@@ -44,7 +44,7 @@ api.get("/", async ctx => {
     if (p.root) return (isRoot = true, 0)
     return p.instance
   })
-  const states = getContainerState("Instance")
+  const states = getContainerState("instance")
   if (isRoot) return ctx.body = states
   ctx.body = states.filter(state => instances.includes(state.id))
 })

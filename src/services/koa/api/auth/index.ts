@@ -1,6 +1,8 @@
 import Router from "koa-joi-router"
 import { User } from "@entity/User"
 import { createToken } from "@service/koa/jwt"
+import { getCustomRepository } from "typeorm"
+import { PermissionRepository } from "@repository/PermissionRepository"
 
 const { Joi } = Router
 const router = Router()
@@ -24,6 +26,16 @@ router.route({
       return
     }
     response.body = { token: await createToken({ user }) }
+  }
+})
+
+router.get("/whoami", async ctx => {
+  if (!ctx.state.token) return ctx.status = 401
+  const repository = getCustomRepository(PermissionRepository)
+  ctx.body = {
+    permissions: (await repository.getPermissions(ctx.state.token.id))
+      .map(p => ({ instance: p.instanceId, root: p.root, permission: p.mask })),
+    token: ctx.state.token
   }
 })
 

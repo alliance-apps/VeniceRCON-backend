@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken"
 import { User } from "@entity/User"
 import { Config } from "@entity/Config"
-import { PermissionRepository } from "@repository/PermissionRepository"
-import { getCustomRepository } from "typeorm"
 import koaJwt from "koa-jwt"
 
 
@@ -15,8 +13,6 @@ export async function createToken(props: CreateTokenProps) {
     id: props.user.id,
     username: props.user.username
   }
-  token.permissions = (await getCustomRepository(PermissionRepository).getPermissions(props.user))
-    .map(p => ({ instance: p.instanceId, root: p.root, permission: p.mask }))
   return jwt.sign(token, await getSecret())
 }
 
@@ -43,9 +39,4 @@ export interface CreateTokenProps {
 export interface JsonWebToken {
   id: number
   username: string
-  permissions?: {
-    instance?: number,
-    root: boolean,
-    permission: string
-  }[]
 }
