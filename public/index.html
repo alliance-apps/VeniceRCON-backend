@@ -1,8 +1,10 @@
 <html>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0._FS8JJ9kFaikmaKoXPCnkhUr-O-IQPHY4mxf7-EWYGM"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU5MDMxNDQ3MX0.zGbvJbsRrC3NQacyHDXoR_KNPX2NPWezl_P-t6gjKEg"
     console.log("connect...")
-    const socket = io.connect(undefined, { query: `auth_token=${token}`})    
+    const socket = io.connect(undefined, { query: `auth_token=${token}`})
+    socket.on("error", err => console.log(err))
+    socket.on("instance#initial", data => console.log(data))
   </script>
 </html>
