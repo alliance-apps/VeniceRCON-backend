@@ -15,3 +15,10 @@ database:
 webserver:
   #port which the webserver listens to
   listenport: 8000
+  #cors are only being set when development has been set to true
+  cors:
+    Access-Control-Allow-Credentials: "true"
+    Access-Control-Allow-Origin: "*"
+    Access-Control-Allow-Headers: 
+      - Authorization
+      - Content-Type

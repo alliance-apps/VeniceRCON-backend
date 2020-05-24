@@ -18,22 +18,16 @@ export async function initialize() {
   const router = Router()
  
   if (config.development) {
-    
+
     app.use(async (ctx, next) => {
-      ctx.set("Access-Control-Allow-Credentials", "true")
-      ctx.set("Access-Control-Allow-Origin", "*")
-      ctx.set("Access-Control-Allow-Headers", ["Authorization"])
+      const { cors } = config.webserver
+      Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
       //firefox
       if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
       await next()
     })
-
-    console.log("serve swagger")
     router.get("/swagger/(.*)", ctx => koaSend(ctx, ctx.path, { root: `${__dirname}` }))
-
     router.use(swagger())
-    const content = await fs.readFile(`${__dirname}/swagger/meta.yaml`, "utf-8")
-
     router.get("/swagger", swagger({
       routePrefix: false,
       hideTopbar: true,
