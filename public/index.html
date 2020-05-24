@@ -3,6 +3,9 @@
   <script>
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU5MDMxNDQ3MX0.zGbvJbsRrC3NQacyHDXoR_KNPX2NPWezl_P-t6gjKEg"
     console.log("connect...")
+    fetch("/api/auth/whoami", {
+      headers: { "Authorization": `Bearer ${token}` }
+    }).then(async res => console.log(await res.json()))
     const socket = io.connect(undefined, { query: `auth_token=${token}`})
     socket.on("error", err => console.log(err))
     socket.on("instance#initial", data => console.log("instance#initial", data))

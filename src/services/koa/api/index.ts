@@ -1,15 +1,15 @@
 import Router from "koa-joi-router"
+import json from "koa-json"
 import bodyParser from "koa-bodyparser"
 import authRouter from "./auth"
 import instanceRouter from "./instances"
-import json from "koa-json"
 import { config } from "@service/config"
 import { jwtMiddleware } from "../jwt"
 import { stateDefaults } from "./state"
 
 export async function createRoute() {
   const router = Router()
-  
+
   router.use(bodyParser({
     enableTypes: ["json"],
     onerror: (err, ctx) => ctx.throw("body parse error", 422)
