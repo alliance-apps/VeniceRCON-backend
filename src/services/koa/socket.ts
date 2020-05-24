@@ -2,7 +2,6 @@ import { Server } from "socket.io"
 import ioJWT from "socketio-jwt-auth"
 import { User } from "@entity/User"
 import { getSecret } from "./jwt"
-import { instanceManager } from "@service/battlefield"
 import { getContainerState, getContainerNamespaces } from "@service/container"
 
 export let io: Server

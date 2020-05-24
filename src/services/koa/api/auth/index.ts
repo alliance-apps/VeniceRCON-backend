@@ -34,7 +34,7 @@ router.get("/whoami", async ctx => {
   const repository = getCustomRepository(PermissionRepository)
   ctx.body = {
     permissions: (await repository.getPermissions(ctx.state.token.id))
-      .map(p => ({ instance: p.instanceId, root: p.root, permission: p.mask })),
+      .map(p => ({ instance: p.instanceId, root: p.root, scopes: p.getScopes() })),
     token: ctx.state.token
   }
 })

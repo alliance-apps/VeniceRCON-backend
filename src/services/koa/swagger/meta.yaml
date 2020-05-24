@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: VU RCON API
-  description: API Routes for Venice Unleashed RCON Tool
-  version: 0.1.9
+  title: VeniceRCON
+  description: API Routes for VeniceRCON
+  version: 0.0.1
 components:
   securitySchemes:
     bearerAuth:
@@ -17,6 +17,8 @@ tags:
 paths:
   /api/auth/login:
     $ref: "paths/auth/login.yaml"
+  /api/auth/whoami:
+    $ref: "paths/auth/whoami.yaml"
   /api/instances:
     $ref: "paths/instances/index.yaml"
   /api/instances/{id}:

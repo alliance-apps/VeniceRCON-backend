@@ -27,7 +27,7 @@ export class Instance {
   }
 
   private startUpdateInterval() {
-    this.interval = setInterval(this.updateInterval.bind(this), 3 * 1000)
+    this.interval = setInterval(this.updateInterval.bind(this), 1 * 1000)
     this.updateInterval()
   }
 

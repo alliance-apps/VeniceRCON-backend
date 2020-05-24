@@ -5,6 +5,8 @@
     console.log("connect...")
     const socket = io.connect(undefined, { query: `auth_token=${token}`})
     socket.on("error", err => console.log(err))
-    socket.on("instance#initial", data => console.log(data))
+    socket.on("instance#initial", data => console.log("instance#initial", data))
+    socket.on("instance#update", data => console.log("instance#update", data))
+    socket.on("serverinfo#update", data => console.log("serverinfo#update", data))
   </script>
 </html>

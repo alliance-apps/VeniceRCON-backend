@@ -84,11 +84,40 @@ export class Permission extends AbstractEntity<Permission> {
     return (nodes[index] & perm) === perm
   }
 
+  /** retrieves readable scope names */
+  getScopes() {
+    const scopes: string[] = []
+    const validateScope = (prefix: string, e: any) => {
+      return (val: Permission.Type) => {
+        if (!this.hasPermission(val)) return
+        scopes.push(`${prefix}#${e[val]}`)
+      }
+    }
+    Array(2).fill(null).map((_, index) => {
+      switch(index) {
+        case 0:
+          const instance = validateScope("INSTANCE", Permission.Instance)
+          instance(Permission.Instance.ACCESS)
+          instance(Permission.Instance.CREATE)
+          instance(Permission.Instance.DELETE)
+          instance(Permission.Instance.UPDATE)
+          return
+        case 1:
+          const user = validateScope("USER", Permission.User)
+          user(Permission.User.ADD)
+          user(Permission.User.UPDATE)
+          user(Permission.User.REMOVE)
+          return
+      }
+    })
+    return scopes
+  }
+
   /**
    * gets the permission nodes
    */
   private getPermissionNodes() {
-    return this.mask.split(":").map(n => parseInt(n, 16))
+    return this.mask.split(":").map(hex => parseInt(hex, 16))
   }
 
   /** creates a new instance */

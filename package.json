@@ -2,6 +2,10 @@
   "name": "battlefield",
   "version": "1.0.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alliance-apps/VeniceRCON-backend"
+  },
   "scripts": {
     "test": "jest --runInBand",
     "start": "ts-node -r tsconfig-paths/register src/index.ts"
