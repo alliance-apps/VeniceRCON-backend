@@ -18,7 +18,7 @@ export abstract class Container<T extends {}> extends EventEmitter {
   }
 
   /** retrieves a clone from the current state */
-  getStateClone(): T {
+  getStateClone(): { id: number } & T {
     //@ts-ignore
     return {
       id: this.id,

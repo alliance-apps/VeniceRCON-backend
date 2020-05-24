@@ -21,10 +21,11 @@ export async function initialize(server: Server) {
   ))
 
   io.on("connection", socket => {
+    if (!socket.request.user) throw new Error("user not authenticated but came till connection")
     socket.emit("success")
   
-    getContainerNamespaces().forEach(ns => {
-      socket.emit(`${ns}#initial`, getContainerState(ns))
+    getContainerNamespaces().forEach(async ns => {
+      socket.emit(`${ns}#initial`, await getContainerState(ns, socket.request.user.user.id))
     })
 
   })

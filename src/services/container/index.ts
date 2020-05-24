@@ -1,6 +1,8 @@
 import { Container } from "./Container"
 import { InstanceContainer } from "./InstanceContainer"
 import { io } from "../koa/socket"
+import { permissionManager } from "@service/permissions"
+import { Permission } from "@entity/Permission"
 
 export let containers: Container<any>[] = []
 
@@ -19,8 +21,15 @@ export function createInstanceContainer(props: InstanceContainer.IProps) {
  * retrieves the state of containers with a specific namespace
  * @param namespace 
  */
-export function getContainerState(namespace: string) {
-  return containers.filter(c => c.namespace === namespace).map(c => c.getStateClone())
+export async function getContainerState(namespace: string, user: number|true) {
+  const states = containers.filter(c => c.namespace === namespace).map(c => c.getStateClone())
+  if (user === true) return states
+  const allowed = await Promise.all(
+    states.map(state => permissionManager.hasPermission({
+      scope: Permission.Instance.ACCESS, instance: state.id, user
+    }))
+  )
+  return states.filter((s, i) => allowed[i])
 }
 
 /**

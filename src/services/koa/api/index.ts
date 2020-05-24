@@ -5,7 +5,6 @@ import authRouter from "./auth"
 import instanceRouter from "./instances"
 import { config } from "@service/config"
 import { jwtMiddleware } from "../jwt"
-import { stateDefaults } from "./state"
 
 export async function createRoute() {
   const router = Router()
@@ -17,7 +16,6 @@ export async function createRoute() {
   router.use(json({ pretty: config.development }))
   
   router.use(await jwtMiddleware({ passthrough: true }))
-  router.use(stateDefaults)
   
   router.use("/auth", authRouter.middleware())
   router.use("/instances", await jwtMiddleware(), instanceRouter.middleware())

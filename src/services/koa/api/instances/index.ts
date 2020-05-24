@@ -4,6 +4,7 @@ import instanceRouter from "./instance"
 import { getContainerState } from "@service/container"
 import { perm } from "@service/koa/permission"
 import { Permission } from "@entity/Permission"
+import { permissionManager } from "@service/permissions"
 
 
 const { Joi } = Router
@@ -38,15 +39,7 @@ api.route({
 })
 
 api.get("/", async ctx => {
-  let isRoot = false
-  const instances = (await ctx.state.getUserPermissions()).map(p => {
-    if (!p.hasPermission(Permission.Instance.ACCESS)) return 0
-    if (p.root) return (isRoot = true, 0)
-    return p.instance
-  })
-  const states = getContainerState("instance")
-  if (isRoot) return ctx.body = states
-  ctx.body = states.filter(state => instances.includes(state.id))
+  ctx.body = getContainerState("instance", ctx.state.token!.id)
 })
 
 api.param("id", async (id, ctx, next) => {
