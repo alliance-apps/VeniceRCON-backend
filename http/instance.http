@@ -1,0 +1,29 @@
+@id=1
+
+### create a new instance
+POST {{$dotenv url}}/api/instances
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "host": "multivitamin.wtf",
+  "port": 47200,
+  "password": "saft"
+}
+
+### lists all available instances
+GET {{$dotenv url}}/api/instances
+Authorization: Bearer {{$dotenv jwt}}
+
+
+### stops an instance by its id
+PATCH {{$dotenv url}}/api/instances/{{id}}/stop
+Authorization: Bearer {{$dotenv jwt}}
+
+### starts an instance by its id
+PATCH {{$dotenv url}}/api/instances/{{id}}/start
+Authorization: Bearer {{$dotenv jwt}}
+
+### deletes an instance
+DELETE {{$dotenv url}}/api/instances/{{id}}
+Authorization: Bearer {{$dotenv jwt}}

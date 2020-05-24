@@ -1,0 +1,12 @@
+### login to a specific account
+POST {{$dotenv url}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "4ZKZu3JCT1x6rv/WqvEW"
+}
+
+### gets information about the token
+GET {{$dotenv url}}/api/auth/whoami
+Authorization: Bearer {{$dotenv jwt}}
