@@ -10,7 +10,7 @@ export abstract class Container<T extends {}> extends EventEmitter {
 
   abstract readonly namespace: string 
   abstract readonly id: number
-  private readonly state: T
+  protected readonly state: T
 
   constructor(initial: T) {
     super()
@@ -19,7 +19,19 @@ export abstract class Container<T extends {}> extends EventEmitter {
 
   /** retrieves a clone from the current state */
   getStateClone(): T {
-    return { id: this.id, ...this.state }
+    //@ts-ignore
+    return {
+      id: this.id,
+      //@ts-ignore
+      ...Object.fromEntries(Object.keys(this.state).map((k: keyof T) => {
+        if (this.state[k] instanceof Container) {
+          //@ts-ignore
+          return [k, this.state[k].getStateClone()]
+        } else {
+          return [k, this.state[k]]
+        }
+      }))
+    }
   }
 
   /**
@@ -34,12 +46,13 @@ export abstract class Container<T extends {}> extends EventEmitter {
    * updates a given value
    * @param name key to update
    * @param value new value
+   * @returns wether the resource has been modified or not
    */
   protected set<Y extends keyof T>(name: Y, value: T[Y]) {
-    if (this.equal(this.state[name], value)) return this
+    if (this.equal(this.state[name], value)) return false
     this.state[name] = value
     this.emitSocket(name)
-    return this
+    return true
   }
 
   private emitSocket(name: keyof T) {

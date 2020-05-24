@@ -3,18 +3,21 @@ import { Container } from "./Container"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity"
 import { Battlefield } from "vu-rcon"
+import { ServerInfoContainer } from "./ServerInfoContainer"
 
 export class InstanceContainer extends Container<InstanceContainer.StateProps> {
 
-  readonly namespace = "Instance"
+  readonly namespace = "instance"
   readonly id: number
 
   constructor(props: InstanceContainer.IProps) {
     super({
       host: props.entity.host,
       port: props.entity.port,
-      serverinfo: <Battlefield.ServerInfo><unknown>{},
-      state: Instance.State.DISCONNECTED
+      state: Instance.State.DISCONNECTED,
+      serverinfo: new ServerInfoContainer({
+        parentId: props.entity.id, state: {}
+      }),
     })
     this.id = props.entity.id
   }
@@ -37,8 +40,9 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
    * @param info
    */
   async updateServerInfo(info: Battlefield.ServerInfo) {
-    this.set("serverinfo", info)
-    await this.updateEntity({ name: info.name })
+    if (this.state.serverinfo.updateServerInfo(info).includes("name")) {
+      await this.updateEntity({ name: info.name })
+    }
     return this
   }
 
@@ -71,7 +75,7 @@ export namespace InstanceContainer {
     host: string
     port: number
     state: Instance.State
-    serverinfo: Battlefield.ServerInfo
+    serverinfo: ServerInfoContainer
   }
 
   export interface IProps {
