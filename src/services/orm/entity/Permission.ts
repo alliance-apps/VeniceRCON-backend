@@ -44,8 +44,15 @@ export class Permission extends AbstractEntity<Permission> {
     return this.setRelation("instance", instance)
   }
 
+  /** sets multiple permissions */
+  setPermissions(perms: Permission.Type[], save: boolean = true) {
+    perms.forEach(p => this.setPermission(p, false))
+    if (save) return this.save({ reload: true })
+    return this
+  }
+
   /** sets a specific permission */
-  setPermission(perm: Permission.Type) {
+  setPermission(perm: Permission.Type, save: boolean = true) {
     const nodes = this.getPermissionNodes()
     let index = 0
     while (perm > 255) {
@@ -55,11 +62,19 @@ export class Permission extends AbstractEntity<Permission> {
     if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
     nodes[index] |= perm
     this.mask = nodes.map(n => n.toString(16)).map(c => c.length === 1 ? `0${c}` : c).join(":")
+    if (save) return this.save({ reload: true })
+    return this
+  }
+
+  /** removes multiple permissions */
+  detPermissions(perms: Permission.Type[], save: boolean = true) {
+    perms.forEach(p => this.setPermission(p, false))
+    if (save) return this.save({ reload: true })
     return this
   }
 
   /** removes a specific permission */
-  delPermission(perm: Permission.Type) {
+  delPermission(perm: Permission.Type, save: boolean = true) {
     const nodes = this.getPermissionNodes()
     let index = 0
     while (perm > 255) {
@@ -69,6 +84,7 @@ export class Permission extends AbstractEntity<Permission> {
     if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
     nodes[index] &= ~perm
     this.mask = nodes.map(n => n.toString(16)).map(c => c.length === 1 ? `0${c}` : c).join(":")
+    if (save) return this.save({ reload: true })
     return this
   }
 
@@ -123,16 +139,13 @@ export class Permission extends AbstractEntity<Permission> {
 
   /** creates a new instance */
   static async from(props: Permission.ICreate) {
-    if (props.root && props.instance)
-      throw new Error("can either set root or instance but not both")
-    if (!props.root && !props.instance)
-      throw new Error("either root or instance required but both are missing")
     const perm = new Permission()
     perm.mask = props.mask || "00"
-    perm.root = props.root === true
+    if (props.scopes) perm.setPermissions(props.scopes, false)
+    if ("root" in props) perm.root = true
     await perm.save()
     const update = [perm.setUser(props.user)]
-    if (props.instance) update.push(perm.setInstance(props.instance))
+    if ("instance" in props) update.push(perm.setInstance(props.instance))
     await Promise.all(update)
     await perm.reload()
     return perm
@@ -142,11 +155,20 @@ export class Permission extends AbstractEntity<Permission> {
 
 export namespace Permission {
 
-  export interface ICreate {
+  export type ICreate = ICreateRoot | ICreateInstance
+
+  export interface ICreateBase {
     user: UserEntity|number
-    instance?: InstanceEntity|number
-    root?: boolean,
     mask?: string
+    scopes?: Permission.Type[]
+  }
+
+  export interface ICreateRoot extends ICreateBase {
+    root: boolean
+  }
+
+  export interface ICreateInstance extends ICreateBase {
+    instance: InstanceEntity|number
   }
 
   export type Type = Instance | InstanceUser

@@ -1,6 +1,6 @@
 import Router from "koa-joi-router"
 import { getCustomRepository } from "typeorm"
-import { UserRepository } from "@repository/UserRepository"
+import { PermissionRepository } from "@repository/PermissionRepository"
 import { Invite } from "@entity/Invite"
 import { Permission } from "@entity/Permission"
 import { perm } from "@service/koa/permission"
@@ -9,7 +9,7 @@ const api = Router()
 
 //lists users
 api.get("/", async ctx => {
-  ctx.body = await getCustomRepository(UserRepository).getInstanceUsers(ctx.state.instance!.container.id)
+  ctx.body = await getCustomRepository(PermissionRepository).getInstanceUsers(ctx.state.instance!.container.id)
 })
 
 //creates a new invite token

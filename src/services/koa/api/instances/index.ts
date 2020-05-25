@@ -4,8 +4,6 @@ import instanceRouter from "./instance"
 import { getContainerState } from "@service/container"
 import { perm } from "@service/koa/permission"
 import { Permission } from "@entity/Permission"
-import { permissionManager } from "@service/permissions"
-
 
 const { Joi } = Router
 const api = Router()
@@ -39,7 +37,7 @@ api.route({
 })
 
 api.get("/", async ctx => {
-  ctx.body = getContainerState("instance", ctx.state.token!.id)
+  ctx.body = await getContainerState("instance", ctx.state.token!.id)
 })
 
 api.param("instanceId", async (id, ctx, next) => {

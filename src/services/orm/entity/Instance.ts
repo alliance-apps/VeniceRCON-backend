@@ -23,7 +23,7 @@ export class Instance extends AbstractEntity<Instance> {
   @OneToMany(type => Permission, perm => perm.instance)
   permissions!: Promise<Permission[]>
 
-  @ManyToOne(type => Invite, invite => invite.instance)
+  @OneToMany(type => Invite, invite => invite.instance)
   invites!: Promise<Invite[]>
 
   /** creates a new instance */

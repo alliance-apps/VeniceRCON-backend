@@ -20,6 +20,7 @@ export function createInstanceContainer(props: InstanceContainer.IProps) {
 /**
  * retrieves the state of containers with a specific namespace
  * @param namespace 
+ * @param user wether to retrieve states for only a specific user or all states
  */
 export async function getContainerState(namespace: string, user: number|true) {
   const states = containers.filter(c => c.namespace === namespace).map(c => c.getStateClone())

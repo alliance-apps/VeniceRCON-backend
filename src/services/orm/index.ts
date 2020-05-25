@@ -44,8 +44,9 @@ export async function connect() {
       user, root: true, mask: Array(32).fill("ff").join(":")
     })
     setTimeout(async () => {
+      const token = await createToken({ user })
       console.log(`created default user "admin" with password "${password}"`)
-      console.log(`jwt token: ${await createToken({ user })}`)
+      console.log(`jwt token: ${token}`)
     }, 1000)
   }
 }

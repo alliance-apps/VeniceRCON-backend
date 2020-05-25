@@ -21,6 +21,10 @@ paths:
     $ref: "paths/auth/login.yaml"
   /api/auth/whoami:
     $ref: "paths/auth/whoami.yaml"
+  /api/auth/invite:
+    $ref: "paths/auth/invite.yaml"
+  /api/auth/register:
+    $ref: "paths/auth/register.yaml"
   /api/instances:
     $ref: "paths/instances/index.yaml"
   /api/instances/{id}:

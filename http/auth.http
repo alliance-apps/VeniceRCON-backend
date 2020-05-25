@@ -10,3 +10,21 @@ Content-Type: application/json
 ### gets information about the token
 GET {{$dotenv url}}/api/auth/whoami
 Authorization: Bearer {{$dotenv jwt}}
+
+### creates a new user with a invite token
+POST {{$dotenv url}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "foobar",
+  "password": "foobar",
+  "token": "5ab798987b240afa7db8335411d0dc39"
+}
+
+### creates a new user with a invite token
+POST {{$dotenv url}}/api/auth/invite
+Content-Type: application/json
+
+{
+  "token": "123"
+}

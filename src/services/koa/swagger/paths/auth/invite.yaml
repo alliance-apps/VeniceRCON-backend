@@ -1,0 +1,20 @@
+post:
+  summary: consume an invite token while being already registered
+  description: |
+    use and consume a login token in order to gain access to an additional instance
+  tags:
+    - "Auth"
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+  responses:
+    '200':
+      description: successfully gained access to a new instance

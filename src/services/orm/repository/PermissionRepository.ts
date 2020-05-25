@@ -1,15 +1,38 @@
 import { EntityRepository, Repository } from "typeorm"
 import { User } from "@entity/User"
 import { Permission } from "@entity/Permission"
+import { Instance } from "@entity/Instance"
 
 @EntityRepository(Permission)
 export class PermissionRepository extends Repository<Permission> {
 
+  /**
+   * retrieves all permissions a user has
+   * @param user user to get the permissions for
+   */
   getPermissions(user: User|number): Promise<Permission[]> {
     return Permission.createQueryBuilder("permission")
       .select()
       .where("permission.user = :id", { id: typeof user === "number" ? user : user.id })
       .getMany()
+  }
+
+  /**
+   * retrieves all permissions from a specific instance
+   * @param instance instance to get the permissions for
+   */
+  getInstanceUsers(instance: Instance|number): Promise<PermissionRepository.IInstanceUser[]> {
+    const instanceId = instance instanceof Instance ? instance.id : instance
+    return Permission.createQueryBuilder("perm")
+      .select("perm.userId", "userId")
+      .addSelect("user.username", "username")
+      .addSelect("perm.id", "permId")
+      .addSelect("perm.created", "created")
+      .addSelect("perm.modified", "modified")
+      .addSelect("perm.mask", "mask")
+      .where("perm.instanceId = :instanceId", { instanceId })
+      .leftJoin("perm.user", "user")
+      .getRawMany()
   }
 
 }
@@ -20,4 +43,13 @@ export namespace PermissionRepository {
     instance: number,
     mask: string
   }[]
+
+  export interface IInstanceUser {
+    userId: number
+    username: string
+    permId: number
+    created: string
+    modified: string
+    mask: string
+  }
 }

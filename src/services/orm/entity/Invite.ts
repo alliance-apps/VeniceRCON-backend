@@ -3,6 +3,8 @@ import { AbstractEntity } from "./Abstract"
 import { User } from "./User"
 import { Instance } from "./Instance"
 import { randomBytes } from "crypto"
+import { Permission } from "./Permission"
+import { permissionManager } from "@service/permissions"
 
 @Entity()
 export class Invite extends AbstractEntity<Invite> {
@@ -35,6 +37,27 @@ export class Invite extends AbstractEntity<Invite> {
   @OneToOne(type => User, { nullable: true })
   @JoinColumn()
   user!: Promise<User|null>
+
+  @Column({ nullable: true })
+  userId?: number
+
+  /**
+   * uses the token by the specified user
+   */
+  async consume(user: User) {
+    if (this.userId) throw new Error(`can not use this token, it already has been used by someone else`)
+    await this.setUser(user)
+    await this.reload()
+    return permissionManager.createPermission({
+      user,
+      instance: this.instanceId,
+      scopes: [Permission.Instance.ACCESS]
+    })
+  }
+
+  setUser(user: User|number) {
+    return this.setRelation("user", user)
+  }
 
   /** sets the issuer of the invite link */
   setIssuer(issuer: User|number) {

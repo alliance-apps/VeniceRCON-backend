@@ -12,7 +12,4 @@ get:
       content:
         application/json:
           schema: 
-            type: object
-            properties:
-              token:
-                type: string
+            $ref: "../../schemes/Whoami.yaml"
