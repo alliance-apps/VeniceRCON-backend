@@ -1,0 +1,19 @@
+@instanceId=1
+@userId=2
+
+### retrieve a single user
+GET {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### removes a user from this instance
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### updates permissions of a user
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/permissions
+Content-Type: application/json
+Authorization: Bearer {{$dotenv jwt}}
+
+{
+  "scopes": ["INSTANCE#ACCESS", "INSTANCE#UDATE"]
+}

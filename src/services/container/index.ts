@@ -2,7 +2,7 @@ import { Container } from "./Container"
 import { InstanceContainer } from "./InstanceContainer"
 import { io } from "../koa/socket"
 import { permissionManager } from "@service/permissions"
-import { Permission } from "@entity/Permission"
+import { InstanceScope } from "@service/permissions/Scopes"
 
 export let containers: Container<any>[] = []
 
@@ -27,7 +27,7 @@ export async function getContainerState(namespace: string, user: number|true) {
   if (user === true) return states
   const allowed = await Promise.all(
     states.map(state => permissionManager.hasPermission({
-      scope: Permission.Instance.ACCESS, instance: state.id, user
+      scope: InstanceScope.ACCESS, instance: state.id, user
     }))
   )
   return states.filter((s, i) => allowed[i])

@@ -2,6 +2,7 @@ import { User as UserEntity } from "@entity/User"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { Permission } from "@entity/Permission"
 import { PermissionCache } from "./PermissionCache"
+import { Scopes } from "./Scopes"
 
 export class PermissionManager {
   
@@ -79,6 +80,22 @@ export class PermissionManager {
     return perms.some(p => p.instanceId === instanceId)
   }
 
+  /**
+   * removes instance access from a router
+   * @param user user to remove
+   * @param instance instance to remove the user from
+   */
+  async removeInstanceAccess(user: UserEntity|number, instance: InstanceEntity|number) {
+    const perm = await Permission.findOne({
+      userId: typeof user === "number" ? user : user.id,
+      instanceId: typeof instance === "number" ? instance : instance.id
+    })
+    if (!perm) return false
+    await perm.remove()
+    this.removeUserFromCache(user)
+    return true
+  }
+
 }
 
 
@@ -87,13 +104,13 @@ export namespace PermissionManager {
   export interface IHasPermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
-    scope: Permission.Type
+    scope: Scopes
   }
 
   export interface IUpdatePermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number
-    scope: Permission.Type
+    scope: Scopes
   }
 
 }

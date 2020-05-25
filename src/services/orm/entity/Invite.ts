@@ -1,10 +1,10 @@
-import { Entity, Column, OneToOne, JoinColumn, ManyToOne } from "typeorm"
+import { Entity, Column, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { User } from "./User"
 import { Instance } from "./Instance"
 import { randomBytes } from "crypto"
-import { Permission } from "./Permission"
 import { permissionManager } from "@service/permissions"
+import { InstanceScope } from "@service/permissions/Scopes"
 
 @Entity()
 export class Invite extends AbstractEntity<Invite> {
@@ -34,8 +34,7 @@ export class Invite extends AbstractEntity<Invite> {
   @Column({ nullable: true })
   instanceId!: number
 
-  @OneToOne(type => User, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(type => User, { nullable: true })
   user!: Promise<User|null>
 
   @Column({ nullable: true })
@@ -51,7 +50,7 @@ export class Invite extends AbstractEntity<Invite> {
     return permissionManager.createPermission({
       user,
       instance: this.instanceId,
-      scopes: [Permission.Instance.ACCESS]
+      scopes: [InstanceScope.ACCESS]
     })
   }
 

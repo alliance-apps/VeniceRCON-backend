@@ -1,0 +1,23 @@
+patch:
+  summary: updates the permissions of a single user
+  description: |
+    updates the permissions of a single user
+    only the permissions can be set which the own user already have
+  tags:
+    - "InstanceUser"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            scopes:
+              type: array
+              items: 
+                type: string
+  security:
+    - bearerAuth: ["INSTANCEUSER#UPDATE"]
+  responses:
+    '200':
+      description: permissions have been updated successfully

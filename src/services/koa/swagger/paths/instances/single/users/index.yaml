@@ -12,4 +12,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: "../../../../schemes/InstanceUser.yaml#/InstanceUser"
+            $ref: "../../../../schemes/InstanceUser.yaml#/InstanceUsers"

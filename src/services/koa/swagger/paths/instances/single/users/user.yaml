@@ -1,0 +1,26 @@
+get:
+  summary: retrieves a single user with their permissions
+  description: |
+    retrieves a single user with their permissions
+  tags:
+    - "InstanceUser"
+  security:
+    - bearerAuth: ["INSTANCEUSER#ACCESS"]
+  responses:
+    '200':
+      description: single user
+      content:
+        application/json:
+          schema:
+            $ref: "../../../../schemes/InstanceUser.yaml#/InstanceUser"
+delete:
+  summary: revokes access for a user to the instance
+  description: |
+    revokes access for a user to the instance
+  tags:
+    - "InstanceUser"
+  security:
+    - bearerAuth: ["INSTANCEUSER#UPDATE"]
+  responses:
+    '200':
+      description: user has been deleted successfully

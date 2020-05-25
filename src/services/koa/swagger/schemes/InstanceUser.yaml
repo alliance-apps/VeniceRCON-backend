@@ -1,3 +1,20 @@
+InstanceUsers:
+  type: array
+  items:
+    $ref: "#/InstanceUser"
 InstanceUser:
   type: object
   properties:
+    permId:
+      type: number
+    userId:
+      type: number
+    modified:
+      type: string
+    created:
+      type: string
+    username:
+      type: string
+    scopes:
+      type: array
+      items: string

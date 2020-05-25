@@ -27,13 +27,17 @@ paths:
     $ref: "paths/auth/register.yaml"
   /api/instances:
     $ref: "paths/instances/index.yaml"
-  /api/instances/{id}:
+  /api/instances/{instanceId}:
     $ref: "paths/instances/single/index.yaml"
-  /api/instances/{id}/start:
+  /api/instances/{instanceId}/start:
     $ref: "paths/instances/single/start.yaml"
-  /api/instances/{id}/stop:
+  /api/instances/{instanceId}/stop:
     $ref: "paths/instances/single/stop.yaml"
-  /api/instances/{id}/users:
+  /api/instances/{instanceId}/users:
     $ref: "paths/instances/single/users/index.yaml"
-  /api/instances/{id}/users/invite:
+  /api/instances/{instanceId}/users/invite:
     $ref: "paths/instances/single/users/invite.yaml"
+  /api/instances/{instanceId}/users/{userId}:
+    $ref: "paths/instances/single/users/user.yaml"
+  /api/instances/{instanceId}/users/{userId}/permissions:
+    $ref: "paths/instances/single/users/permissions.yaml"

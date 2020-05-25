@@ -1,5 +1,6 @@
 import { Permission } from "@entity/Permission"
 import { User } from "@entity/User"
+import { Scopes } from "./Scopes"
 
 export class PermissionCache {
 
@@ -87,7 +88,7 @@ export class CacheItem {
    * @param instance instance to check the permission if set to true then only root perms get searched
    * @param scope scope to check the permission
    */
-  async hasPermission(instance: number|true, scope: Permission.Type) {
+  async hasPermission(instance: number|true, scope: Scopes) {
     return (await this.permissions)
       .filter(p => p.root || p.instanceId === instance)
       .some(p => p.hasPermission(scope))

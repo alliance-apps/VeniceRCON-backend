@@ -6,7 +6,7 @@ import { Battlefield } from "vu-rcon"
 import { ServerInfoContainer } from "./ServerInfoContainer"
 import { Socket } from "socket.io"
 import { permissionManager } from "@service/permissions"
-import { Permission } from "@entity/Permission"
+import { InstanceScope } from "@service/permissions/Scopes"
 
 export class InstanceContainer extends Container<InstanceContainer.StateProps> {
 
@@ -30,7 +30,7 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
     return permissionManager.hasPermission({
       user: socket.request.user.user.id,
       instance: this.id,
-      scope: Permission.Instance.ACCESS
+      scope: InstanceScope.ACCESS
     })
   }
 

@@ -3,7 +3,7 @@ import { instanceManager } from "@service/battlefield"
 import instanceRouter from "./instance"
 import { getContainerState } from "@service/container"
 import { perm } from "@service/koa/permission"
-import { Permission } from "@entity/Permission"
+import { InstanceScope } from "@service/permissions/Scopes"
 
 const { Joi } = Router
 const api = Router()
@@ -19,7 +19,7 @@ api.route({
       password: Joi.string()
     })
   },
-  pre: perm(Permission.Instance.CREATE),
+  pre: perm(InstanceScope.CREATE),
   handler: async ctx => {
     try {
       const instance = await instanceManager.addInstance({
@@ -47,6 +47,6 @@ api.param("instanceId", async (id, ctx, next) => {
   await next()
 })
 
-api.use("/:instanceId", perm(Permission.Instance.ACCESS), instanceRouter.middleware())
+api.use("/:instanceId", perm(InstanceScope.ACCESS), instanceRouter.middleware())
 
 export default api

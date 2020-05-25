@@ -2,6 +2,7 @@ import { EntityRepository, Repository } from "typeorm"
 import { User } from "@entity/User"
 import { Permission } from "@entity/Permission"
 import { Instance } from "@entity/Instance"
+import { getScopesFromMask } from "@service/permissions/Scopes"
 
 @EntityRepository(Permission)
 export class PermissionRepository extends Repository<Permission> {
@@ -23,16 +24,46 @@ export class PermissionRepository extends Repository<Permission> {
    */
   getInstanceUsers(instance: Instance|number): Promise<PermissionRepository.IInstanceUser[]> {
     const instanceId = instance instanceof Instance ? instance.id : instance
+    return this.getPermissionQueryBuilder()
+      .where("perm.instanceId = :instanceId", { instanceId })
+      .getRawMany()
+      .then((res: any) => {
+        return res.map((r: any) => {
+          const { mask, ...rest } = r
+          return {
+            ...rest,
+            scopes: getScopesFromMask(mask)
+          }
+        })
+      })
+  }
+
+  /**
+   * retrieves all permissions from a specific instance
+   * @param instance instance to get the permissions for
+   */
+  getInstanceUser(instance: Instance|number, user: User|number): Promise<PermissionRepository.IInstanceUser> {
+    const instanceId = instance instanceof Instance ? instance.id : instance
+    const userId = user instanceof Instance ? user.id : user
+    return this.getPermissionQueryBuilder()
+      .where("perm.instanceId = :instanceId", { instanceId })
+      .andWhere("user.id = :userId", { userId })
+      .getRawOne()
+      .then((res: any) => {
+        const { mask, ...rest } = res
+        return { ...rest, scopes: getScopesFromMask(mask) }
+      })
+  }
+
+  private getPermissionQueryBuilder() {
     return Permission.createQueryBuilder("perm")
       .select("perm.userId", "userId")
-      .addSelect("user.username", "username")
       .addSelect("perm.id", "permId")
+      .addSelect("user.username", "username")
       .addSelect("perm.created", "created")
       .addSelect("perm.modified", "modified")
       .addSelect("perm.mask", "mask")
-      .where("perm.instanceId = :instanceId", { instanceId })
       .leftJoin("perm.user", "user")
-      .getRawMany()
   }
 
 }
@@ -46,10 +77,10 @@ export namespace PermissionRepository {
 
   export interface IInstanceUser {
     userId: number
-    username: string
     permId: number
+    username: string
     created: string
     modified: string
-    mask: string
+    scopes: string[]
   }
 }

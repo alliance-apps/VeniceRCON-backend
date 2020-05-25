@@ -3,8 +3,8 @@ POST {{$dotenv url}}/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "4ZKZu3JCT1x6rv/WqvEW"
+  "username": "foobar",
+  "password": "foobar"
 }
 
 ### gets information about the token
@@ -18,13 +18,14 @@ Content-Type: application/json
 {
   "username": "foobar",
   "password": "foobar",
-  "token": "5ab798987b240afa7db8335411d0dc39"
+  "token": "22270befcd5cf0a7b3611fafc0bfa1b8"
 }
 
-### creates a new user with a invite token
+### invites an existing user via invite token
 POST {{$dotenv url}}/api/auth/invite
 Content-Type: application/json
+Authorization: Bearer {{$dotenv jwt2}}
 
 {
-  "token": "123"
+  "token": "367e20ae5b0de8b0ac440bc0dfc0d46a"
 }

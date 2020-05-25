@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance as InstanceEntity } from "./Instance"
 import { User as UserEntity } from "./User"
+import { Scopes, getScopesFromMask, hasPermission } from "@service/permissions/Scopes"
 
 @Entity()
 export class Permission extends AbstractEntity<Permission> {
@@ -45,15 +46,15 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** sets multiple permissions */
-  setPermissions(perms: Permission.Type[], save: boolean = true) {
+  setPermissions(perms: Scopes[], save: boolean = true) {
     perms.forEach(p => this.setPermission(p, false))
     if (save) return this.save({ reload: true })
     return this
   }
 
   /** sets a specific permission */
-  setPermission(perm: Permission.Type, save: boolean = true) {
-    const nodes = this.getPermissionNodes()
+  setPermission(perm: Scopes, save: boolean = true) {
+    const nodes = this.mask.split(":").map(hex => parseInt(hex, 16))
     let index = 0
     while (perm > 255) {
       index++
@@ -67,15 +68,15 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** removes multiple permissions */
-  detPermissions(perms: Permission.Type[], save: boolean = true) {
+  detPermissions(perms: Scopes[], save: boolean = true) {
     perms.forEach(p => this.setPermission(p, false))
     if (save) return this.save({ reload: true })
     return this
   }
 
   /** removes a specific permission */
-  delPermission(perm: Permission.Type, save: boolean = true) {
-    const nodes = this.getPermissionNodes()
+  delPermission(perm: Scopes, save: boolean = true) {
+    const nodes = this.mask.split(":").map(hex => parseInt(hex, 16))
     let index = 0
     while (perm > 255) {
       index++
@@ -89,52 +90,13 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** checks if there is a permission set */
-  hasPermission(perm: Permission.Type) {
-    const nodes = this.getPermissionNodes()
-    let index = 0
-    while (perm > 255) {
-      index++
-      perm = perm >>> 8
-    }
-    if (nodes.length < index) return false
-    return (nodes[index] & perm) === perm
+  hasPermission(perm: Scopes) {
+    return hasPermission(this.mask, perm)
   }
 
   /** retrieves readable scope names */
   getScopes() {
-    const scopes: string[] = []
-    const validateScope = (prefix: string, e: any) => {
-      return (val: Permission.Type) => {
-        if (!this.hasPermission(val)) return
-        scopes.push(`${prefix}#${e[val]}`)
-      }
-    }
-    Array(2).fill(null).map((_, index) => {
-      switch(index) {
-        case 0:
-          const instance = validateScope("INSTANCE", Permission.Instance)
-          instance(Permission.Instance.ACCESS)
-          instance(Permission.Instance.CREATE)
-          instance(Permission.Instance.DELETE)
-          instance(Permission.Instance.UPDATE)
-          return
-        case 1:
-          const user = validateScope("INSTANCEUSER", Permission.InstanceUser)
-          user(Permission.InstanceUser.ACCESS)
-          user(Permission.InstanceUser.CREATE)
-          user(Permission.InstanceUser.UPDATE)
-          user(Permission.InstanceUser.REMOVE)
-          return
-      }
-    })
-    return scopes
-  }
-
-  /**
-   * gets the permission nodes
-   */
-  private getPermissionNodes() {
-    return this.mask.split(":").map(hex => parseInt(hex, 16))
+    return getScopesFromMask(this.mask)
   }
 
   /** creates a new instance */
@@ -160,7 +122,7 @@ export namespace Permission {
   export interface ICreateBase {
     user: UserEntity|number
     mask?: string
-    scopes?: Permission.Type[]
+    scopes?: Scopes[]
   }
 
   export interface ICreateRoot extends ICreateBase {
@@ -169,22 +131,6 @@ export namespace Permission {
 
   export interface ICreateInstance extends ICreateBase {
     instance: InstanceEntity|number
-  }
-
-  export type Type = Instance | InstanceUser
-
-  export enum Instance {
-    ACCESS = 0x01,
-    CREATE = 0x02,
-    UPDATE = 0x04,
-    DELETE = 0x08
-  }
-  
-  export enum InstanceUser {
-    ACCESS = 0x100,
-    CREATE = 0x200,
-    UPDATE = 0x400,
-    REMOVE = 0x800
   }
 
 }
