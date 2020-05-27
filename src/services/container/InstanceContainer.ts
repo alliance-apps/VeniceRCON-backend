@@ -1,37 +1,27 @@
 import { Instance } from "../battlefield/Instance"
-import { Container } from "./Container"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity"
 import { Battlefield } from "vu-rcon"
-import { ServerInfoContainer } from "./ServerInfoContainer"
-import { Socket } from "socket.io"
-import { permissionManager } from "@service/permissions"
-import { InstanceScope } from "@service/permissions/Scopes"
+import { StreamingContainer } from "./manager/StreamingContainer"
+import IO from "socket.io"
+import { io } from "@service/koa/socket"
+import { State } from "./manager/State"
 
-export class InstanceContainer extends Container<InstanceContainer.StateProps> {
+export class InstanceContainer extends StreamingContainer<InstanceContainer.State> {
 
-  readonly namespace = "instance"
+  readonly namespace = "INSTANCE"
   readonly id: number
+  readonly room: IO.Namespace
 
   constructor(props: InstanceContainer.IProps) {
     super({
       host: props.entity.host,
       port: props.entity.port,
       state: Instance.State.DISCONNECTED,
-      serverinfo: new ServerInfoContainer({
-        parentId: props.entity.id, state: {}
-      }),
+      serverinfo: {},
     })
     this.id = props.entity.id
-  }
-
-  async isAllowed(socket: Socket) {
-    if (!socket.request.user || !socket.request.user.logged_in) return false
-    return permissionManager.hasPermission({
-      user: socket.request.user.user.id,
-      instance: this.id,
-      scope: InstanceScope.ACCESS
-    })
+    this.room = io.to(`${this.namespace}#${this.id}`)
   }
 
   /**
@@ -51,10 +41,10 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
    * updates serverinfo data
    * @param info
    */
-  async updateServerInfo(info: Battlefield.ServerInfo) {
-    if (this.state.serverinfo.updateServerInfo(info).includes("name")) {
-      await this.updateEntity({ name: info.name })
-    }
+  async updateServerInfo(serverinfo: Battlefield.ServerInfo) {
+    const changes = this.update({ serverinfo })
+    const change = changes.find(change => change[0] === "serverinfo.name")
+    if (change) await this.updateEntity({ name: <string>change[1] })
     return this
   }
 
@@ -64,9 +54,8 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
    * @param port 
    */
   async updateConnection(host: string, port: number) {
-    this.set("host", host)
-    this.set("port", port)
     await this.updateEntity({ host, port })
+    this.update({ host, port })
     return this
   }
 
@@ -74,8 +63,8 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
    * updates the battlefield instance current connection state
    * @param state state to set instance to
    */
-  async updateState(state: Instance.State) {
-    this.set("state", state)
+  async updateConnectionState(state: Instance.State) {
+    this.update({ state })
     return this
   }
 
@@ -83,11 +72,11 @@ export class InstanceContainer extends Container<InstanceContainer.StateProps> {
 
 export namespace InstanceContainer {
 
-  export interface StateProps {
+  export interface State extends State.Type {
     host: string
     port: number
     state: Instance.State
-    serverinfo: ServerInfoContainer
+    serverinfo: Battlefield.ServerInfo|{}
   }
 
   export interface IProps {

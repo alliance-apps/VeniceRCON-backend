@@ -1,6 +1,8 @@
 # Venice Rcon Backend
 
-## Installation
+RCON Backend to connect to Battlefield / VeniceUnleashed Instances
+
+# Installation
 
 ```bash
 #install dependencies
@@ -17,16 +19,39 @@ cp config.default.yaml config.yaml
 npm start
 ```
 
-## Permissions
+# Permission Scopes
 
-> INSTANCE
+|       scope           |  bit    | description
+|---------------------- | ------- | --------------------
+| `INSTANCE#ACCESS`     | `0x01`  | read access for an instance
+| `INSTANCE#CREATE`     | `0x02`  | create an instance
+| `INSTANCE#UPDATE`     | `0x04`  | modify an instance
+| `INSTANCE#DELETE`     | `0x08`  | delete an instance
+| `INSTANCEUSER#ACCESS` | `0x100` | read access for an instance
+| `INSTANCEUSER#CREATE` | `0x200` | create invite tokens for an instance
+| `INSTANCEUSER#UPDATE` | `0x400` | update permissions from an instace
+| `INSTANCEUSER#REMOVE` | `0x800` | remove users from an instance
 
-* `INSTANCE#CREATE` Create new Instances
-* `INSTANCE#UPDATE` Update an Instance
-* `INSTANCE#DELETE` Delete an Instance
+## Socket Rooms
 
-> USER
+## Default
 
-* `USER#ADD` Add a User to the Instance
-* `USER#REMOVE` Remove a User from the Instance
-* `USER#MODIFY` Modify Permissions of a user
+> INSTANCE#ADD
+
+socket got added to an instance data received is same as `/api/instances/{instanceId}`
+
+```javascript
+socket.on("INSTANCE#ADD", state => {
+  socket.join("")
+})
+```
+
+## INSTANCE
+
+**room name** `INSTANCE#{instanceId}`
+
+### Events
+
+> remove
+
+event gets fired when either the instance has been deleted or permissions have been withdrawn

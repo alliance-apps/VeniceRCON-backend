@@ -1,10 +1,11 @@
 import { Server } from "socket.io"
 import ioJWT from "socketio-jwt-auth"
 import { User } from "@entity/User"
-import { getSecret } from "./jwt"
-import { getContainerState, getContainerNamespaces } from "@service/container"
+import { getSecret } from "../jwt"
+import { Socket } from "./Socket"
 
 export let io: Server
+export let sockets: Socket[]
 
 export async function initialize(server: Server) {
 
@@ -20,14 +21,14 @@ export async function initialize(server: Server) {
     }
   ))
 
-  io.on("connection", socket => {
+  io.on("connection", async socket => {
     if (!socket.request.user) throw new Error("user not authenticated but came till connection")
     socket.emit("success")
-  
-    getContainerNamespaces().forEach(async ns => {
-      socket.emit(`${ns}#initial`, await getContainerState(ns, socket.request.user.user.id))
-    })
-
+    sockets.push(new Socket({
+      socket,
+      userId: socket.request.user.user.id,
+      handleClose: (socket: Socket) => sockets = sockets.filter(s => s !== socket)
+    }))
   })
 
 }

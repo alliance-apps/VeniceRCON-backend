@@ -2,6 +2,8 @@ import { Instance } from "./Instance"
 import { Instance as InstanceEntity } from "@service/orm/entity/Instance"
 import { Battlefield } from "vu-rcon"
 import { getRepository } from "typeorm"
+import { Scopes } from "@service/permissions/Scopes"
+import { User } from "@entity/User"
 
 export class InstanceManager {
 
@@ -23,13 +25,23 @@ export class InstanceManager {
    * @param props
    */
   async addInstance(props: Battlefield.Options) {
-    const entity = await InstanceEntity.from(props)
+    const res = await Battlefield.testConnection(props)
+    if (res instanceof Error) throw res
+    let instance: Instance|undefined
+    let entity: InstanceEntity|undefined
     try {
-      const instance = await Instance.from({ entity })
+      entity = await InstanceEntity.from(props)
+      instance = await Instance.from({ entity })
       this.instances.push(instance)
       return instance
     } catch (e) {
-      await entity.remove()
+      console.log("instance creation failed", e)
+      if (!entity) throw e
+      if (instance instanceof Instance) {
+        this.instances.push(instance)   
+      } else {
+        await entity.remove()
+      }   
       throw e
     }
   }
@@ -52,7 +64,19 @@ export class InstanceManager {
    * @param id 
    */
   getInstanceById(id: number) {
-    return this.instances.find(i => i.container.id === id)
+    return this.instances.find(instance => instance.id === id)
+  }
+
+  /**
+   * gets all instances with a user has permission with a specific scope to
+   * @param user user to check permissions for
+   * @param scope scope to check
+   */
+  async getInstancesWithPermissions(user: User|number, scope: Scopes) {
+    //copy instances so if an instance gets added while checking permissions it wont fuck with the indexes
+    const instances = [...this.instances]
+    const allowed = await Promise.all(instances.map(instance => instance.hasPermission(user, scope)))
+    return instances.filter((_, i) => allowed[i])
   }
 }
 

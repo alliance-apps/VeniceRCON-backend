@@ -11,20 +11,20 @@ const api = Router()
 
 //lists users
 api.get("/", async ctx => {
-  ctx.body = await getCustomRepository(PermissionRepository).getInstanceUsers(ctx.state.instance!.container.id)
+  ctx.body = await getCustomRepository(PermissionRepository).getInstanceUsers(ctx.state.instance!.id)
 })
 
 //lists all invite tokens
 api.get("/invite", perm(InstanceUserScope.ACCESS), async ctx => {
   ctx.body = await Invite.find({
-    instanceId: ctx.state.instance!.container.id
+    instanceId: ctx.state.instance!.id
   })
 })
 
 api.post("/invite", perm(InstanceUserScope.CREATE), async ctx => {
   const { token } = await Invite.from({
     issuer: ctx.state.token!.id,
-    instance: ctx.state.instance!.container.id
+    instance: ctx.state.instance!.id
   })
   ctx.body = { token }
 })

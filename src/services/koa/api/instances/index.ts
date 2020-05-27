@@ -1,7 +1,6 @@
 import Router from "koa-joi-router"
 import { instanceManager } from "@service/battlefield"
 import instanceRouter from "./instance"
-import { getContainerState } from "@service/container"
 import { perm } from "@service/koa/permission"
 import { InstanceScope } from "@service/permissions/Scopes"
 
@@ -28,7 +27,7 @@ api.route({
         password: ctx.request.body.password
       })
       ctx.status = 200
-      ctx.body = { id: instance.container }
+      ctx.body = instance.getState()
     } catch (e) {
       ctx.status = 500
       ctx.body = { message: e.message }
@@ -37,7 +36,11 @@ api.route({
 })
 
 api.get("/", async ctx => {
-  ctx.body = await getContainerState("instance", ctx.state.token!.id)
+  const instances = await instanceManager.getInstancesWithPermissions(
+    ctx.state.token!.id,
+    InstanceScope.ACCESS
+  )
+  ctx.body = instances.map(instance => instance.getState())
 })
 
 api.param("instanceId", async (id, ctx, next) => {

@@ -18,7 +18,7 @@ Content-Type: application/json
 {
   "username": "foobar",
   "password": "foobar",
-  "token": "22270befcd5cf0a7b3611fafc0bfa1b8"
+  "token": "b5010a35b55a30df7e14d77a70a5ac1d"
 }
 
 ### invites an existing user via invite token

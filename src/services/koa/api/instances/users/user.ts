@@ -32,7 +32,7 @@ api.route({
     const { scopes } = ctx.request.body
     const bits: Scopes[] = scopes.map((s: string) => getBitFromName(s))
     const set = await Promise.all(bits.map(async scope => permissionManager.hasPermission({
-      user: ctx.state.token!.id, instance: ctx.state.instance!.container.id, scope
+      user: ctx.state.token!.id, instance: ctx.state.instance!.id, scope
     })))
     if (!set.every(s => s)) {
       ctx.body = { message: "you tried to set a permission which you do not have access to"}

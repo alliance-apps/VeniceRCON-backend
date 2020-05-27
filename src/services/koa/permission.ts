@@ -12,7 +12,7 @@ export function perm(scope: Scopes): FullHandler {
     const { token, instance } = ctx.state
     if (!token) return ctx.status = 401
     const ok = await permissionManager.hasPermission({
-      instance: instance === undefined || instance.container.id, scope, user: token.id
+      instance: instance === undefined || instance.id, scope, user: token.id
     })
     if (!ok) return ctx.status = 401
     await next()

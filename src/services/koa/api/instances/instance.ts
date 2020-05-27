@@ -8,7 +8,7 @@ const api = Router()
 
 api.delete("/", perm(InstanceScope.DELETE), async ctx => {
   try {
-    await instanceManager.removeInstance(ctx.state.instance!.container.id)
+    await instanceManager.removeInstance(ctx.state.instance!.id)
     ctx.status = 200
   } catch (e) {
     ctx.status = 500
@@ -17,7 +17,7 @@ api.delete("/", perm(InstanceScope.DELETE), async ctx => {
 })
 
 api.get("/", async ctx => {
-  ctx.body = ctx.state.instance!.container.getStateClone()
+  ctx.body = ctx.state.instance!.getState()
 })
 
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {

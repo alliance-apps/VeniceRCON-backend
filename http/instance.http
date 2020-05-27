@@ -6,7 +6,7 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "host": "multivitamin.wtf",
+  "host": "10.10.12.120",
   "port": 47200,
   "password": "saft"
 }
