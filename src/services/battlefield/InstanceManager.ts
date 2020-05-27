@@ -4,6 +4,7 @@ import { Battlefield } from "vu-rcon"
 import { getRepository } from "typeorm"
 import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
+import { socketManager } from "@service/koa/socket"
 
 export class InstanceManager {
 
@@ -24,7 +25,7 @@ export class InstanceManager {
    * adds a new battlefield instance
    * @param props
    */
-  async addInstance(props: Battlefield.Options) {
+  async createInstance(props: Battlefield.Options) {
     const res = await Battlefield.testConnection(props)
     if (res instanceof Error) throw res
     let instance: Instance|undefined
@@ -33,6 +34,7 @@ export class InstanceManager {
       entity = await InstanceEntity.from(props)
       instance = await Instance.from({ entity })
       this.instances.push(instance)
+      await socketManager.checkAccess()
       return instance
     } catch (e) {
       console.log("instance creation failed", e)
@@ -52,7 +54,6 @@ export class InstanceManager {
    */
   async removeInstance(id: number) {
     const instance = this.getInstanceById(id)
-    if (!instance) return
     await instance.remove()
     this.instances = this.instances.filter(i => i !== instance)
     const entity = await getRepository(InstanceEntity).findOne({ id })
@@ -64,7 +65,9 @@ export class InstanceManager {
    * @param id 
    */
   getInstanceById(id: number) {
-    return this.instances.find(instance => instance.id === id)
+    const instance = this.instances.find(instance => instance.id === id)
+    if (!instance) throw new Error(`could not find instance with id ${id}`)
+    return instance
   }
 
   /**

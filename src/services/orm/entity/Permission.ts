@@ -46,7 +46,7 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** sets multiple permissions */
-  setPermissions(perms: Scopes[], save: boolean = true) {
+  async setPermissions(perms: Scopes[], save: boolean = true) {
     perms.forEach(p => this.setPermission(p, false))
     if (save) return this.save({ reload: true })
     return this

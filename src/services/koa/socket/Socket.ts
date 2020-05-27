@@ -2,6 +2,8 @@ import { Socket as IOSocket } from "socket.io"
 import { instanceManager } from "@service/battlefield"
 import { InstanceScope } from "@service/permissions/Scopes"
 import { Instance } from "@service/battlefield/Instance"
+import { SocketManager } from "./SocketManager"
+import { permissionManager } from "@service/permissions"
 
 export class Socket {
 
@@ -14,28 +16,39 @@ export class Socket {
   constructor(props: Socket.IProps) {
     this.socket = props.socket
     this.userId = props.userId
-    this.socket.once("disconnect", () => props.handleClose(this))
-    this.initalize()
+    this.socket.once("disconnect", () => {
+      this.socket.removeAllListeners()
+      props.handleClose(this)
+    })
+    this.checkAccess()
   }
 
-  private async initalize() {
+  /** checks access to all instances the user has and (un)subscribes if needed */
+  async checkAccess() {
     const instances = await instanceManager.getInstancesWithPermissions(this.userId, InstanceScope.ACCESS)
-    instances.forEach(instance => this.addInstance(instance))
-  }
-
-  static getInstanceRoomName(id: number) {
-    return `${Socket.INSTANCE_NAMESPACE}${id}`
+    const access = [...this.instances]
+    instances.map(instance => {
+      if (access.includes(instance.id)) {
+        access.splice(access.indexOf(instance.id), 1)
+      } else {
+        this.addInstance(instance)
+      }
+    })
+    access.forEach(id => this.removeInstance(id))
   }
 
   /**
    * subscribes the socket to an instance and sends the initial state
    * @param state initial state to send
    */
-  addInstance(instance: Instance) {
-    this.instances.push(instance.id)
-    const name = Socket.getInstanceRoomName(instance.id)
-    this.socket.join(name, () => {
-      this.socket.emit(`${Socket.INSTANCE_NAMESPACE}add`, instance.getState())
+  addInstance(instance: Instance|number) {
+    const id = typeof instance === "number" ? instance : instance.id
+    if (this.instances.includes(id)) return
+    this.instances.push(id)
+    this.socket.join(SocketManager.getInstanceRoomName(id), () => {
+      this.socket.emit(SocketManager.INSTANCE.ADD, {
+        state: instanceManager.getInstanceById(id).getState()
+      })
     })
   }
 
@@ -44,9 +57,10 @@ export class Socket {
    * @param id instance id to remove to user from
    */
   removeInstance(id: number) {
+    if (!this.instances.includes(id)) return
     this.instances = this.instances.filter(i => i !== id)
-    const name = Socket.getInstanceRoomName(id)
-    this.socket.in(name).emit("remove")
+    const name = SocketManager.getInstanceRoomName(id)
+    this.socket.emit(SocketManager.INSTANCE.REMOVE, { id })
     this.socket.leave(name)
   }
 

@@ -20,6 +20,9 @@ export class Instance extends AbstractEntity<Instance> {
   @Column({ default: "" })
   name!: string
 
+  @Column({ default: true })
+  autostart!: boolean
+
   @OneToMany(type => Permission, perm => perm.instance)
   permissions!: Promise<Permission[]>
 

@@ -7,19 +7,19 @@ import { permissionManager } from "@service/permissions"
 
 export class Instance {
 
-  readonly bf3: Battlefield
+  readonly battlefield: Battlefield
   private readonly state: InstanceContainer
   private requestStop: boolean = false
   private interval: any
 
-  constructor(bf3: Battlefield, entity: InstanceEntity) {
-    this.state = new InstanceContainer({ entity })
-    this.bf3 = bf3
-    this.bf3.on("close", async () => {
+  constructor(props: Instance.Props) {
+    this.state = new InstanceContainer({ entity: props.entity })
+    this.battlefield = props.battlefield
+    this.battlefield.on("close", async () => {
       this.stopUpdateInterval()
       if (this.requestStop) return
       await this.state.updateConnectionState(Instance.State.RECONNECTING)
-      await this.bf3.reconnect()
+      await this.battlefield.reconnect()
       this.state.updateConnectionState(Instance.State.CONNECTED)
       this.startUpdateInterval()
     })
@@ -44,9 +44,9 @@ export class Instance {
     await this.serverInfo()
   }
 
-  private startUpdateInterval() {
+  private async startUpdateInterval() {
     this.interval = setInterval(this.updateInterval.bind(this), 1 * 1000)
-    this.updateInterval()
+    await this.updateInterval()
   }
 
   private stopUpdateInterval() {
@@ -58,18 +58,19 @@ export class Instance {
     if (this.state.getState().state !== Instance.State.DISCONNECTED)
       throw new Error("instance is not in state disconnected")
     this.requestStop = false
-    await this.state.updateConnectionState(Instance.State.CONNECTING)
+    this.state.updateConnectionState(Instance.State.CONNECTING)
     try {
-      await this.bf3.connect()
+      await this.battlefield.connect()
     } catch (e) {
-      await this.state.updateConnectionState(Instance.State.DISCONNECTED)
+      this.state.updateConnectionState(Instance.State.DISCONNECTED)
       throw e
     }
-    await this.state.updateConnectionState(Instance.State.CONNECTED)
-    this.startUpdateInterval()
+    this.state.updateConnectionState(Instance.State.CONNECTED)
+    await this.startUpdateInterval()
     return this
   }
 
+  /** removes this instance */
   async remove() {
     await this.stop()
     this.state.remove()
@@ -82,34 +83,39 @@ export class Instance {
       throw new Error("instance is not in state connected")
     this.requestStop = true
     this.stopUpdateInterval()
-    await this.state.updateConnectionState(Instance.State.DISCONNECTING)
-    await this.bf3.quit()
-    await this.state.updateConnectionState(Instance.State.DISCONNECTED)
+    this.state.updateConnectionState(Instance.State.DISCONNECTING)
+    await this.battlefield.quit()
+    this.state.updateConnectionState(Instance.State.DISCONNECTED)
     return this
   }
 
   /** retrieves the server info */
   async serverInfo() {
-    const info = await this.bf3.serverInfo()
+    const info = await this.battlefield.serverInfo()
     await this.state.updateServerInfo(info)
     return info
   }
 
-  static async from(props: Instance.IProps, start: boolean = true) {
-    const instance = new Instance(
-      new Battlefield({
-        ...props.entity,
-        autoconnect: false
-      }),
-      props.entity
-    )
-    if (start) await instance.start()
+  static async from(props: Instance.CreateProps) {
+    const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
+    const instance = new Instance({ battlefield, entity: props.entity })
+    if (props.entity.autostart) await instance.start()
     return instance
   }
 
 }
 
 export namespace Instance {
+
+  export interface Props {
+    battlefield: Battlefield,
+    entity: InstanceEntity,
+    serverinfo?: Battlefield.ServerInfo
+  }
+
+  export interface CreateProps {
+    entity: InstanceEntity
+  }
 
   export enum State {
     UNKNOWN = 0,
@@ -118,10 +124,6 @@ export namespace Instance {
     DISCONNECTING = 3,
     DISCONNECTED = 4,
     RECONNECTING = 5
-  }
-
-  export interface IProps {
-    entity: InstanceEntity
   }
 
 }

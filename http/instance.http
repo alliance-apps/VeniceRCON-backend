@@ -6,9 +6,9 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "host": "10.10.12.120",
-  "port": 47200,
-  "password": "saft"
+  "host": "{{$dotenv instance_host}}",
+  "port": {{$dotenv instance_port}},
+  "password": "{{$dotenv instance_pass}}"
 }
 
 ### lists all available instances

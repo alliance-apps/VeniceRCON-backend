@@ -1,12 +1,10 @@
 import _ from "lodash"
 import { State } from "./State"
-import IO from "socket.io"
+import { socketManager } from "@service/koa/socket"
 
 export abstract class StreamingContainer<T extends State.Type> {
 
-  abstract readonly namespace: string
   abstract readonly id: number
-  abstract readonly room: IO.Namespace
   private state: State<T>
 
   constructor(state: T) {
@@ -17,20 +15,19 @@ export abstract class StreamingContainer<T extends State.Type> {
   getState(): StreamingContainer.StateDefaults & T {
     return {
       id: this.id,
-      namespace: this.namespace,
       ...this.state.getState()
     }
   }
 
   update(props: State.DeepPartial<T>) {
     const changes = this.state.update(props)
-    this.room.emit("update", changes)
+    socketManager.emitInstanceUpdate(this.id, changes)
     return changes
   }
 
   /** emits a remove event */
   remove() {
-    this.room.emit("remove")
+    socketManager.emitInstanceRemove(this.id)
   }
 
 }
@@ -39,7 +36,6 @@ export namespace StreamingContainer {
 
   export interface StateDefaults {
     id: number
-    namespace: string
   }
 
 }

@@ -2,16 +2,15 @@ import { Server } from "socket.io"
 import ioJWT from "socketio-jwt-auth"
 import { User } from "@entity/User"
 import { getSecret } from "../jwt"
-import { Socket } from "./Socket"
+import { SocketManager } from "./SocketManager"
 
-export let io: Server
-export let sockets: Socket[]
+export let socketManager: SocketManager
 
 export async function initialize(server: Server) {
 
-  io = server
+  socketManager = new SocketManager(server)
   
-  io.use(
+  server.use(
     ioJWT.authenticate({ secret: await getSecret() },
     async (payload, done) => {
       if (!payload || !payload.id) return done(null, false, "user does not exist")
@@ -21,14 +20,10 @@ export async function initialize(server: Server) {
     }
   ))
 
-  io.on("connection", async socket => {
+  server.on("connection", async socket => {
     if (!socket.request.user) throw new Error("user not authenticated but came till connection")
     socket.emit("success")
-    sockets.push(new Socket({
-      socket,
-      userId: socket.request.user.user.id,
-      handleClose: (socket: Socket) => sockets = sockets.filter(s => s !== socket)
-    }))
+    socketManager.add(socket)
   })
 
 }

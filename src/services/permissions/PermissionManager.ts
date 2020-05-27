@@ -2,7 +2,9 @@ import { User as UserEntity } from "@entity/User"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { Permission } from "@entity/Permission"
 import { PermissionCache } from "./PermissionCache"
-import { Scopes } from "./Scopes"
+import { Scopes, InstanceScope } from "./Scopes"
+import { socketManager } from "@service/koa/socket"
+import { instanceManager } from "@service/battlefield"
 
 export class PermissionManager {
   
@@ -12,7 +14,7 @@ export class PermissionManager {
    * checks if a specific permission for an instance and user has been set
    * @param props 
    */
-  hasPermission(props: PermissionManager.IHasPermissionProps) {
+  hasPermission(props: PermissionManager.HasPermissionProps) {
     const instanceId = props.instance instanceof InstanceEntity ? props.instance.id : props.instance
     return this.cache.getUser(props.user).hasPermission(instanceId, props.scope)
   }
@@ -37,35 +39,23 @@ export class PermissionManager {
    * adds a permission scope to a user for a specific instance
    * @param props 
    */
-  async addPermission(props: PermissionManager.IUpdatePermissionProps) {
+  async updatePermissions(props: PermissionManager.UpdatePermissionProps) {
     const perms = await this.getPermissions(props.user)
-    const perm = perms.find(p => p.instanceId === props.instance)
+    const perm = perms.find(p => p.instanceId === props.instance || p.root === props.instance)
     if (!perm) throw new Error(`can not add permission, user does not have access to the instance`)
-    if (perm.hasPermission(props.scope)) return
-    await perm.setPermission(props.scope)
+    await perm.setPermissions(props.scopes)
     this.removeUserFromCache(props.user)
-  }
-
-  /**
-   * adds a permission scope to a user for a specific instance
-   * @param props 
-   */
-  async delPermission(props: PermissionManager.IUpdatePermissionProps) {
-    const perms = await this.getPermissions(props.user)
-    const perm = perms.find(p => p.instanceId === props.instance)
-    if (!perm) throw new Error(`can not add permission, user does not have access to the instance`)
-    if (!perm.hasPermission(props.scope)) return
-    await perm.delPermission(props.scope)
-    this.removeUserFromCache(props.user)
+    await this.validateSocketAccess(props.user)    
   }
 
   /**
    * creates a new permission
    * @param props 
    */
-  async createPermission(props: Permission.ICreate) {
+  private async createPermission(props: Permission.ICreate) {
     const perm = await Permission.from(props)
     this.removeUserFromCache(props.user)
+    await this.validateSocketAccess(props.user)
     return perm
   }
 
@@ -81,19 +71,54 @@ export class PermissionManager {
   }
 
   /**
+   * creates a new global permission for a specific user
+   * @param props 
+   */
+  async createGlobalPermission(props: PermissionManager.AddGlobalAccess) {
+    const user = this.getUserId(props.user)
+    const perm = await this.createPermission({ root: true, user, scopes: props.scopes })
+    return perm
+  }
+
+  /**
+   * creates a new instance permission for a specific user
+   * @param props 
+   */
+  async addInstanceAccess(props: PermissionManager.AddInstanceAccess) {
+    const instance = this.getInstanceId(props.instance)
+    const user = this.getUserId(props.user)
+    const scopes: Scopes[] = props.scopes||[]
+    if (!scopes.includes(InstanceScope.ACCESS)) scopes.push(InstanceScope.ACCESS)
+    const perm = await this.createPermission({ instance, user, scopes })
+    return perm
+  }
+
+  /**
    * removes instance access from a router
    * @param user user to remove
    * @param instance instance to remove the user from
    */
   async removeInstanceAccess(user: UserEntity|number, instance: InstanceEntity|number) {
-    const perm = await Permission.findOne({
-      userId: typeof user === "number" ? user : user.id,
-      instanceId: typeof instance === "number" ? instance : instance.id
-    })
+    const userId = this.getUserId(user)
+    const instanceId = this.getInstanceId(instance)
+    const perm = await Permission.findOne({ userId, instanceId })
     if (!perm) return false
     await perm.remove()
     this.removeUserFromCache(user)
+    await this.validateSocketAccess(user)
     return true
+  }
+
+  private getUserId(user: UserEntity|number) {
+    return typeof user === "number" ? user : user.id
+  }
+
+  private getInstanceId(instance: InstanceEntity|number) {
+    return typeof instance === "number" ? instance : instance.id
+  }
+
+  private validateSocketAccess(user: UserEntity|number) {
+    return Promise.all(socketManager.getSocketsByUserId(this.getUserId(user)).map(socket => socket.checkAccess()))
   }
 
 }
@@ -101,16 +126,27 @@ export class PermissionManager {
 
 export namespace PermissionManager {
 
-  export interface IHasPermissionProps {
+  export interface AddInstanceAccess {
+    user: UserEntity|number
+    instance: InstanceEntity|number
+    scopes: Scopes[]
+  }
+
+  export interface AddGlobalAccess {
+    user: UserEntity|number
+    scopes?: Scopes[]
+  }
+
+  export interface HasPermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
     scope: Scopes
   }
 
-  export interface IUpdatePermissionProps {
+  export interface UpdatePermissionProps {
     user: UserEntity|number
-    instance: InstanceEntity|number
-    scope: Scopes
+    instance: InstanceEntity|number|true
+    scopes: Scopes[]
   }
 
 }

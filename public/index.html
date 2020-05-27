@@ -1,15 +1,15 @@
 <html>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU5MDMxNDQ3MX0.zGbvJbsRrC3NQacyHDXoR_KNPX2NPWezl_P-t6gjKEg"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU5MDU4NzM3OX0.-fcotdCBiqwZ1QXc0nTZgW_-XaeeCtxvXnQzTekSqAg"
     console.log("connect...")
     fetch("/api/auth/whoami", {
       headers: { "Authorization": `Bearer ${token}` }
     }).then(async res => console.log(await res.json()))
-    const socket = io.connect(undefined, { query: `auth_token=${token}`})
+    const socket = io.connect(undefined, { query: `auth_token=${token}`, transports: ["websocket"]})
     socket.on("error", err => console.log(err))
-    socket.on("instance#initial", data => console.log("instance#initial", data))
-    socket.on("instance#update", data => console.log("instance#update", data))
-    socket.on("serverinfo#update", data => console.log("serverinfo#update", data))
+    socket.on("INSTANCE#ADD", event => console.log("INSTANCE#ADD", event))
+    socket.on("INSTANCE#REMOVE", event => console.log("INSTANCE#REMOVE", event))
+    socket.on("INSTANCE#UPDATE", event => console.log("INSTANCE#UPDATE", event))
   </script>
 </html>

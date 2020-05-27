@@ -21,7 +21,7 @@ api.route({
   pre: perm(InstanceScope.CREATE),
   handler: async ctx => {
     try {
-      const instance = await instanceManager.addInstance({
+      const instance = await instanceManager.createInstance({
         host: ctx.request.body.host,
         port: ctx.request.body.port,
         password: ctx.request.body.password

@@ -47,10 +47,8 @@ export class Invite extends AbstractEntity<Invite> {
     if (this.userId) throw new Error(`can not use this token, it already has been used by someone else`)
     await this.setUser(user)
     await this.reload()
-    return permissionManager.createPermission({
-      user,
-      instance: this.instanceId,
-      scopes: [InstanceScope.ACCESS]
+    return permissionManager.addInstanceAccess({
+      user, instance: this.instanceId, scopes: [InstanceScope.ACCESS]
     })
   }
 
