@@ -18,12 +18,23 @@ describe("State", () => {
     expect(state.getState()).toEqual({ foo: { x: 0, y: 2 }, bar: 2 })
   })
 
-  it("should check if an array gets updated correclty", () => {
+  it("should check if an array gets updated correctly", () => {
     const state = new State<{ foo: number[] }>({ foo: [0, 1, 2] })
     expect(state.getState()).toEqual({ foo: [0, 1, 2] })
     expect(state.update({ foo: [1, 2, 3] }))
       .toEqual([["foo", [1, 2, 3]]])
     expect(state.getState()).toEqual({ foo: [1, 2, 3] })
+  })
+
+  it("should check if a dynamic object gets updated correctly", () => {
+    const state = new State<{ foo: Record<string, { a: number, b: number }> }>({ foo: {} })
+    expect(state.getState()).toEqual({ foo: {} })
+    expect(state.update({ foo: { bar: { a: 1, b: 2 } } }))
+      .toEqual([["foo.bar.a", 1], ["foo.bar.b", 2]])
+    expect(state.getState()).toEqual({ foo: { bar: { a: 1, b: 2 } } })
+    expect(state.update({ foo: { baz: { a: 3, b: 4 }, bar: undefined } }))
+      .toEqual([["foo.baz.a", 3], ["foo.baz.b", 4], ["foo.bar", undefined]])
+    expect(state.getState()).toEqual({ foo: { baz: { a: 3, b: 4 } } })
   })
 
 })

@@ -66,12 +66,17 @@ export class State<T extends State.Type> {
           current[k] = <any>value
           updated[k] = <any>value
         } else {
+          if (current[k] === undefined) current[k] = <any>{}
           //@ts-ignore
           updated[k] = State.updateDeep(current[k], value)
         }        
       } else {
-        if (current[k] === <any>value || value === undefined) return
-        current[k] = <any>value
+        if (current[k] === <any>value) return
+        if (value === undefined) {
+          delete current[k]
+        } else {
+          current[k] = <any>value
+        }
         updated[k] = <any>value
       }
     })
