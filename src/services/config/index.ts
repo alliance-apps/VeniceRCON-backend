@@ -26,4 +26,7 @@ export interface Configuration {
     listenport: number
     cors: Record<string, string|string[]>
   }
+  instance: {
+    syncInterval: number
+  }
 }

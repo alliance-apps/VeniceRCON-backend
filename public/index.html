@@ -1,15 +1,51 @@
 <html>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU5MDU4NzM3OX0.-fcotdCBiqwZ1QXc0nTZgW_-XaeeCtxvXnQzTekSqAg"
-    console.log("connect...")
-    fetch("/api/auth/whoami", {
-      headers: { "Authorization": `Bearer ${token}` }
-    }).then(async res => console.log(await res.json()))
-    const socket = io.connect(undefined, { query: `auth_token=${token}`, transports: ["websocket"]})
-    socket.on("error", err => console.log(err))
-    socket.on("INSTANCE#ADD", event => console.log("INSTANCE#ADD", event))
-    socket.on("INSTANCE#REMOVE", event => console.log("INSTANCE#REMOVE", event))
-    socket.on("INSTANCE#UPDATE", event => console.log("INSTANCE#UPDATE", event))
+
+    async function requestToken() {
+      const token = prompt("Please enter a valid JWT Token", "")
+      if (!token) requestToken()
+      await whoami(token)
+      localStorage.setItem("token", token)
+    }
+
+    async function whoami(token = localStorage.getItem("token")) {
+      const res = await fetch("/api/auth/whoami", {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      if (res.status === 200) {
+        console.log("whoami request ok")
+        return res
+      } else if (res.status === 401) {
+        console.log("got 401, invalid token?")
+        await this.requestToken()
+      } else {
+        console.log(`got status ${res.status}`)
+        console.log(await res.text())
+      }
+    }
+
+    async function connect() {
+      console.log("authenticating...")
+      await whoami()
+      console.log("connecting to socket...")
+      const token = localStorage.getItem("token")
+      const socket = io.connect(undefined, {
+        query: `auth_token=${token}`,
+        transports: ["websocket"]
+      })
+      socket.on("error", err => {
+        if (err && err.message.startsWith("Signature")) requestToken()
+      })
+      socket.on("success", () => {
+        console.log("successfully connected to socket!")
+      })
+      socket.on("INSTANCE#ADD", event => console.log("INSTANCE#ADD", event))
+      socket.on("INSTANCE#REMOVE", event => console.log("INSTANCE#REMOVE", event))
+      socket.on("INSTANCE#UPDATE", event => console.log("INSTANCE#UPDATE", event))
+    }
+
+    connect()
+
   </script>
 </html>

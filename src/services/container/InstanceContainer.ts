@@ -14,7 +14,8 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       host: props.entity.host,
       port: props.entity.port,
       state: Instance.State.DISCONNECTED,
-      serverinfo: props.serverinfo || {}
+      serverinfo: props.serverinfo || {},
+      players: {}
     })
     this.id = props.entity.id
   }
@@ -40,6 +41,15 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
     const changes = this.update({ serverinfo })
     const change = changes.find(change => change[0] === "serverinfo.name")
     if (change) await this.updateEntity({ name: <string>change[1] })
+    return this
+  }
+
+  /**
+   * updates serverinfo data
+   * @param info
+   */
+  async updatePlayers(players: Battlefield.Player[]) {
+    this.update({ players: Object.fromEntries(players.map(p => [p.guid, p])) })
     return this
   }
 
@@ -72,6 +82,7 @@ export namespace InstanceContainer {
     port: number
     state: Instance.State
     serverinfo: Battlefield.ServerInfo|{}
+    players: Record<string, Battlefield.Player>
   }
 
   export interface IProps {

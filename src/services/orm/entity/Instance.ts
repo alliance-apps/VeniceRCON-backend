@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Permission } from "./Permission"
 import { Invite } from "./Invite"
+import { config } from "@service/config"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -22,6 +23,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @Column({ default: true })
   autostart!: boolean
+
+  @Column({ default: config.instance.syncInterval })
+  syncInterval!: number
 
   @OneToMany(type => Permission, perm => perm.instance)
   permissions!: Promise<Permission[]>

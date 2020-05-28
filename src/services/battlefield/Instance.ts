@@ -41,11 +41,16 @@ export class Instance {
   }
 
   private async updateInterval() {
-    await this.serverInfo()
+    await Promise.all([
+      this.serverInfo(),
+      this.playerList()
+    ])
   }
 
   private async startUpdateInterval() {
-    this.interval = setInterval(this.updateInterval.bind(this), 1 * 1000)
+    const entity = await InstanceEntity.findOne({ id: this.id })
+    if (!entity) throw new Error(`could not find instance entity with id ${this.id} has the db entity been deleted?`)
+    this.interval = setInterval(this.updateInterval.bind(this), entity.syncInterval)
     await this.updateInterval()
   }
 
@@ -94,6 +99,13 @@ export class Instance {
     const info = await this.battlefield.serverInfo()
     await this.state.updateServerInfo(info)
     return info
+  }
+
+  /** retrieves all connected players */
+  async playerList() {
+    const players = await this.battlefield.getPlayers()
+    await this.state.updatePlayers(players)
+    return players
   }
 
   static async from(props: Instance.CreateProps) {
