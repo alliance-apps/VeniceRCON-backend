@@ -1,4 +1,5 @@
-import { Permission } from "../../src/services/orm/entity/Permission"
+import { Permission } from "@entity/Permission"
+import { InstanceScope, InstanceUserScope } from "@service/permissions/Scopes"
 
 describe("Permission", () => {
 
@@ -8,46 +9,46 @@ describe("Permission", () => {
   
     beforeEach(() => {
       permission = new Permission()
-      permission.mask = "0"
+      permission.mask = "00"
     })
 
     it("should set an instance permission", () => {
-      permission.setPermission(Permission.Instance.CREATE)
-      expect(permission.hasPermission(Permission.Instance.CREATE)).toBe(true)
-      expect(permission.hasPermission(Permission.Instance.DELETE)).toBe(false)
-      expect(permission.hasPermission(Permission.Instance.UPDATE)).toBe(false)
+      permission.setPermission(InstanceScope.CREATE, false)
+      expect(permission.hasPermission(InstanceScope.CREATE)).toBe(true)
+      expect(permission.hasPermission(InstanceScope.DELETE)).toBe(false)
+      expect(permission.hasPermission(InstanceScope.UPDATE)).toBe(false)
     })
 
     it("should set a user permission", () => {
-      permission.setPermission(Permission.User.UPDATE)
-      expect(permission.hasPermission(Permission.User.UPDATE)).toBe(true)
-      expect(permission.hasPermission(Permission.User.REMOVE)).toBe(false)
-      expect(permission.hasPermission(Permission.User.ADD)).toBe(false)
+      permission.setPermission(InstanceUserScope.UPDATE, false)
+      expect(permission.hasPermission(InstanceUserScope.UPDATE)).toBe(true)
+      expect(permission.hasPermission(InstanceUserScope.REMOVE)).toBe(false)
+      expect(permission.hasPermission(InstanceUserScope.CREATE)).toBe(false)
     })
 
     it("should set multiple permissions", () => {
-      permission.setPermission(Permission.User.UPDATE)
-      permission.setPermission(Permission.User.REMOVE)
-      expect(permission.hasPermission(Permission.User.UPDATE)).toBe(true)
-      expect(permission.hasPermission(Permission.User.REMOVE)).toBe(true)
-      expect(permission.hasPermission(Permission.User.ADD)).toBe(false)
+      permission.setPermission(InstanceUserScope.UPDATE, false)
+      permission.setPermission(InstanceUserScope.REMOVE, false)
+      expect(permission.hasPermission(InstanceUserScope.UPDATE)).toBe(true)
+      expect(permission.hasPermission(InstanceUserScope.REMOVE)).toBe(true)
+      expect(permission.hasPermission(InstanceUserScope.CREATE)).toBe(false)
     })
 
     it("should validate that the mask is correct", () => {
-      permission.setPermission(Permission.User.ADD)
-      permission.setPermission(Permission.User.REMOVE)
-      permission.delPermission(Permission.User.REMOVE)
-      expect(permission.mask).toBe("00:01")
+      permission.setPermission(InstanceUserScope.CREATE, false)
+      permission.setPermission(InstanceUserScope.REMOVE, false)
+      permission.delPermission(InstanceUserScope.REMOVE, false)
+      expect(permission.mask).toBe("00:02")
     })
 
     it("should validate that the mask gets reseted correctly", () => {
-      permission.setPermission(Permission.User.ADD)
-      permission.setPermission(Permission.User.REMOVE)
-      permission.setPermission(Permission.User.UPDATE)
-      permission.delPermission(Permission.User.REMOVE)
-      expect(permission.hasPermission(Permission.User.ADD)).toBe(true)
-      expect(permission.hasPermission(Permission.User.REMOVE)).toBe(false)
-      expect(permission.hasPermission(Permission.User.UPDATE)).toBe(true)
+      permission.setPermission(InstanceUserScope.CREATE, false)
+      permission.setPermission(InstanceUserScope.REMOVE, false)
+      permission.setPermission(InstanceUserScope.UPDATE, false)
+      permission.delPermission(InstanceUserScope.REMOVE, false)
+      expect(permission.hasPermission(InstanceUserScope.CREATE)).toBe(true)
+      expect(permission.hasPermission(InstanceUserScope.REMOVE)).toBe(false)
+      expect(permission.hasPermission(InstanceUserScope.UPDATE)).toBe(true)
     })
   })
 
