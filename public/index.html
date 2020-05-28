@@ -5,7 +5,7 @@
     <pre id="state"></pre>
     <script>
 
-      const states = []
+      const states = {}
   
       function update() {
         document.getElementById("state").innerHTML = JSON.stringify(states, null, 2)
@@ -54,7 +54,7 @@
           update()
         })
         socket.on("INSTANCE#REMOVE", event => {
-          states.splice(event.id, 1)
+          delete states[event.id]
           update()
         })
         socket.on("INSTANCE#UPDATE", event => {
