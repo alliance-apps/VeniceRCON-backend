@@ -57,7 +57,7 @@ export class State<T extends State.Type> {
     Y extends State.Type,
     T extends State.DeepPartial<Y>
   >(current: Y, next: T) {
-    const updated: State.DeepPartial<Y> = {}
+    const updated: any = {}
     Object.keys(next).forEach((k: keyof T & keyof Y) => {
       const value = next[k]
       if (typeof value === "object") {
@@ -66,9 +66,12 @@ export class State<T extends State.Type> {
           current[k] = <any>value
           updated[k] = <any>value
         } else {
-          if (current[k] === undefined) current[k] = <any>{}
-          //@ts-ignore
-          updated[k] = State.updateDeep(current[k], value)
+          if (current[k] === undefined) {
+            current[k] = <any>value
+            updated[k] = value
+          } else {
+            updated[k] = State.updateDeep(<any>current[k], <any>value)
+          }
         }        
       } else {
         if (current[k] === <any>value) return
