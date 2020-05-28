@@ -49,7 +49,13 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * @param info
    */
   async updatePlayers(players: Battlefield.Player[]) {
-    this.update({ players: Object.fromEntries(players.map(p => [p.guid, p])) })
+    const obj: Record<string, Battlefield.Player|undefined> = Object.fromEntries(players.map(p => [p.guid, p]))
+    const guids = Object.keys(obj)
+    Object.keys(this.getState().players).forEach(guid => {
+      if (guids.includes(guid)) return
+      obj[guid] = undefined
+    })
+    this.update({ players: obj })
     return this
   }
 
