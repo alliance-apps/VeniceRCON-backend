@@ -11,6 +11,17 @@ Content-Type: application/json
   "password": "{{$dotenv instance_pass}}"
 }
 
+### create a new instance
+POST {{$dotenv url}}/api/instances
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "host": "{{$dotenv instance1_host}}",
+  "port": {{$dotenv instance1_port}},
+  "password": "{{$dotenv instance1_pass}}"
+}
+
 ### lists all available instances
 GET {{$dotenv url}}/api/instances
 Authorization: Bearer {{$dotenv jwt}}
