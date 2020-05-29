@@ -39,3 +39,11 @@ ServerInfo:
       type: string
     joinQueueEnabled:
       type: boolean
+    region:
+      type: string
+    closestPingSite:
+      type: string
+    country:
+      type: string
+    matchmaking:
+      type: boolean

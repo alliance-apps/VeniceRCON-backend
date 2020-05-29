@@ -11,8 +11,6 @@ Instance:
       type: string
     port:
       type: number
-    serverinfo:
-      $ref: "ServerInfo.yaml#/ServerInfo"
     state:
       type: number
       enum:
@@ -22,3 +20,7 @@ Instance:
         - DISCONNECTING
         - DISCONNECTED
         - RECONNECTING
+    serverinfo:
+      $ref: "ServerInfo.yaml#/ServerInfo"
+    players:
+      $ref: "Player.yaml#/Players"

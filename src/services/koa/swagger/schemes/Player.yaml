@@ -1,0 +1,33 @@
+Players:
+  type: object
+  additionalProperties:
+    $ref: "#/Player"
+Player:
+  type: object
+  properties:
+    name:
+      type: string
+    guid:
+      type: string
+    playerGuid:
+      oneOf:
+        - type: string
+        - type: null
+    teamId:
+      type: number
+    squadId:
+      type: number
+    kills:
+      type: number
+    deaths:
+      type: number
+    score:
+      type: string
+    rank:
+      type: string
+    ping:
+      type: number
+    spectator:
+      type: number
+    ip:
+      type: string
