@@ -59,10 +59,11 @@
         })
         socket.on("INSTANCE#UPDATE", event => {
           event.changes.forEach(change => {
+            if (change[0].startsWith("player")) console.log(change)
             _.set(states[event.id], change[0], change[1])
           })
           Object.keys(states[event.id].players).forEach(guid => {
-            if (states[event.id].players[guid] !== undefined) return
+            if (states[event.id].players[guid] !== null) return
             delete states[event.id].players[guid]
           })
           update()          
