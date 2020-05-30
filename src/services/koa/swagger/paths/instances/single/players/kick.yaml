@@ -1,0 +1,20 @@
+post:
+  summary: kicks a player
+  description: |
+    kicks a single player from the server with optional reason
+  tags:
+    - "Player"
+  security:
+    - bearerAuth: ["PLAYER#KICK"]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            reason:
+              type: string
+  responses:
+    '200':
+      description: player has been kicked

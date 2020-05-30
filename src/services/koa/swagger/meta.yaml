@@ -16,6 +16,8 @@ tags:
     description: instance related routes
   - name: InstanceUser
     description: instance related user managment routes
+  - name: Player
+    description: player managment related routes
 paths:
   /api/auth/login:
     $ref: "paths/auth/login.yaml"
@@ -41,3 +43,13 @@ paths:
     $ref: "paths/instances/single/users/user.yaml"
   /api/instances/{instanceId}/users/{userId}/permissions:
     $ref: "paths/instances/single/users/permissions.yaml"
+  /api/instances/{instanceId}/players:
+    $ref: "paths/instances/single/players/index.yaml"
+  /api/instances/{instanceId}/players/{guid}:
+    $ref: "paths/instances/single/players/player.yaml"
+  /api/instances/{instanceId}/players/{guid}/kill:
+    $ref: "paths/instances/single/players/kill.yaml"
+  /api/instances/{instanceId}/players/{guid}/kick:
+    $ref: "paths/instances/single/players/kick.yaml"
+  /api/instances/{instanceId}/players/{guid}/ban:
+    $ref: "paths/instances/single/players/ban.yaml"

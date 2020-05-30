@@ -1,0 +1,15 @@
+get:
+  summary: retrieves a list of online players
+  description: |
+    retrieves a list of users with their permissions
+  tags:
+    - "Player"
+  security:
+    - bearerAuth: ["INSTANCE#ACCESS"]
+  responses:
+    '200':
+      description: list of users
+      content:
+        application/json:
+          schema:
+            $ref: "../../../../schemes/Player.yaml#/Player"

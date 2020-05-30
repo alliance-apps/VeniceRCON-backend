@@ -2,6 +2,7 @@ import Router from "koa-joi-router"
 import { instanceManager } from "@service/battlefield"
 import { perm } from "@service/koa/permission"
 import userRouter from "./users"
+import playerRouter from "./players"
 import { InstanceScope, InstanceUserScope } from "@service/permissions/Scopes"
 
 const api = Router()
@@ -41,5 +42,6 @@ api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
 })
 
 api.use("/users", perm(InstanceUserScope.ACCESS), userRouter.middleware())
+api.use("/players", perm(InstanceUserScope.ACCESS), playerRouter.middleware())
 
 export default api

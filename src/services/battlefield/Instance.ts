@@ -11,6 +11,7 @@ export class Instance {
   private readonly state: InstanceContainer
   private requestStop: boolean = false
   private interval: any
+  private intervalModulo = -1
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
@@ -41,10 +42,15 @@ export class Instance {
   }
 
   private async updateInterval() {
-    await Promise.all([
+    this.intervalModulo++
+    const promises: Promise<any>[] = [
       this.serverInfo(),
       this.playerList()
-    ])
+    ]
+    if (this.intervalModulo % 60 === 0) {
+      promises.push(this.mapList())
+    }
+    await Promise.all(promises)
   }
 
   private async startUpdateInterval() {
@@ -94,24 +100,37 @@ export class Instance {
     return this
   }
 
+  /** retrieves the current maplist */
+  async mapList() {
+    const maps = await this.battlefield.getMaps()
+    this.state.updateMapList(maps)
+    return maps
+  }
+
   /** retrieves the server info */
   async serverInfo() {
     const info = await this.battlefield.serverInfo()
-    await this.state.updateServerInfo(info)
+    this.state.updateServerInfo(info)
     return info
   }
 
   /** retrieves all connected players */
   async playerList() {
     const players = await this.battlefield.getPlayers()
-    await this.state.updatePlayers(players)
+    this.state.updatePlayers(players)
     return players
   }
 
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
     const instance = new Instance({ battlefield, entity: props.entity })
-    if (props.entity.autostart) await instance.start()
+    if (props.entity.autostart) {
+      try {
+        await instance.start()
+      } catch (e) {
+        console.log(`could not connect to battlefield server with id ${instance.id}`, e.message)
+      }
+    }
     return instance
   }
 

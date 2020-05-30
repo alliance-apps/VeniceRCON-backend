@@ -1,0 +1,15 @@
+get:
+  summary: informations about a single player
+  description: |
+    retrieves a single player
+  tags:
+    - "Player"
+  security:
+    - bearerAuth: ["INSTANCE#ACCESS"]
+  responses:
+    '200':
+      description: single player
+      content:
+        application/json:
+          schema:
+            $ref: "../../../../schemes/Player.yaml#/Player"

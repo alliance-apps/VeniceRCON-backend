@@ -26,7 +26,6 @@ Content-Type: application/json
 GET {{$dotenv url}}/api/instances
 Authorization: Bearer {{$dotenv jwt}}
 
-
 ### stops an instance by its id
 PATCH {{$dotenv url}}/api/instances/{{id}}/stop
 Authorization: Bearer {{$dotenv jwt}}
@@ -39,7 +38,6 @@ Authorization: Bearer {{$dotenv jwt}}
 DELETE {{$dotenv url}}/api/instances/{{id}}
 Authorization: Bearer {{$dotenv jwt}}
 
-
 ### lists all users for this instance
 GET {{$dotenv url}}/api/instances/{{id}}/users
 Authorization: Bearer {{$dotenv jwt}}
@@ -47,7 +45,6 @@ Authorization: Bearer {{$dotenv jwt}}
 ### reads all invite for new users
 GET {{$dotenv url}}/api/instances/{{id}}/users/invite
 Authorization: Bearer {{$dotenv jwt}}
-
 
 ### creates an invite for a new user
 POST {{$dotenv url}}/api/instances/{{id}}/users/invite

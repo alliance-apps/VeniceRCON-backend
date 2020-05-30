@@ -1,4 +1,7 @@
-export type Scopes = InstanceScope | InstanceUserScope
+export type Scopes =
+  InstanceScope |
+  InstanceUserScope |
+  PlayerScope
 
 export enum InstanceScope {
   ACCESS = 0x01,
@@ -14,9 +17,16 @@ export enum InstanceUserScope {
   REMOVE = 0x800
 }
 
+export enum PlayerScope {
+  KILL = 0x10000,
+  KICK = 0x20000,
+  BAN = 0x40000
+}
+
 const translation = {
   INSTANCE: InstanceScope,
-  INSTANCEUSER: InstanceUserScope
+  INSTANCEUSER: InstanceUserScope,
+  PLAYER: PlayerScope
 }
 
 /**
@@ -87,6 +97,11 @@ export function getScopesFromMask(mask: string) {
         user(InstanceUserScope.UPDATE)
         user(InstanceUserScope.REMOVE)
         return
+      case 2:
+        const player = validateScope("PLAYER", PlayerScope)
+        player(PlayerScope.KILL)
+        player(PlayerScope.KICK)
+        player(PlayerScope.BAN)
     }
   })
   return scopes

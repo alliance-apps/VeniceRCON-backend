@@ -1,0 +1,38 @@
+@instanceId=1
+
+### retrieve a list of users online
+GET {{$dotenv url}}/api/instances/{{instanceId}}/players
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieve a single user
+GET {{$dotenv url}}/api/instances/{{instanceId}}/players/{{$dotenv EA_GUID}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### kills a user
+POST {{$dotenv url}}/api/instances/{{instanceId}}/players/{{$dotenv EA_GUID}}/kill
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "reason": "foo"
+}
+
+### kicks a user
+POST {{$dotenv url}}/api/instances/{{instanceId}}/players/{{$dotenv EA_GUID}}/kick
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "reason": "foobar"
+}
+
+### bans a user
+POST {{$dotenv url}}/api/instances/{{instanceId}}/players/{{$dotenv EA_GUID}}/ban
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "reason": "foobar",
+  "type": "seconds",
+  "duration": 60
+}

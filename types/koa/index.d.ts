@@ -1,6 +1,7 @@
 import { Instance } from "@service/battlefield/Instance"
 import { JsonWebToken } from "@service/koa/jwt"
 import { Permission } from "@entity/Permission"
+import { Battlefield } from "vu-rcon"
 
 declare module "koa" {
 
@@ -8,6 +9,7 @@ declare module "koa" {
     token?: JsonWebToken
     instance?: Instance
     permission?: Permission
+    player?: Battlefield.Player
   }
 
 }

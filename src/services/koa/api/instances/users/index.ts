@@ -33,7 +33,7 @@ api.param("userId", async (id, ctx, next) => {
   const userId = parseInt(id)
   if (isNaN(userId)) return ctx.status = 401
   const permission = await Permission.findOne({
-    instanceId: ctx.state.instance.container.id, userId
+    instanceId: ctx.state.instance.state.id, userId
   })
   if (!permission) return ctx.status = 404
   ctx.state.permission = permission
