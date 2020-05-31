@@ -1,7 +1,6 @@
 import Koa from "koa"
 import koaSend from "koa-send"
 import Router from "koa-joi-router"
-import swagger from "koa2-swagger-ui"
 import { createServer } from "http"
 import { createRoute as createApiRoute } from "./api"
 import { initialize as initSocket } from "../koa/socket"
@@ -25,15 +24,6 @@ export async function initialize() {
       if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
       await next()
     })
-    router.get("/swagger/(.*)", ctx => koaSend(ctx, ctx.path, { root: `${__dirname}` }))
-    router.use(swagger())
-    router.get("/swagger", swagger({
-      routePrefix: false,
-      hideTopbar: true,
-      swaggerOptions: {
-        url: "/swagger/meta.yaml"
-      }
-    }))
 
   }
 

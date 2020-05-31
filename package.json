@@ -38,7 +38,6 @@
     "koa-json": "^2.0.2",
     "koa-jwt": "^4.0.0",
     "koa-send": "^5.0.0",
-    "koa2-swagger-ui": "^3.0.0",
     "mysql": "^2.18.1",
     "socket.io": "^2.3.0",
     "socketio-jwt-auth": "^0.1.0",
