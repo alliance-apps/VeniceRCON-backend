@@ -48,7 +48,7 @@ api.route({
       id: Joi.string().min(1)
     })
   },
-  pre: perm(BanScope.CREATE),
+  pre: perm(BanScope.DELETE),
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { subset, id } = ctx.request.body
