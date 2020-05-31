@@ -1,5 +1,4 @@
 import Router from "koa-joi-router"
-import { Permission } from "@entity/Permission"
 import playerRouter from "./player"
 import { Battlefield } from "vu-rcon"
 

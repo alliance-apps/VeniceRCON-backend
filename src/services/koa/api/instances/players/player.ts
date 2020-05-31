@@ -1,5 +1,5 @@
 import Router from "koa-joi-router"
-import { PlayerScope } from "@service/permissions/Scopes"
+import { PlayerScope, BanScope } from "@service/permissions/Scopes"
 import { perm } from "@service/koa/permission"
 import { Battlefield } from "vu-rcon"
 
@@ -24,7 +24,7 @@ api.route({
     const { battlefield } = ctx.state.instance!
     const { name } = ctx.state.player!
     try {
-      await battlefield.killPlayer(name)
+      await battlefield.playerKill(name)
       if (ctx.request.body.reason) {
         await battlefield.say(ctx.request.body.reason, ["player", name])
       }
@@ -50,7 +50,7 @@ api.route({
     const { battlefield } = ctx.state.instance!
     const { name } = ctx.state.player!
     try {
-      await battlefield.kickPlayer(name, ctx.request.body.reason)
+      await battlefield.playerKick(name, ctx.request.body.reason)
       ctx.status = 200
     } catch (e) {
       ctx.status = 500
@@ -65,23 +65,23 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      type: Joi.string().allow("guid", "name", "ip"),
-      reason: Joi.string().optional(),
+      subset: Joi.string().allow("guid", "name", "ip"),
       durationType: Joi.string().allow("rounds", "seconds", "perm").required(),
-      duration: Joi.number().optional()
+      duration: Joi.number().optional(),
+      reason: Joi.string().optional()
     })
   },
-  pre: perm(PlayerScope.BAN),
+  pre: perm(BanScope.CREATE),
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { player } = ctx.state
-    const { reason, type, durationType, duration } = ctx.request.body
+    const { reason, subset, durationType, duration } = ctx.request.body
     const banType = (() => {
-      switch (type) {
+      switch (subset) {
         default: 
         case "guid": return ["guid", player!.guid] as Battlefield.IdType
         case "name": return ["guid", player!.name] as Battlefield.IdType
-        //case "ip": return ["ip", player!.ip] as Battlefield.IdType
+        case "ip": return ["ip", player!.ip] as Battlefield.IdType
       }
     })()
     try {

@@ -1,0 +1,27 @@
+@instanceId=1
+
+### retrieve a list of bans
+GET {{$dotenv url}}/api/instances/{{instanceId}}/bans
+Authorization: Bearer {{$dotenv jwt}}
+
+### creates a ban
+POST {{$dotenv url}}/api/instances/{{instanceId}}/bans
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "subset": "ip",
+  "id": "8.8.8.8",
+  "durationType": "perm"
+}
+
+
+### removes a ban
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/bans
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "subset": "ip",
+  "id": "8.8.8.8"
+}

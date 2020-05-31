@@ -18,6 +18,8 @@ tags:
     description: instance related user managment routes
   - name: Player
     description: player managment related routes
+  - name: Bans
+    description: banning related routes
 paths:
   /api/auth/login:
     $ref: "paths/auth/login.yaml"
@@ -53,3 +55,5 @@ paths:
     $ref: "paths/instances/single/players/kick.yaml"
   /api/instances/{instanceId}/players/{guid}/ban:
     $ref: "paths/instances/single/players/ban.yaml"
+  /api/instances/{instanceId}/bans:
+    $ref: "paths/instances/single/bans.yaml"

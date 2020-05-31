@@ -1,0 +1,67 @@
+get:
+  summary: retrieves a list of bans
+  description: |
+    gets the informations from a single instance
+  tags:
+    - "Bans"
+  security:
+    - bearerAuth: ["BAN#ACCESS"]
+  responses:
+    '200':
+      description: instance has been removed successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../../../schemes/Ban.yaml#/Bans"
+post:
+  summary: creates a new ban
+  description: |
+    creates a new ban
+  tags:
+    - "Bans"
+  security:
+    - bearerAuth: ["BAN#CREATE"]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            subset:
+              type: string
+              enum: [guid, name, ip]
+            id:
+              type: string
+            durationType:
+              type: string
+              enum: ["rounds", "seconds", "perm"]
+            duration:
+              type: number
+            reason:
+              type: string
+  responses:
+    '200':
+      description: instance has been removed successfully
+delete:
+  summary: removes a ban entry
+  description: |
+    removes a ban
+  tags:
+    - "Bans"
+  security:
+    - bearerAuth: ["BAN#DELETE"]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            subset:
+              type: string
+            id:
+              type: string
+  responses:
+    '200':
+      description: instance has been removed successfully

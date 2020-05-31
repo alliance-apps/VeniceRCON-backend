@@ -1,0 +1,19 @@
+Bans:
+  type: array
+  items:
+    $ref: "#/Ban"
+Ban:
+  type: object
+  properties:
+    subset:
+      type: array
+      items:
+        type: string
+    timeout:
+      type: array
+      items:
+        oneOf:
+          - type: string
+          - type: integer
+    reason:
+      type: string
