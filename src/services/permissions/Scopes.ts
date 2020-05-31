@@ -18,15 +18,15 @@ export enum InstanceUserScope {
   REMOVE = 0x0800
 }
 
-export enum PlayerScope {
-  KILL = 0x010000,
-  KICK = 0x020000
+export enum BanScope {
+  ACCESS = 0x010000,
+  CREATE = 0x020000,
+  DELETE = 0x040000
 }
 
-export enum BanScope {
-  ACCESS = 0x01000000,
-  CREATE = 0x02000000,
-  DELETE = 0x04000000
+export enum PlayerScope {
+  KILL = 0x01000000,
+  KICK = 0x02000000
 }
 
 const translation = {
@@ -88,31 +88,33 @@ export function getScopesFromMask(mask: string) {
       scopes.push(`${prefix}#${e[val]}`)
     }
   }
-  Array(Object.values(translation).length).fill(null).map((_, index) => {
-    switch(index) {
-      case 0:
-        const instance = validateScope("INSTANCE", InstanceScope)
+  Object.keys(translation).map(key => {
+    switch(key) {
+      case "INSTANCE":
+        const instance = validateScope(key, InstanceScope)
         instance(InstanceScope.ACCESS)
         instance(InstanceScope.CREATE)
         instance(InstanceScope.DELETE)
         instance(InstanceScope.UPDATE)
         return
-      case 1:
-        const user = validateScope("INSTANCEUSER", InstanceUserScope)
+      case "INSTANCEUSER":
+        const user = validateScope(key, InstanceUserScope)
         user(InstanceUserScope.ACCESS)
         user(InstanceUserScope.CREATE)
         user(InstanceUserScope.UPDATE)
         user(InstanceUserScope.REMOVE)
         return
-      case 2:
-        const player = validateScope("PLAYER", PlayerScope)
-        player(PlayerScope.KILL)
-        player(PlayerScope.KICK)
-      case 3:
-        const ban = validateScope("BAN", PlayerScope)
+      case "BAN":
+        const ban = validateScope(key, PlayerScope)
         ban(BanScope.ACCESS)
         ban(BanScope.CREATE)
         ban(BanScope.DELETE)
+        return
+      case "PLAYER":
+        const player = validateScope(key, PlayerScope)
+        player(PlayerScope.KILL)
+        player(PlayerScope.KICK)
+        return
     }
   })
   return scopes
