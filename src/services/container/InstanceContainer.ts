@@ -16,7 +16,8 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       state: Instance.State.DISCONNECTED,
       serverinfo: props.serverinfo || {},
       players: {},
-      maps: []
+      maps: [],
+      mapInfo: { index: 0, next: 0 }
     })
     this.id = props.entity.id
   }
@@ -51,6 +52,15 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    */
   async updateMapList(maps: Battlefield.MapList) {
     this.update({ maps })
+    return this
+  }
+
+  /**
+   * updates current and next playing map
+   * @param mapInfo maps which is currently running and which is coming next
+   */
+  async updateMapIndex(mapInfo: { index: number, next: number }) {
+    this.update({ mapInfo })
     return this
   }
 
@@ -100,6 +110,10 @@ export namespace InstanceContainer {
     serverinfo: Battlefield.ServerInfo|{}
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList
+    mapInfo: {
+      index: number
+      next: number
+    }
   }
 
   export interface IProps {

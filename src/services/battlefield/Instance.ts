@@ -107,6 +107,13 @@ export class Instance {
     return maps
   }
 
+  /** retrieves the current and next map playing */
+  async currentMapIndices() {
+    const state = await this.battlefield.getMapIndices()
+    this.state.updateMapIndex(state)
+    return state
+  }
+
   /** retrieves the server info */
   async serverInfo() {
     const info = await this.battlefield.serverInfo()

@@ -10,6 +10,7 @@ declare module "koa" {
     instance?: Instance
     permission?: Permission
     player?: Battlefield.Player
+    map?: Battlefield.MapEntry
   }
 
 }

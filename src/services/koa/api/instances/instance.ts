@@ -4,6 +4,7 @@ import { perm } from "@service/koa/permission"
 import userRouter from "./users"
 import playerRouter from "./players"
 import banRouter from "./bans"
+import mapRouter from "./maps"
 import { InstanceScope, InstanceUserScope, BanScope } from "@service/permissions/Scopes"
 
 const api = Router()
@@ -45,5 +46,6 @@ api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
 api.use("/players", playerRouter.middleware())
 api.use("/users", perm(InstanceUserScope.ACCESS), userRouter.middleware())
 api.use("/bans", perm(BanScope.ACCESS), banRouter.middleware())
+api.use("/maps", mapRouter.middleware())
 
 export default api

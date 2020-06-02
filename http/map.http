@@ -1,0 +1,10 @@
+@instanceId=1
+@mapIndex=1
+
+### retrieve a list of available maps
+GET {{$dotenv url}}/api/instances/{{instanceId}}/maps
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieves the current map index
+GET {{$dotenv url}}/api/instances/{{instanceId}}/maps/current
+Authorization: Bearer {{$dotenv jwt}}
