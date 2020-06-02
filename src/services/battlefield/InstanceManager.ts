@@ -40,10 +40,10 @@ export class InstanceManager {
       console.log("instance creation failed", e)
       if (!entity) throw e
       if (instance instanceof Instance) {
-        this.instances.push(instance)   
+        this.instances.push(instance)
       } else {
         await entity.remove()
-      }   
+      }
       throw e
     }
   }
@@ -62,7 +62,7 @@ export class InstanceManager {
 
   /**
    * retrieves a single instance by its id
-   * @param id 
+   * @param id
    */
   getInstanceById(id: number) {
     const instance = this.instances.find(instance => instance.id === id)
@@ -84,5 +84,5 @@ export class InstanceManager {
 }
 
 export namespace InstanceManager {
-  
+
 }

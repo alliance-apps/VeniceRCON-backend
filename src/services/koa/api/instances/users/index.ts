@@ -30,7 +30,7 @@ api.post("/invite", perm(InstanceUserScope.CREATE), async ctx => {
 })
 
 api.param("userId", async (id, ctx, next) => {
-  const userId = parseInt(id)
+  const userId = parseInt(id, 10)
   if (isNaN(userId)) return ctx.status = 401
   const permission = await Permission.findOne({
     instanceId: ctx.state.instance.state.id, userId

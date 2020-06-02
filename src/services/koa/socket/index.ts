@@ -9,7 +9,7 @@ export let socketManager: SocketManager
 export async function initialize(server: Server) {
 
   socketManager = new SocketManager(server)
-  
+
   server.use(
     ioJWT.authenticate({ secret: await getSecret() },
     async (payload, done) => {

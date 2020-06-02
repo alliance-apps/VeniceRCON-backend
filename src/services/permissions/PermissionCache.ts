@@ -62,7 +62,7 @@ export class PermissionCache {
 
   /**
    * loads the permissions from the repository
-   * @param user 
+   * @param user
    */
   private getUserPermissions(user: User|number) {
     return Permission.createQueryBuilder("permission")

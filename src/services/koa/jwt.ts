@@ -25,7 +25,7 @@ export async function getSecret() {
 
 /**
  * creates a jwt middleware with options override
- * @param opts 
+ * @param opts
  */
 export async function jwtMiddleware(opts: Partial<koaJwt.Options> = {}) {
   return koaJwt({ ...opts, secret: await getSecret(), key: "token" })

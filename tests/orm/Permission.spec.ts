@@ -8,7 +8,7 @@ describe("Permission", () => {
 
   describe("check if the mask gets set correctly", () => {
     let permission: Permission
-  
+
     beforeEach(() => {
       permission = new Permission()
       permission.mask = "00"

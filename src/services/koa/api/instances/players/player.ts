@@ -78,7 +78,7 @@ api.route({
     const { reason, subset, durationType, duration } = ctx.request.body
     const banType = (() => {
       switch (subset) {
-        default: 
+        default:
         case "guid": return ["guid", player!.guid] as Battlefield.IdType
         case "name": return ["guid", player!.name] as Battlefield.IdType
         case "ip": return ["ip", player!.ip] as Battlefield.IdType

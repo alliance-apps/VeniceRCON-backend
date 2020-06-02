@@ -28,7 +28,7 @@ export class User extends AbstractEntity<User> {
 
   /**
    * updates the current password
-   * @param newPass 
+   * @param newPass
    */
   async updatePassword(newPass: string) {
     this.password = await hash(newPass, 10)

@@ -3,11 +3,8 @@ import { instanceManager } from "@service/battlefield"
 import { InstanceScope } from "@service/permissions/Scopes"
 import { Instance } from "@service/battlefield/Instance"
 import { SocketManager } from "./SocketManager"
-import { permissionManager } from "@service/permissions"
 
 export class Socket {
-
-  static INSTANCE_NAMESPACE = `INSTANCE#`
 
   readonly socket: IOSocket
   readonly userId: number
@@ -35,6 +32,7 @@ export class Socket {
       }
     })
     access.forEach(id => this.removeInstance(id))
+    this.socket.emit(SocketManager.SELF.PERMISSION_UPDATE)
   }
 
   /**
@@ -68,7 +66,7 @@ export class Socket {
 }
 
 export namespace Socket {
-  
+
   export interface IProps {
     socket: IOSocket
     userId: number

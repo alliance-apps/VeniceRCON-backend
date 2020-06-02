@@ -29,7 +29,7 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
 
   /**
    * updates the own entity
-   * @param data 
+   * @param data
    */
   protected update(data: QueryDeepPartialEntity<T>): Promise<UpdateResult> {
     return getRepository(this.entityClass)

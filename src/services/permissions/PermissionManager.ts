@@ -4,15 +4,14 @@ import { Permission } from "@entity/Permission"
 import { PermissionCache } from "./PermissionCache"
 import { Scopes, InstanceScope } from "./Scopes"
 import { socketManager } from "@service/koa/socket"
-import { instanceManager } from "@service/battlefield"
 
 export class PermissionManager {
-  
+
   private cache = new PermissionCache()
 
   /**
    * checks if a specific permission for an instance and user has been set
-   * @param props 
+   * @param props
    */
   hasPermission(props: PermissionManager.HasPermissionProps) {
     const instanceId = props.instance instanceof InstanceEntity ? props.instance.id : props.instance
@@ -37,7 +36,7 @@ export class PermissionManager {
 
   /**
    * adds a permission scope to a user for a specific instance
-   * @param props 
+   * @param props
    */
   async updatePermissions(props: PermissionManager.UpdatePermissionProps) {
     const perms = await this.getPermissions(props.user)
@@ -45,12 +44,12 @@ export class PermissionManager {
     if (!perm) throw new Error(`can not add permission, user does not have access to the instance`)
     await perm.setPermissions(props.scopes)
     this.removeUserFromCache(props.user)
-    await this.validateSocketAccess(props.user)    
+    await this.validateSocketAccess(props.user)
   }
 
   /**
    * creates a new permission
-   * @param props 
+   * @param props
    */
   private async createPermission(props: Permission.ICreate) {
     const perm = await Permission.from(props)
@@ -72,7 +71,7 @@ export class PermissionManager {
 
   /**
    * creates a new global permission for a specific user
-   * @param props 
+   * @param props
    */
   async createGlobalPermission(props: PermissionManager.AddGlobalAccess) {
     const user = this.getUserId(props.user)
@@ -82,7 +81,7 @@ export class PermissionManager {
 
   /**
    * creates a new instance permission for a specific user
-   * @param props 
+   * @param props
    */
   async addInstanceAccess(props: PermissionManager.AddInstanceAccess) {
     const instance = this.getInstanceId(props.instance)

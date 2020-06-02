@@ -44,7 +44,7 @@ api.get("/", async ctx => {
 })
 
 api.param("instanceId", async (id, ctx, next) => {
-  const instance = instanceManager.getInstanceById(parseInt(id))
+  const instance = instanceManager.getInstanceById(parseInt(id, 10))
   if (!instance) return ctx.status = 404
   ctx.state.instance = instance
   await next()

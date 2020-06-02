@@ -33,7 +33,7 @@ export class Instance {
   getState() {
     return this.state.getState()
   }
-  
+
   /**
    * checks if the specified user has the specified scope for this instance
    */
@@ -89,7 +89,7 @@ export class Instance {
 
   /** disconnects to the battlefield instance */
   async stop() {
-    if (this.state.getState().state == Instance.State.DISCONNECTED) return this
+    if (this.state.getState().state === Instance.State.DISCONNECTED) return this
     if (this.state.getState().state !== Instance.State.CONNECTED)
       throw new Error("instance is not in state connected")
     this.requestStop = true

@@ -72,7 +72,7 @@ export class State<T extends State.Type> {
           } else {
             updated[k] = State.updateDeep(<any>current[k], <any>value)
           }
-        }        
+        }
       } else {
         if (current[k] === <any>value) return
         if (value === undefined) {
@@ -105,7 +105,7 @@ export namespace State {
     boolean |
     undefined |
     (number|string|boolean)[]
-  
+
   export type Type = {
     [key: string]: Primitives|Record<string, Primitives>|{}
   }

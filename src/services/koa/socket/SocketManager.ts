@@ -18,7 +18,7 @@ export class SocketManager {
     this.sockets.push(new Socket({
       socket,
       userId: socket.request.user.user.id,
-      handleClose: (socket: Socket) => this.sockets = this.sockets.filter(s => s !== socket)
+      handleClose: (sock: Socket) => this.sockets = this.sockets.filter(s => s !== sock)
     }))
   }
 
@@ -43,7 +43,7 @@ export class SocketManager {
 
   /**
    * retrieves all connected sockets by a specific user id
-   * @param userId 
+   * @param userId
    */
   getSocketsByUserId(userId: number) {
     return this.sockets.filter(s => s.userId === userId)
@@ -59,9 +59,14 @@ export namespace SocketManager {
 
   export enum INSTANCE {
     NAMESPACE = "INSTANCE",
-    UPDATE = `INSTANCE#UPDATE`,
-    REMOVE = `INSTANCE#REMOVE`,
-    ADD = `INSTANCE#ADD`,
+    UPDATE = "INSTANCE#UPDATE",
+    REMOVE = "INSTANCE#REMOVE",
+    ADD = "INSTANCE#ADD",
+  }
+
+  export enum SELF {
+    NAMESPACE = "SELF",
+    PERMISSION_UPDATE = "SELF#PERMISSION_UPDATE"
   }
 
 }

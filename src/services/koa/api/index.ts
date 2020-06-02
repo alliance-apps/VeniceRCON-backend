@@ -14,11 +14,11 @@ export async function createRoute() {
     onerror: (err, ctx) => ctx.throw("body parse error", 422)
   }))
   router.use(json({ pretty: config.development }))
-  
+
   router.use(await jwtMiddleware({ passthrough: true }))
-  
+
   router.use("/auth", authRouter.middleware())
   router.use("/instances", await jwtMiddleware(), instanceRouter.middleware())
-  
+
   return router
 }

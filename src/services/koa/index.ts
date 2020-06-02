@@ -6,15 +6,16 @@ import { createRoute as createApiRoute } from "./api"
 import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
 import path from "path"
+import socketIO from "socket.io"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
-export const io = require("socket.io")(server)
+export const io = socketIO(server)
 
 export async function initialize() {
 
   const router = Router()
- 
+
   if (config.development) {
 
     app.use(async (ctx, next) => {

@@ -47,7 +47,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
 
   /**
    * updates maplist data
-   * @param maps 
+   * @param maps
    */
   async updateMapList(maps: Battlefield.MapList) {
     this.update({ maps })
@@ -71,8 +71,8 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
 
   /**
    * updates the connection
-   * @param host 
-   * @param port 
+   * @param host
+   * @param port
    */
   async updateConnection(host: string, port: number) {
     await this.updateEntity({ host, port })
