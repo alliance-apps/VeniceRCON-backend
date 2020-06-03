@@ -4,6 +4,7 @@ import { InstanceContainer } from "@service/container/InstanceContainer"
 import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
+import { PrependAction } from "../../util/PrependAction"
 
 export class Instance {
 
@@ -12,10 +13,23 @@ export class Instance {
   private requestStop: boolean = false
   private interval: any
   private intervalModulo = -1
+  private syncInterval: number
+  private playerListAction: PrependAction<Battlefield.PlayerList>
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
+    this.syncInterval = props.entity.syncInterval
     this.battlefield = props.battlefield
+    this.registerPlayerEvents()
+    this.playerListAction = new PrependAction({
+      shouldExecute: () => {
+        const { slots } = this.getState().serverinfo
+        return Boolean(slots && slots > 0)
+      },
+      execute: () => this.playerList(),
+      minimumInterval: this.syncInterval * 4,
+      prependTimeout: this.syncInterval * 2
+    })
     this.battlefield.on("close", async () => {
       this.stopUpdateInterval()
       if (this.requestStop) return
@@ -24,6 +38,35 @@ export class Instance {
       this.state.updateConnectionState(Instance.State.CONNECTED)
       this.startUpdateInterval()
     })
+  }
+
+  /**
+   * registers handler for player events
+   */
+  private registerPlayerEvents() {
+    this.battlefield.on("playerLeave", event => {
+      this.playerListAction.prepend()
+      this.state.removePlayer(event.player.guid)
+    })
+    this.battlefield.on("playerAuthenticated", async event => {
+      console.log("playerAuthenticated")
+      console.log(await this.playerListAction.execute())
+    })
+  }
+
+  /** starts the update interval */
+  private async startUpdateInterval() {
+    this.interval = setInterval(this.updateInterval.bind(this), this.syncInterval)
+    this.playerListAction.unpause()
+    await Promise.all([
+      this.playerListAction.execute(),
+      this.updateInterval()
+    ])
+  }
+
+  private stopUpdateInterval() {
+    this.playerListAction.pause()
+    clearInterval(this.interval)
   }
 
   get id() {
@@ -43,25 +86,10 @@ export class Instance {
 
   private async updateInterval() {
     this.intervalModulo++
-    const promises: Promise<any>[] = [
-      this.serverInfo(),
-      this.playerList()
-    ]
     if (this.intervalModulo % 60 === 0) {
-      promises.push(this.mapList())
+      this.mapList()
     }
-    await Promise.all(promises)
-  }
-
-  private async startUpdateInterval() {
-    const entity = await InstanceEntity.findOne({ id: this.id })
-    if (!entity) throw new Error(`could not find instance entity with id ${this.id} has the db entity been deleted?`)
-    this.interval = setInterval(this.updateInterval.bind(this), entity.syncInterval)
-    await this.updateInterval()
-  }
-
-  private stopUpdateInterval() {
-    clearInterval(this.interval)
+    await this.serverInfo()
   }
 
   /** connects to the battlefield instance */
@@ -84,6 +112,7 @@ export class Instance {
   /** removes this instance */
   async remove() {
     await this.stop()
+    this.battlefield.removeAllListeners()
     this.state.remove()
   }
 
@@ -122,7 +151,7 @@ export class Instance {
   }
 
   /** retrieves all connected players */
-  async playerList() {
+  private async playerList() {
     const players = await this.battlefield.getPlayers()
     this.state.updatePlayers(players)
     return players

@@ -68,7 +68,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * updates serverinfo data
    * @param info
    */
-  async updatePlayers(players: Battlefield.Player[]) {
+  updatePlayers(players: Battlefield.Player[]) {
     const obj: Record<string, Battlefield.Player|undefined> = Object.fromEntries(players.map(p => [p.guid, p]))
     const guids = Object.keys(obj)
     Object.keys(this.getState().players).forEach(guid => {
@@ -76,6 +76,19 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       obj[guid] = undefined
     })
     this.update({ players: obj })
+    return this
+  }
+
+  /** removes a single player from the array */
+  removePlayer(guid: string) {
+    const { players } = this.getState()
+    this.update({
+      players: Object.fromEntries(
+        Object.keys(players)
+          .filter(g => g !== guid)
+          .map(g => [g, players[g]])
+      )
+    })
     return this
   }
 
@@ -107,7 +120,7 @@ export namespace InstanceContainer {
     host: string
     port: number
     state: Instance.State
-    serverinfo: Battlefield.ServerInfo|{}
+    serverinfo: Partial<Battlefield.ServerInfo>
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList
     mapInfo: {
