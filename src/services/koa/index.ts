@@ -7,6 +7,8 @@ import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
 import path from "path"
 import socketIO from "socket.io"
+import winston from "winston"
+import chalk from "chalk"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
@@ -43,7 +45,7 @@ export async function initialize() {
   })
 
   server.listen(config.webserver.listenport, () => {
-    console.log(`webserver listening on ${config.webserver.listenport}`)
+    winston.info(`webserver listening on ${chalk.bold(config.webserver.listenport)}`)
   })
 
 }

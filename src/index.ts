@@ -1,11 +1,14 @@
+import winston from "winston"
+
 (async () => {
-  console.log("initializing config...")
+  require("./util/winston")
+  winston.info("initializing config...")
   await require("@service/config").initialize()
-  console.log("initializing database...")
+  winston.info("initializing database...")
   await require("@service/orm").connect()
-  console.log("initializing koa webserver...")
+  winston.info("initializing koa webserver...")
   await require("@service/koa").initialize()
-  console.log("initializing instance manager...")
+  winston.info("initializing instance manager...")
   await require("@service/battlefield").initialize()
-  console.log("initialization done!")
+  winston.info("initialization done!")
 })()

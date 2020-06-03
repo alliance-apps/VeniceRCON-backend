@@ -65,6 +65,33 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
   }
 
   /**
+   * partially updates a player
+   * @param guid guid of the player to change
+   * @param props props to change
+   */
+  updatePlayerPropsByGuid(guid: string, props: Partial<Battlefield.Player>) {
+    const player = this.getState().players[guid]
+    if (!player) return false
+    return this.updatePlayerProps(player, props)
+  }
+
+  /**
+   * partially updates a player
+   * @param name of the player
+   * @param props props to change
+   */
+  updatePlayerPropsByName(name: string, props: Partial<Battlefield.Player>) {
+    const player = Object.values(this.getState().players).find(p => p.name === name)
+    if (!player) return false
+    return this.updatePlayerProps(player, props)
+  }
+
+  private updatePlayerProps(player: Battlefield.Player, props: Partial<Battlefield.Player>) {
+    this.update({ players: { [player.guid]: {...player, ...props } } })
+    return true
+  }
+
+  /**
    * updates serverinfo data
    * @param info
    */

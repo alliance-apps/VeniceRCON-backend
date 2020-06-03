@@ -20,7 +20,6 @@ export class Instance {
     this.state = new InstanceContainer({ entity: props.entity })
     this.syncInterval = props.entity.syncInterval
     this.battlefield = props.battlefield
-    this.registerPlayerEvents()
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
         const { slots } = this.getState().serverinfo
@@ -30,6 +29,7 @@ export class Instance {
       minimumInterval: this.syncInterval * 4,
       prependTimeout: this.syncInterval * 2
     })
+    this.registerEvents()
     this.battlefield.on("close", async () => {
       this.stopUpdateInterval()
       if (this.requestStop) return
@@ -41,15 +41,27 @@ export class Instance {
   }
 
   /**
-   * registers handler for player events
+   * registers handler for events
    */
-  private registerPlayerEvents() {
+  private registerEvents() {
     this.battlefield.on("playerLeave", event => {
       this.playerListAction.prepend()
       this.state.removePlayer(event.player.guid)
     })
-    this.battlefield.on("playerAuthenticated", async event => {
+    this.battlefield.on("playerAuthenticated", async () => {
       await this.playerListAction.execute()
+    })
+    this.battlefield.on("squadChange", async ({ player, squad, team }) => {
+      this.playerListAction.prepend()
+      if (!this.state.updatePlayerPropsByName(player, { squadId: squad, teamId: team })) {
+        await this.playerListAction.execute()
+      }
+    })
+    this.battlefield.on("teamChange", async ({ player, squad, team }) => {
+      this.playerListAction.prepend()
+      if (!this.state.updatePlayerPropsByName(player, { squadId: squad, teamId: team })) {
+        await this.playerListAction.execute()
+      }
     })
   }
 

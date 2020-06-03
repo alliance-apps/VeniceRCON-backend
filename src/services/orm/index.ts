@@ -1,6 +1,7 @@
 import "reflect-metadata"
 import { randomBytes } from "crypto"
 import { createConnection, Connection } from "typeorm"
+import winston from "winston"
 import { Instance } from "@entity/Instance"
 import { User } from "@entity/User"
 import { Config } from "@entity/Config"
@@ -8,6 +9,8 @@ import { config } from "@service/config"
 import { Permission } from "@entity/Permission"
 import { createToken } from "@service/koa/jwt"
 import { Invite } from "@entity/Invite"
+import { WinstonLogger } from "./WinstonLogger"
+import chalk from "chalk"
 
 export let connection: Connection
 
@@ -18,6 +21,7 @@ export async function connect() {
     logging: config.development,
     maxQueryExecutionTime: 200,
     ...config.database[config.database.use] as any,
+    logger: new WinstonLogger(),
     entities: [
       Instance,
       User,
@@ -45,8 +49,8 @@ export async function connect() {
     })
     setTimeout(async () => {
       const token = await createToken({ user })
-      console.log(`created default user "admin" with password "${password}"`)
-      console.log(`jwt token: ${token}`)
+      winston.info(`created default user "${chalk.red.bold("admin")}" with password "${chalk.red.bold(password)}"`)
+      winston.info(`jwt token: ${chalk.red.bold(token)}`)
     }, 1000)
   }
 }
