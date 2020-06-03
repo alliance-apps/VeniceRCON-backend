@@ -49,8 +49,7 @@ export class Instance {
       this.state.removePlayer(event.player.guid)
     })
     this.battlefield.on("playerAuthenticated", async event => {
-      console.log("playerAuthenticated")
-      console.log(await this.playerListAction.execute())
+      await this.playerListAction.execute()
     })
   }
 
