@@ -29,32 +29,6 @@ api.post("/restartRound", perm(MapScope.SWITCH), async ctx => {
   ctx.status = 200
 })
 
-
-/** sets the index of the next round */
-api.route({
-  method: "POST",
-  path: "/nextMap",
-  validate: {
-    type: "json",
-    body: Joi.object({
-      index: Joi.number().required()
-    })
-  },
-  pre: perm(MapScope.SWITCH),
-  handler: async ctx => {
-    const { battlefield } = ctx.state.instance!
-    const { index } = ctx.request.body
-    try {
-      await battlefield.setNextMapIndex(index)
-      ctx.state.instance!.currentMapIndices()
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
-  }
-})
-
 /** ends the round with a set winner team */
 api.route({
   method: "POST",
