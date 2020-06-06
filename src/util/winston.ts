@@ -1,17 +1,26 @@
 import winston, { format, transports } from "winston"
 import chalk from "chalk"
 
-const prettyLog = format(opts => {
-  let message = ""
-  let meta = ""
-  if (opts.message !== undefined) message = opts.message
+const errorLog = format(info => {
+  if (info instanceof Error) info.error = info
+  if (info.stack) {
+    info.error = new Error(info.message)
+    info.error.stack = info.stack
+  }
+  return info
+})
 
-  if (opts.meta && Object.keys(opts.meta).length) {
-    meta = "\n\t" + JSON.stringify(opts.meta)
+const prettyLog = format(info => {
+  const messages: string[] = []
+  let meta = ""
+  if (info.message !== undefined) messages.push(info.message)
+
+  if (info.meta && Object.keys(info.meta).length) {
+    meta = "\n\t" + JSON.stringify(info.meta)
   }
 
   const level = (() => {
-    const level = opts.level.toUpperCase()
+    const level = info.level ? info.level.toUpperCase() : "WARN"
     switch (level) {
       case "VERBOSE": return chalk.grey.bold(level)
       case "INFO": return chalk.cyan.bold(level)
@@ -21,16 +30,28 @@ const prettyLog = format(opts => {
     }
   })()
 
-  opts.message = [`${chalk.dim(opts.timestamp)} ${level}`, message, meta].join(" ")
-  return opts
+  if (info.error instanceof Error) {
+    if (info.error.stack) {
+      messages.push(info.error.stack)
+    } else {
+      messages.push(info.error.message)
+    }
+  }
+
+  info.message = [`${chalk.dim(info.timestamp)} ${level}`, messages.join(" "), meta].join(" ")
+  return info
 })
 
 winston.configure({
+  format: format.combine(
+    errorLog()
+  ),
   transports: [
     new transports.Console({
       level: "verbose",
       format: format.combine(
         format.timestamp({format: "DD.MM.YYYY HH:mm:ss.SSS"}),
+        //errorLog(),
         prettyLog(),
         format.printf(opts => opts.message)
       )

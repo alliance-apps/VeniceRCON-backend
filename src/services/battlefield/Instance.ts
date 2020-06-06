@@ -5,6 +5,7 @@ import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../util/PrependAction"
+import winston from "winston"
 
 export class Instance {
 
@@ -175,7 +176,7 @@ export class Instance {
       try {
         await instance.start()
       } catch (e) {
-        console.log(`could not connect to battlefield server with id ${instance.id}`, e.message)
+        winston.warn(`could not connect to battlefield server with id ${instance.id} message: ${e.message}`)
       }
     }
     return instance

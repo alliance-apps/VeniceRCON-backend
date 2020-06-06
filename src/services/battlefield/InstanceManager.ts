@@ -5,6 +5,7 @@ import { getRepository } from "typeorm"
 import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
 import { socketManager } from "@service/koa/socket"
+import winston from "winston"
 
 export class InstanceManager {
 
@@ -37,7 +38,7 @@ export class InstanceManager {
       await socketManager.checkAccess()
       return instance
     } catch (e) {
-      console.log("instance creation failed", e)
+      winston.error("instance creation failed", e)
       if (!entity) throw e
       if (instance instanceof Instance) {
         this.instances.push(instance)

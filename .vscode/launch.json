@@ -12,5 +12,11 @@
     "console": "integratedTerminal",
     "internalConsoleOptions": "neverOpen",
     "skipFiles": ["node_modules/**"]
+  },{
+    "name": "Debug Runtime",
+    "type": "node",
+    "request": "launch",
+    "args": ["${workspaceRoot}/src/index.ts"],
+    "runtimeArgs": ["-r", "ts-node/register"]
   }]
 }
