@@ -16,7 +16,10 @@ export class Plugin extends AbstractEntity<Plugin> {
   @ManyToOne(type => Instance, instance => instance.plugins)
   instance!: Promise<Instance>
 
-  @Column()
+  @Column({ default: false })
+  start!: boolean
+
+  @Column({ nullable: true })
   instanceId?: number
 
   @Column({ default: "{}" })

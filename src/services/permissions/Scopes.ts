@@ -4,7 +4,8 @@ export type Scopes =
   PlayerScope |
   BanScope |
   MapScope |
-  ReservedSlotScope
+  ReservedSlotScope |
+  PluginScope
 
 export enum InstanceScope {
   ACCESS = 0x01,
@@ -40,6 +41,11 @@ export enum ReservedSlotScope {
   ACCESS = 0x010000000000,
   CREATE = 0x020000000000,
   DELETE = 0x040000000000
+}
+
+export enum PluginScope {
+  ACCESS = 0x01000000000000,
+  MODIFY = 0x02000000000000
 }
 
 const translation = {
@@ -140,6 +146,11 @@ export function getScopesFromMask(mask: string) {
         reserved(ReservedSlotScope.ACCESS)
         reserved(ReservedSlotScope.CREATE)
         reserved(ReservedSlotScope.DELETE)
+        return
+      case "PLUGIN":
+        const plugin = validateScope(key, PluginScope)
+        plugin(PluginScope.ACCESS)
+        plugin(PluginScope.MODIFY)
         return
     }
   })

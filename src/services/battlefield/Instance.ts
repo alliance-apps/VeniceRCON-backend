@@ -7,6 +7,8 @@ import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../util/PrependAction"
 import winston from "winston"
 import { Connection } from "./Connection"
+import { Plugin } from "@service/plugin/libs/Plugin"
+import { pluginManager } from "@service/plugin"
 
 export class Instance {
 
@@ -16,6 +18,7 @@ export class Instance {
   private intervalModulo = -1
   private syncInterval: number
   private playerListAction: PrependAction<Battlefield.PlayerList>
+  plugins: Plugin[] = []
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
@@ -46,6 +49,21 @@ export class Instance {
   /** current instance id from the database */
   get id() {
     return this.state.id
+  }
+
+  /** reloads all plugins in this instance */
+  async reloadPlugins() {
+    await Promise.all(this.plugins.map(p => p.stop()))
+    this.plugins = await pluginManager.getPluginsFromInstance(this)
+  }
+
+  /**
+   * adds a new plugin to the instance
+   * @param plugin
+   */
+  addPlugin(plugin: Plugin) {
+    this.plugins.push(plugin)
+    return this
   }
 
   /** registers handler for events */
@@ -107,12 +125,13 @@ export class Instance {
   }
 
   /** starts the connection to the battlefield server */
-  start() {
+  async start() {
     return this.connection.start()
   }
 
   /** disconnects to the battlefield instance */
-  stop() {
+  async stop() {
+    await Promise.all(this.plugins.map(p => p.stop()))
     return this.connection.stop()
   }
 
@@ -154,7 +173,11 @@ export class Instance {
   /** creates a new instance from given properties */
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
-    const instance = new Instance({ battlefield, entity: props.entity })
+    const instance = new Instance({
+      battlefield,
+      entity: props.entity
+    })
+    await instance.reloadPlugins()
     if (props.entity.autostart) {
       try {
         await instance.start()

@@ -17,7 +17,13 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       serverinfo: props.serverinfo || {},
       players: {},
       maps: [],
-      version: InstanceContainer.Version.BF3,
+      version: (() => {
+        switch (props.entity.version) {
+          case "VU": return InstanceContainer.Version.VU
+          case "BF3":
+          default: return InstanceContainer.Version.BF3
+        }
+      })(),
       mapInfo: { index: 0, next: 0 }
     })
     this.id = props.entity.id

@@ -2,12 +2,13 @@ import winston from "winston"
 import { metaSchema } from "../schema"
 import { Instance } from "@service/battlefield/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
+import { Plugin } from "./Plugin"
 
 export class PluginBlueprint {
 
   readonly id: string
   meta: PluginBlueprint.Meta
-  private basePath: string
+  readonly basePath: string
 
   constructor(props: PluginBlueprint.Props) {
     this.id = props.id
@@ -45,8 +46,10 @@ export class PluginBlueprint {
    * @param instance
    */
   async createInstance(instance: Instance) {
-    const entity = this.getPluginEntity(instance, true)
-    throw new Error("Plugin#startInstance not impleneted")
+    const entity = await this.getPluginEntity(instance, true)
+    const plugin = new Plugin({ entity, blueprint: this })
+    instance.addPlugin(plugin)
+    return plugin
   }
 
   static validateMeta(meta: PluginBlueprint.Meta) {
@@ -65,7 +68,8 @@ export namespace PluginBlueprint {
     name: string
     description?: string
     version: string
-    backend: "JS"
+    backend: "BF3"|"VU"
+    language: "JS"
     entry: string
     vars?: PluginVariable[]
   }

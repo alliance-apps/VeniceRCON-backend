@@ -1,0 +1,18 @@
+@instanceId=1
+
+### retrieve a list of created plugins
+GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieve a list of useable plugins
+GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/available
+Authorization: Bearer {{$dotenv jwt}}
+
+### adds a new plugin to the server
+POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "identifier": "test"
+}

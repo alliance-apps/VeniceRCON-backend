@@ -3,11 +3,14 @@ import winston from "winston"
 import path from "path"
 import { parse } from "yaml"
 import { PluginBlueprint } from "./PluginBlueprint"
+import { Plugin as PluginEntity } from "@entity/Plugin"
+import { Plugin } from "./Plugin"
+import { Instance } from "@service/battlefield/Instance"
 
 export class PluginManager {
 
   private readonly pluginFolder: string
-  private plugins: Record<string, PluginBlueprint> = {}
+  private blueprints: Record<string, PluginBlueprint> = {}
 
   constructor(props: PluginManager.Props) {
     this.pluginFolder = props.path
@@ -25,9 +28,29 @@ export class PluginManager {
     await this.reloadPlugins()
   }
 
-  /** retrieves all available plugins */
-  getPlugins() {
-    return Object.values(this.plugins)
+  /** retrieves all available plugins for a specific backend */
+  getPlugins(backend: "BF3"|"VU"|"ALL" = "ALL") {
+    return Object.values(this.blueprints).filter(({ meta }) => {
+      switch (backend) {
+        default:
+        case "BF3": return meta.backend === "BF3"
+        case "ALL":
+        case "VU": return true
+      }
+    })
+  }
+
+  getBlueprint(name: string, backend?: "BF3"|"VU"|"ALL") {
+    return this.getPlugins(backend).find(bp => bp.id === name)
+  }
+
+  async getPluginsFromInstance(instance: Instance): Promise<Plugin[]> {
+    const plugins = await PluginEntity.find({ instanceId: instance.id })
+    return (await Promise.all(plugins.map(async entity => {
+      const blueprint = this.getBlueprint(entity.name, "ALL")
+      if (!blueprint) return undefined
+      return new Plugin({ entity, blueprint })
+    }))).filter(p => p !== undefined) as Plugin[]
   }
 
   private async reloadPlugins() {
@@ -43,10 +66,10 @@ export class PluginManager {
         winston.error(e)
         continue
       }
-      const current = this.plugins[name]
+      const current = this.blueprints[name]
       if (current) await current.stop()
-      delete this.plugins[name]
-      this.plugins[name] = new PluginBlueprint({ id: name, basePath: folder, meta })
+      delete this.blueprints[name]
+      this.blueprints[name] = new PluginBlueprint({ id: name, basePath: folder, meta })
     }
   }
 }
