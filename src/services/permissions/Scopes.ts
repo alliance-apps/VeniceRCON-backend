@@ -3,7 +3,8 @@ export type Scopes =
   InstanceUserScope |
   PlayerScope |
   BanScope |
-  MapScope
+  MapScope |
+  ReservedSlotScope
 
 export enum InstanceScope {
   ACCESS = 0x01,
@@ -35,12 +36,19 @@ export enum MapScope {
   MANAGE = 0x0200000000
 }
 
+export enum ReservedSlotScope {
+  ACCESS = 0x010000000000,
+  CREATE = 0x020000000000,
+  DELETE = 0x040000000000
+}
+
 const translation = {
   INSTANCE: InstanceScope,
   INSTANCEUSER: InstanceUserScope,
   PLAYER: PlayerScope,
   BAN: BanScope,
-  MAP: MapScope
+  MAP: MapScope,
+  RESERVEDSLOT: ReservedSlotScope
 }
 
 /**
@@ -126,6 +134,12 @@ export function getScopesFromMask(mask: string) {
         const map = validateScope(key, MapScope)
         map(MapScope.SWITCH)
         map(MapScope.MANAGE)
+        return
+      case "RESERVEDSLOT":
+        const reserved = validateScope(key, ReservedSlotScope)
+        reserved(ReservedSlotScope.ACCESS)
+        reserved(ReservedSlotScope.CREATE)
+        reserved(ReservedSlotScope.DELETE)
         return
     }
   })

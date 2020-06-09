@@ -1,0 +1,18 @@
+@instanceId=1
+
+### retrieve a list of reserved slots
+GET {{$dotenv url}}/api/instances/{{instanceId}}/reservedslot
+Authorization: Bearer {{$dotenv jwt}}
+
+### adds someone to the reserved slot list
+POST {{$dotenv url}}/api/instances/{{instanceId}}/reservedslot
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "name": "foobar"
+}
+
+### deletes someone from the reserved slot list
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/reservedslot/foobar
+Authorization: Bearer {{$dotenv jwt}}

@@ -11,6 +11,7 @@ declare module "koa" {
     permission?: Permission
     player?: Battlefield.Player
     map?: Battlefield.MapEntry
+    name?: string
   }
 
 }

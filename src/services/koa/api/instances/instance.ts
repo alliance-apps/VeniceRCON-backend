@@ -5,6 +5,7 @@ import userRouter from "./users"
 import playerRouter from "./players"
 import banRouter from "./bans"
 import mapRouter from "./maps"
+import reservedslotRouter from "./reservedslot"
 import { InstanceScope, InstanceUserScope, BanScope } from "@service/permissions/Scopes"
 
 const api = Router()
@@ -47,5 +48,6 @@ api.use("/players", playerRouter.middleware())
 api.use("/users", perm(InstanceUserScope.ACCESS), userRouter.middleware())
 api.use("/bans", perm(BanScope.ACCESS), banRouter.middleware())
 api.use("/maps", mapRouter.middleware())
+api.use("/reservedslot", reservedslotRouter.middleware())
 
 export default api
