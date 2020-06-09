@@ -17,6 +17,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       serverinfo: props.serverinfo || {},
       players: {},
       maps: [],
+      version: InstanceContainer.Version.BF3,
       mapInfo: { index: 0, next: 0 }
     })
     this.id = props.entity.id
@@ -139,6 +140,11 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
     return this
   }
 
+  async updateGameVersion(version: InstanceContainer.Version) {
+    this.update({ version })
+    await InstanceEntity.update({ id: this.id }, { version })
+  }
+
 }
 
 export namespace InstanceContainer {
@@ -150,6 +156,7 @@ export namespace InstanceContainer {
     serverinfo: Partial<Battlefield.ServerInfo>
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList
+    version: InstanceContainer.Version
     mapInfo: {
       index: number
       next: number
@@ -159,5 +166,10 @@ export namespace InstanceContainer {
   export interface IProps {
     entity: InstanceEntity
     serverinfo?: Battlefield.ServerInfo
+  }
+
+  export enum Version {
+    BF3 = "BF3",
+    VU = "VU"
   }
 }

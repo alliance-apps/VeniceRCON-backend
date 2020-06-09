@@ -9,6 +9,7 @@ import { config } from "@service/config"
 import { Permission } from "@entity/Permission"
 import { createToken } from "@service/koa/jwt"
 import { Invite } from "@entity/Invite"
+import { Plugin } from "@entity/Plugin"
 import { WinstonLogger } from "./WinstonLogger"
 import chalk from "chalk"
 
@@ -27,7 +28,8 @@ export async function connect() {
       User,
       Config,
       Permission,
-      Invite
+      Invite,
+      Plugin
     ]
   })
 

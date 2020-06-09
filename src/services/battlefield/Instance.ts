@@ -6,12 +6,12 @@ import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../util/PrependAction"
 import winston from "winston"
+import { Connection } from "./Connection"
 
 export class Instance {
 
-  readonly battlefield: Battlefield
-  private readonly state: InstanceContainer
-  private requestStop: boolean = false
+  readonly connection: Connection
+  readonly state: InstanceContainer
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
@@ -20,7 +20,10 @@ export class Instance {
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
     this.syncInterval = props.entity.syncInterval
-    this.battlefield = props.battlefield
+    this.connection = new Connection({
+      battlefield: props.battlefield,
+      instance: this
+    })
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
         const { slots } = this.getState().serverinfo
@@ -31,19 +34,21 @@ export class Instance {
       prependTimeout: this.syncInterval * 2
     })
     this.registerEvents()
-    this.battlefield.on("close", async () => {
-      this.stopUpdateInterval()
-      if (this.requestStop) return
-      await this.state.updateConnectionState(Instance.State.RECONNECTING)
-      await this.battlefield.reconnect()
-      this.state.updateConnectionState(Instance.State.CONNECTED)
-      this.startUpdateInterval()
-    })
+    this.battlefield.on("close", () => this.stopUpdateInterval())
+    this.battlefield.on("ready", () => this.startUpdateInterval())
   }
 
-  /**
-   * registers handler for events
-   */
+  /** battlefield rcon instance */
+  get battlefield() {
+    return this.connection.battlefield
+  }
+
+  /** current instance id from the database */
+  get id() {
+    return this.state.id
+  }
+
+  /** registers handler for events */
   private registerEvents() {
     this.battlefield.on("playerLeave", event => {
       this.playerListAction.prepend()
@@ -76,26 +81,23 @@ export class Instance {
     ])
   }
 
+  /** stopts the update interval */
   private stopUpdateInterval() {
     this.playerListAction.pause()
     clearInterval(this.interval)
   }
 
-  get id() {
-    return this.state.id
-  }
-
+  /** retrieves a copy of the current state */
   getState() {
     return this.state.getState()
   }
 
-  /**
-   * checks if the specified user has the specified scope for this instance
-   */
+  /** checks if the specified user has the specified scope for this instance */
   hasPermission(user: User|number, scope: Scopes) {
     return permissionManager.hasPermission({ instance: this.state.id, user, scope })
   }
 
+  /** runs the update tick */
   private async updateInterval() {
     this.intervalModulo++
     if (this.intervalModulo % 60 === 0) {
@@ -104,21 +106,14 @@ export class Instance {
     await this.serverInfo()
   }
 
-  /** connects to the battlefield instance */
-  async start() {
-    if (this.state.getState().state !== Instance.State.DISCONNECTED)
-      throw new Error("instance is not in state disconnected")
-    this.requestStop = false
-    this.state.updateConnectionState(Instance.State.CONNECTING)
-    try {
-      await this.battlefield.connect()
-    } catch (e) {
-      this.state.updateConnectionState(Instance.State.DISCONNECTED)
-      throw e
-    }
-    this.state.updateConnectionState(Instance.State.CONNECTED)
-    await this.startUpdateInterval()
-    return this
+  /** starts the connection to the battlefield server */
+  start() {
+    return this.connection.start()
+  }
+
+  /** disconnects to the battlefield instance */
+  stop() {
+    return this.connection.stop()
   }
 
   /** removes this instance */
@@ -126,19 +121,6 @@ export class Instance {
     await this.stop()
     this.battlefield.removeAllListeners()
     this.state.remove()
-  }
-
-  /** disconnects to the battlefield instance */
-  async stop() {
-    if (this.state.getState().state === Instance.State.DISCONNECTED) return this
-    if (this.state.getState().state !== Instance.State.CONNECTED)
-      throw new Error("instance is not in state connected")
-    this.requestStop = true
-    this.stopUpdateInterval()
-    this.state.updateConnectionState(Instance.State.DISCONNECTING)
-    await this.battlefield.quit()
-    this.state.updateConnectionState(Instance.State.DISCONNECTED)
-    return this
   }
 
   /** retrieves the current maplist */
@@ -169,6 +151,7 @@ export class Instance {
     return players
   }
 
+  /** creates a new instance from given properties */
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
     const instance = new Instance({ battlefield, entity: props.entity })

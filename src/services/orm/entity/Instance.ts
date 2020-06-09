@@ -3,6 +3,7 @@ import { AbstractEntity } from "./Abstract"
 import { Permission } from "./Permission"
 import { Invite } from "./Invite"
 import { config } from "@service/config"
+import { Plugin } from "./Plugin"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -24,6 +25,9 @@ export class Instance extends AbstractEntity<Instance> {
   @Column({ default: true })
   autostart!: boolean
 
+  @Column({ default: "bf3" })
+  version!: string
+
   @Column({ default: config.instance.syncInterval })
   syncInterval!: number
 
@@ -32,6 +36,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @OneToMany(type => Invite, invite => invite.instance)
   invites!: Promise<Invite[]>
+
+  @OneToMany(type => Plugin, plugin => plugin.instance)
+  plugins!: Promise<Plugin[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

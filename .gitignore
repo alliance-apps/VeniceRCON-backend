@@ -3,3 +3,4 @@ config.yaml
 *.db
 *.database
 .env
+/plugins
