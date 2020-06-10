@@ -66,6 +66,14 @@ export class Instance {
     return this
   }
 
+  /**
+   * retrieves a single plugin for this instance
+   * @param id id to find
+   */
+  getPlugin(id: number) {
+    return this.plugins.find(p => p.id === id)
+  }
+
   /** registers handler for events */
   private registerEvents() {
     this.battlefield.on("playerLeave", event => {

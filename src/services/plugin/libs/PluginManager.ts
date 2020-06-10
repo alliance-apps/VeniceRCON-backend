@@ -49,7 +49,7 @@ export class PluginManager {
     return (await Promise.all(plugins.map(async entity => {
       const blueprint = this.getBlueprint(entity.name, "ALL")
       if (!blueprint) return undefined
-      return new Plugin({ entity, blueprint })
+      return new Plugin({ instance, entity, blueprint })
     }))).filter(p => p !== undefined) as Plugin[]
   }
 

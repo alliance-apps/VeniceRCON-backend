@@ -47,7 +47,7 @@ export class PluginBlueprint {
    */
   async createInstance(instance: Instance) {
     const entity = await this.getPluginEntity(instance, true)
-    const plugin = new Plugin({ entity, blueprint: this })
+    const plugin = new Plugin({ instance, entity, blueprint: this })
     instance.addPlugin(plugin)
     return plugin
   }
