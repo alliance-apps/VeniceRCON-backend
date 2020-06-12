@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "jest --runInBand",
-    "start": "ts-node -r tsconfig-paths/register src/index.ts"
+    "start-tsnode": "ts-node -r tsconfig-paths/register src/index.ts",
+    "start": "tsc && node -r tsconfig-paths/register lib/index.js"
   },
   "author": "",
   "license": "ISC",

@@ -30,9 +30,9 @@ export class Plugin {
   private async run() {
     const file = path.join(this.blueprint.basePath, this.blueprint.meta.entry)
     const prefix = chalk.cyan(`[${this.meta.name}]`)
-    this.worker = new Worker(file, {
+    this.worker = new Worker(path.join(__dirname, "../plugin/worker.js"), {
       workerData: {
-        //instance: this.parent
+        path: file
       }
     })
     this.worker.on("online", () => winston.info(`${prefix} Started`))
@@ -41,16 +41,6 @@ export class Plugin {
       if (!this.worker) throw new Error("worker exited but plugin has no worker assigned")
       this.worker.removeAllListeners()
       winston.info(`${prefix} exited with code ${code}`)
-    })
-  }
-
-  private createContext() {
-    const prefix = `[${this.blueprint.meta.name}]`
-    return vm.createContext({
-      console: {
-        log: (...args: any[]) => winston.info(prefix, args),
-        error: (...args: any[]) => winston.warn(prefix, args),
-      }
     })
   }
 

@@ -1,6 +1,16 @@
 import winston from "winston"
+import { register } from "tsconfig-paths"
 
-(async () => {
+const cleanup = register({
+  baseUrl: __dirname.endsWith("src") ? "./src" : __dirname,
+  paths: {
+    "@entity/*": ["services/orm/entity/*"],
+    "@repository/*": ["services/orm/repository/*"],
+    "@service/*": ["services/*"]
+  }
+})
+
+;(async () => {
   require("./util/winston")
   winston.info("initializing config...")
   await require("@service/config").initialize()
@@ -13,4 +23,5 @@ import winston from "winston"
   winston.info("initializing instance manager...")
   await require("@service/battlefield").initialize()
   winston.info("initialization done!")
+  cleanup()
 })()
