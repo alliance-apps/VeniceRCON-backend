@@ -7,18 +7,19 @@ import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../util/PrependAction"
 import winston from "winston"
 import { Connection } from "./Connection"
-import { Plugin } from "@service/plugin/libs/Plugin"
 import { pluginManager } from "@service/plugin"
+import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
+import { PluginManager } from "@service/plugin/main/PluginManager"
 
 export class Instance {
 
   readonly connection: Connection
   readonly state: InstanceContainer
+  readonly plugin: InstancePlugin
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
   private playerListAction: PrependAction<Battlefield.PlayerList>
-  plugins: Plugin[] = []
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
@@ -26,6 +27,10 @@ export class Instance {
     this.connection = new Connection({
       battlefield: props.battlefield,
       instance: this
+    })
+    this.plugin = new InstancePlugin({
+      instance: this,
+      manager: props.pluginManager
     })
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
@@ -49,29 +54,6 @@ export class Instance {
   /** current instance id from the database */
   get id() {
     return this.state.id
-  }
-
-  /** reloads all plugins in this instance */
-  async reloadPlugins() {
-    await Promise.all(this.plugins.map(p => p.stop()))
-    this.plugins = await pluginManager.getPluginsFromInstance(this)
-  }
-
-  /**
-   * adds a new plugin to the instance
-   * @param plugin
-   */
-  addPlugin(plugin: Plugin) {
-    this.plugins.push(plugin)
-    return this
-  }
-
-  /**
-   * retrieves a single plugin for this instance
-   * @param id id to find
-   */
-  getPlugin(id: number) {
-    return this.plugins.find(p => p.id === id)
   }
 
   /** registers handler for events */
@@ -139,7 +121,7 @@ export class Instance {
 
   /** disconnects to the battlefield instance */
   async stop() {
-    await Promise.all(this.plugins.map(p => p.stop()))
+    await this.plugin.stop()
     return this.connection.stop()
   }
 
@@ -183,9 +165,9 @@ export class Instance {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
     const instance = new Instance({
       battlefield,
-      entity: props.entity
+      entity: props.entity,
+      pluginManager
     })
-    await instance.reloadPlugins()
     if (props.entity.autostart) {
       try {
         await instance.start()
@@ -204,6 +186,7 @@ export namespace Instance {
     battlefield: Battlefield,
     entity: InstanceEntity,
     serverinfo?: Battlefield.ServerInfo
+    pluginManager: PluginManager
   }
 
   export interface CreateProps {

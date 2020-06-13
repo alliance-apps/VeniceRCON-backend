@@ -3,26 +3,23 @@ import winston from "winston"
 import path from "path"
 import { parse } from "yaml"
 import { PluginBlueprint } from "./PluginBlueprint"
-import { Plugin as PluginEntity } from "@entity/Plugin"
-import { Plugin } from "./Plugin"
-import { Instance } from "@service/battlefield/Instance"
 
 export class PluginManager {
 
-  private readonly pluginFolder: string
+  readonly baseDir: string
   private blueprints: Record<string, PluginBlueprint> = {}
 
   constructor(props: PluginManager.Props) {
-    this.pluginFolder = props.path
+    this.baseDir = props.path
   }
 
   async init() {
     try {
-      const stat = await fs.stat(this.pluginFolder)
+      const stat = await fs.stat(this.baseDir)
       if (!stat.isDirectory)
-        return winston.error(`plugin folder is not a directory ${this.pluginFolder}`)
+        return winston.error(`plugin folder is not a directory ${this.baseDir}`)
     } catch (e) {
-      winston.info(`plugin folder not found ${this.pluginFolder}`)
+      winston.info(`plugin folder not found ${this.baseDir}`)
       return
     }
     await this.reloadPlugins()
@@ -44,19 +41,10 @@ export class PluginManager {
     return this.getPlugins(backend).find(bp => bp.id === name)
   }
 
-  async getPluginsFromInstance(instance: Instance): Promise<Plugin[]> {
-    const plugins = await PluginEntity.find({ instanceId: instance.id })
-    return (await Promise.all(plugins.map(async entity => {
-      const blueprint = this.getBlueprint(entity.name, "ALL")
-      if (!blueprint) return undefined
-      return new Plugin({ instance, entity, blueprint })
-    }))).filter(p => p !== undefined) as Plugin[]
-  }
-
   private async reloadPlugins() {
-    const plugins = await fs.readdir(this.pluginFolder)
+    const plugins = await fs.readdir(this.baseDir)
     for (const name of plugins) {
-      const folder = path.join(this.pluginFolder, name)
+      const folder = path.join(this.baseDir, name)
       winston.verbose(`loading plugin meta.yaml from folder ${folder}`)
       const meta = parse(await fs.readFile(path.join(folder, "meta.yaml"), "utf8"))
       try {

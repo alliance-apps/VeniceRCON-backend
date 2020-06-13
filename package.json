@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest --runInBand",
     "start-tsnode": "ts-node -r tsconfig-paths/register src/index.ts",
-    "start": "tsc && node -r tsconfig-paths/register lib/index.js"
+    "start": "tsc && node lib/index.js"
   },
   "author": "",
   "license": "ISC",

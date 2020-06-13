@@ -1,47 +1,26 @@
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { PluginBlueprint } from "./PluginBlueprint"
-import vm from "vm"
-import { Worker } from "worker_threads"
-import path from "path"
-import winston from "winston"
-import chalk from "chalk"
-import { Instance } from "@service/battlefield/Instance"
+import { PluginWorker } from "./PluginWorker"
 
 export class Plugin {
 
-  id: number
-  private parent: Instance
+  readonly id: number
+  readonly name: string
   private blueprint: PluginBlueprint
+  private worker: PluginWorker
   state: Plugin.State = Plugin.State.STOPPED
-  private worker: Worker|undefined
   private config: Record<string, any>
 
   constructor(props: Plugin.Props) {
-    this.parent = props.instance
     this.id = props.entity.id
+    this.name = props.entity.name
+    this.worker = props.worker
     this.blueprint = props.blueprint
     this.config = props.entity.getConfig()
   }
 
   get meta() {
     return this.blueprint.meta
-  }
-
-  private async run() {
-    const file = path.join(this.blueprint.basePath, this.blueprint.meta.entry)
-    const prefix = chalk.cyan(`[${this.meta.name}]`)
-    this.worker = new Worker(path.join(__dirname, "../plugin/worker.js"), {
-      workerData: {
-        path: file
-      }
-    })
-    this.worker.on("online", () => winston.info(`${prefix} Started`))
-    this.worker.on("error", err => winston.error(prefix, err))
-    this.worker.on("exit", code => {
-      if (!this.worker) throw new Error("worker exited but plugin has no worker assigned")
-      this.worker.removeAllListeners()
-      winston.info(`${prefix} exited with code ${code}`)
-    })
   }
 
   getConfig() {
@@ -55,17 +34,18 @@ export class Plugin {
   async start() {
     if (this.state === Plugin.State.STARTED) return
     this.state = Plugin.State.STARTED
-    await this.run()
+    this.worker.startPlugin(this)
   }
 
   async stop() {
     if (this.state === Plugin.State.STOPPED) return
-    throw new Error("not implemented")
+    this.worker.stopPlugin(this)
   }
 
   toJSON() {
     return {
       id: this.id,
+      name: this.name,
       state: this.state,
       meta: this.meta,
       config: this.getConfig()
@@ -76,7 +56,7 @@ export class Plugin {
 
 export namespace Plugin {
   export interface Props {
-    instance: Instance
+    worker: PluginWorker
     entity: PluginEntity
     blueprint: PluginBlueprint
   }

@@ -28,5 +28,6 @@ export interface Configuration {
   }
   instance: {
     syncInterval: number
+    plugins: { baseDir: string }
   }
 }

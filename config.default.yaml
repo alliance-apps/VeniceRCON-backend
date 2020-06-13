@@ -25,3 +25,5 @@ webserver:
 instance:
   #default time in ms of how many updates get sent to the rcon client
   syncInterval: 1000
+  plugins:
+    baseDir: "./plugins"

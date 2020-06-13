@@ -2,7 +2,7 @@ import { Instance } from "@service/battlefield/Instance"
 import { JsonWebToken } from "@service/koa/jwt"
 import { Permission } from "@entity/Permission"
 import { Battlefield } from "vu-rcon"
-import { Plugin } from "@service/plugin/libs/Plugin"
+import { Plugin } from "@service/plugin/main/Plugin"
 
 declare module "koa" {
 

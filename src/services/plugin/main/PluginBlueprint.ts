@@ -3,6 +3,7 @@ import { metaSchema } from "../schema"
 import { Instance } from "@service/battlefield/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Plugin } from "./Plugin"
+import { PluginWorker } from "./PluginWorker"
 
 export class PluginBlueprint {
 
@@ -45,11 +46,15 @@ export class PluginBlueprint {
    * creates a new plugin instance for this specific plugin
    * @param instance
    */
-  async createInstance(instance: Instance) {
+  async create(instance: Instance) {
     const entity = await this.getPluginEntity(instance, true)
-    const plugin = new Plugin({ instance, entity, blueprint: this })
-    instance.addPlugin(plugin)
+    const plugin = new Plugin({ worker: instance.plugin.worker, entity, blueprint: this })
     return plugin
+  }
+
+  /** creates a new plugin from an existing entity */
+  fromEntity(worker: PluginWorker, entity: PluginEntity) {
+    return new Plugin({ worker, entity, blueprint: this })
   }
 
   static validateMeta(meta: PluginBlueprint.Meta) {
