@@ -14,6 +14,9 @@ const timeout = setTimeout(() => {
 parentPort.once("message", port => {
   if (!(port instanceof MessagePort)) throw new Error(`expected MessagePort but got ${port}`)
   clearTimeout(timeout)
-  const messages = new Messenger({ port })
+  const messenger = new Messenger({ port })
+  messenger.on("message", ({ message }) => {
+    message.done()
+  })
 })
 parentPort.postMessage("ready")

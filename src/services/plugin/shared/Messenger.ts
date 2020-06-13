@@ -1,75 +1,110 @@
 import { MessageChannel, MessagePort } from "worker_threads"
-import winston from "winston"
+import { EventEmitter } from "events"
+import { Message } from "./Message"
 
-export class Messenger {
-  private ackId: number = 0
-  private acks: Record<number, any> = {}
+export interface Messenger {
+  on(event: "message", cb: (event: { message: Message }) => void): this
+}
+
+export class Messenger extends EventEmitter {
+  private id: number = 0
+  private acks: Record<number, Messenger.AcknowledgeItem> = {}
   private port: MessagePort
-  private promise: Messenger.Ready
+  private resolver: Messenger.Ready
 
   constructor(props: Messenger.Props) {
+    super()
     this.port = props.port
     this.port.on("message", this.onData.bind(this))
-    if (props.ready && props.reject) {
-      const ready: Partial<Messenger.Ready> = { resolved: false }
-      ready.ready = new Promise((fulfill, reject) => {
-        ready.fulfill = fulfill
-        ready.reject = reject
+    const { ready } = props
+    if (ready) {
+      const resolver: Partial<Messenger.Ready> = {}
+      resolver.ready = new Promise((fulfill, reject) => {
+        resolver.fulfill = fulfill
+        resolver.reject = reject
       })
-      this.promise = ready as Messenger.Ready
+      resolver.ready.then(() => ready()).catch(err => ready(err))
+      this.resolver = resolver as Messenger.Ready
       setTimeout(() => {
-        if (this.promise.resolved) return
-        this.promise.resolved = true
-        this.promise.reject!(new Error("timeout while creating message port"))
+        if (this.resolver.resolved) return
+        this.resolver.resolved = true
+        this.resolver.reject!(new Error("timeout while creating message port"))
       }, 1000)
     } else {
-      this.promise = { resolved: true, ready: Promise.resolve() }
+      this.resolver = { resolved: true, ready: Promise.resolve() }
       this.port.postMessage({ type: Messenger.MessageType.READY })
     }
   }
 
-  send<T = any>(action: string, data: T) {
-    return this.post(<Messenger.DataMessage>{
+  send<T = any>(action: string, data: T, timeout: number = 1000) {
+    const ack = this.createAcknowledgeItem(timeout)
+    this.post(<Messenger.DataMessage>{
       type: Messenger.MessageType.DATA,
+      id: ack.id,
       action,
       data
     })
+    return ack.promise
   }
 
-  private onData(data: Messenger.Message) {
-    switch (data.type) {
-      case Messenger.MessageType.READY:
-        if (this.promise.resolved)
-          throw new Error("received ready event twice")
-        if (!this.promise.fulfill)
-          throw new Error("this messengers has no fulfill")
-        this.promise.resolved = true
-        return this.promise.fulfill()
-      case Messenger.MessageType.ACK:
-        const { ackId } = data
-        if (!this.acks[ackId])
-          throw new Error(`received unknown acknowledge ${ackId} for action ${data.action}`)
-        clearTimeout(this.acks[ackId])
-        return delete this.acks[ackId]
+  sendAck(id: number, data?: any) {
+    return this.post(<Messenger.AckMessage>{ type: Messenger.MessageType.ACK, id, data })
+  }
+
+  private onData(ev: Messenger.Message) {
+    switch (ev.type) {
+      case Messenger.MessageType.READY: return this.handleReady()
+      case Messenger.MessageType.ACK: return this.handleAck(ev)
+      case Messenger.MessageType.DATA:
+        return this.emit("message", {
+          message: new Message({ messenger: this, message: ev })
+        })
+
     }
   }
 
-  private async post(data: Omit<Messenger.Message, "ackId">, timeout: number = 500) {
-    await this.promise.ready
-    const id = this.ackId++
-    this.acks[id] = setTimeout(() => {
-      winston.warn(`no acknowledge for message id ${id} received (action: ${data.action})`)
-    }, timeout)
-    return this.port.postMessage({ ...data, id })
+  private async post(data: Messenger.Message) {
+    await this.resolver.ready
+    this.port.postMessage({ ...data })
   }
 
-  static create(sendPort: (port: MessagePort) => void, timeout: number = 1000) {
+  /** handles the ready message */
+  private handleReady() {
+    if (this.resolver.resolved)
+      throw new Error("received ready event twice")
+    if (!this.resolver.fulfill)
+      throw new Error("this messengers has no fulfill")
+    this.resolver.resolved = true
+    return this.resolver.fulfill()
+  }
+
+  /** handles an incoming acknowledge message */
+  private handleAck(ev: Messenger.AckMessage) {
+    const { id } = ev
+    if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id} for action ${ev.action}`)
+    clearTimeout(this.acks[id].timeout)
+    this.acks[id].fulfill(ev.data)
+    return delete this.acks[id]
+  }
+
+  private createAcknowledgeItem(timeout: number): Messenger.AcknowledgeItem {
+    const id = this.id++
+    const item: Partial<Messenger.AcknowledgeItem> = { id }
+    item.promise = new Promise((fulfill, reject) => {
+      item.fulfill = fulfill
+      item.reject = reject
+      item.timeout = setTimeout(() => reject(new Error(`message timeout for id ${id}`)), timeout)
+    })
+    this.acks[id] = item as Messenger.AcknowledgeItem
+    return item as Messenger.AcknowledgeItem
+  }
+
+  static create(sendPort: (port: MessagePort) => void) {
     const promise = new Promise<Messenger>((fulfill, reject) => {
       const { port1, port2 } = new MessageChannel()
       const messenger: Messenger = new Messenger({
         port: port1,
-        ready: () => fulfill(messenger),
-        reject
+        ready: (err) =>  err ? reject(err) : fulfill(messenger)
       })
       sendPort(port2)
     })
@@ -82,8 +117,7 @@ export namespace Messenger {
 
   export interface Props {
     port: MessagePort
-    ready?: () => void
-    reject?: (err: Error) => void
+    ready?: (err?: Error) => void
   }
 
   export interface Ready {
@@ -91,6 +125,14 @@ export namespace Messenger {
     ready: Promise<void>
     fulfill?: () => void
     reject?: (err: Error) => void
+  }
+
+  export interface AcknowledgeItem {
+    id: number
+    promise: Promise<any>
+    fulfill: (data: any) => void
+    reject: (err: Error) => void
+    timeout: any
   }
 
   export enum MessageType {
@@ -112,13 +154,15 @@ export namespace Messenger {
   export interface AckMessage {
     type: MessageType.ACK
     action: string
-    ackId: number
+    id: number
+    data: any
   }
 
   export interface DataMessage {
     type: MessageType.DATA
     action: string
     data: any
+    id: number
   }
 
 }
