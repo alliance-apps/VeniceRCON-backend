@@ -32,14 +32,14 @@ export class Plugin {
   }
 
   async start() {
-    if (this.state === Plugin.State.STARTED) return
+    if (this.state === Plugin.State.STARTED) return null
     this.state = Plugin.State.STARTED
-    await this.worker.startPlugin(this)
+    return this.worker.startPlugin(this)
   }
 
   async stop() {
-    if (this.state === Plugin.State.STOPPED) return
-    await this.worker.stopPlugin(this)
+    if (this.state === Plugin.State.STOPPED) return null
+    return await this.worker.stopPlugin(this)
   }
 
   toJSON() {

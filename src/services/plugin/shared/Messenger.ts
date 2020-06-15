@@ -3,7 +3,8 @@ import { EventEmitter } from "events"
 import { Message } from "./Message"
 
 export interface Messenger {
-  on(event: "message", cb: (event: { message: Message }) => void): this
+  on(event: "*", cb: (event: Messenger.Event) => void): this
+  on(event: string, cb: (event: any & { done: (data: any) => void}) => void): this
 }
 
 export class Messenger extends EventEmitter {
@@ -36,7 +37,8 @@ export class Messenger extends EventEmitter {
     }
   }
 
-  send<T = any>(action: string, data: T, timeout: number = 1000) {
+  /** send data */
+  send<T = any>(action: string, data: T, timeout: number = 2000) {
     const ack = this.createAcknowledgeItem(timeout)
     this.post(<Messenger.DataMessage>{
       type: Messenger.MessageType.DATA,
@@ -51,19 +53,17 @@ export class Messenger extends EventEmitter {
     return this.post(<Messenger.AckMessage>{ type: Messenger.MessageType.ACK, id, data })
   }
 
-  private onData(ev: Messenger.Message) {
+  /** receive data from the message port */
+  private onData(ev: Messenger.MessageData) {
     switch (ev.type) {
       case Messenger.MessageType.READY: return this.handleReady()
       case Messenger.MessageType.ACK: return this.handleAck(ev)
-      case Messenger.MessageType.DATA:
-        return this.emit("message", {
-          message: new Message({ messenger: this, message: ev })
-        })
-
+      case Messenger.MessageType.DATA: return this.handleMessage(ev)
     }
   }
 
-  private async post(data: Messenger.Message) {
+  /** send data to the other side */
+  private async post(data: Messenger.MessageData) {
     await this.resolver.ready
     this.port.postMessage({ ...data })
   }
@@ -87,6 +87,14 @@ export class Messenger extends EventEmitter {
     return delete this.acks[id]
   }
 
+  /** handles an incoming message */
+  private handleMessage(ev: Messenger.DataMessage) {
+    const message = new Message({ messenger: this, message: ev })
+    this.emit(ev.action, { message })
+    this.emit("*", {  message })
+  }
+
+  /** creates an acknowledgeable item */
   private createAcknowledgeItem(timeout: number): Messenger.AcknowledgeItem {
     const id = this.id++
     const item: Partial<Messenger.AcknowledgeItem> = { id }
@@ -99,6 +107,7 @@ export class Messenger extends EventEmitter {
     return item as Messenger.AcknowledgeItem
   }
 
+  /** creates a new messenger instance and sends the port via a given channel */
   static create(sendPort: (port: MessagePort) => void) {
     const promise = new Promise<Messenger>((fulfill, reject) => {
       const { port1, port2 } = new MessageChannel()
@@ -118,6 +127,10 @@ export namespace Messenger {
   export interface Props {
     port: MessagePort
     ready?: (err?: Error) => void
+  }
+
+  export interface Event<T = any> {
+    message: Message<T>
   }
 
   export interface Ready {
@@ -141,7 +154,7 @@ export namespace Messenger {
     READY = "READY"
   }
 
-  export type Message =
+  export type MessageData =
     AckMessage |
     DataMessage |
     ReadyMessage

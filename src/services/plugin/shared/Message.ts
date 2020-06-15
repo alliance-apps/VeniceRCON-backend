@@ -1,6 +1,6 @@
 import { Messenger } from "./Messenger"
 
-export class Message {
+export class Message<T = any> {
 
   private parent: Messenger
   private message: Messenger.DataMessage
@@ -18,7 +18,7 @@ export class Message {
     return this.message.action
   }
 
-  get data() {
+  get data(): T {
     return this.message.data
   }
 

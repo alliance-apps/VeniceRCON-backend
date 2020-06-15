@@ -6,7 +6,7 @@ import { PluginWorker } from "./PluginWorker"
 
 export class InstancePlugin {
 
-  private parent: Instance
+  readonly parent: Instance
   private manager: PluginManager
   private plugins: Plugin[] = []
   readonly worker: PluginWorker
