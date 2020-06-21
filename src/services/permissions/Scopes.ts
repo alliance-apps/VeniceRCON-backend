@@ -5,7 +5,8 @@ export type Scopes =
   BanScope |
   MapScope |
   ReservedSlotScope |
-  PluginScope
+  PluginScope |
+  VariableScope
 
 export enum InstanceScope {
   ACCESS = 0x01,
@@ -48,18 +49,22 @@ export enum PluginScope {
   MODIFY = 0x02000000000000
 }
 
+export enum VariableScope {
+  MODIFY_BF3 = 0x0100000000000000,
+  MODIFY_VU = 0x0200000000000000
+}
+
 const translation = {
   INSTANCE: InstanceScope,
   INSTANCEUSER: InstanceUserScope,
   PLAYER: PlayerScope,
   BAN: BanScope,
   MAP: MapScope,
-  RESERVEDSLOT: ReservedSlotScope
+  RESERVEDSLOT: ReservedSlotScope,
+  VARIABLE: VariableScope
 }
 
-/**
- * gets all available scope names
- */
+/** gets all available scope names */
 export function getScopeNames() {
   return Object.keys(translation).map((k: any) => {
     //@ts-ignore
@@ -151,6 +156,11 @@ export function getScopesFromMask(mask: string) {
         const plugin = validateScope(key, PluginScope)
         plugin(PluginScope.ACCESS)
         plugin(PluginScope.MODIFY)
+        return
+      case "VARIABLE":
+        const vars = validateScope(key, VariableScope)
+        vars(VariableScope.MODIFY_BF3)
+        vars(VariableScope.MODIFY_VU)
         return
     }
   })

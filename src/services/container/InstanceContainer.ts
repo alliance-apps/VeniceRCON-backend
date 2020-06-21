@@ -24,6 +24,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
           default: return InstanceContainer.Version.BF3
         }
       })(),
+      vars: {},
       mapInfo: { index: 0, next: 0 }
     })
     this.id = props.entity.id
@@ -50,6 +51,17 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
     const changes = this.update({ serverinfo })
     const change = changes.find(change => change[0] === "serverinfo.name")
     if (change) await this.updateEntity({ name: <string>change[1] })
+    return this
+  }
+
+  /**
+   * updates variables from the container
+   * @param namespace namespace to save variables under
+   * @param entries entries to save
+   */
+  updateVars(namespace: string, entries: Record<string, any>) {
+    const { vars } = this.getState()
+    this.update({ vars: { ...vars, [namespace]: entries } })
     return this
   }
 
@@ -163,6 +175,7 @@ export namespace InstanceContainer {
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList
     version: InstanceContainer.Version
+    vars: Record<string, Record<string, any>>
     mapInfo: {
       index: number
       next: number

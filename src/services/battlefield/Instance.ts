@@ -108,8 +108,14 @@ export class Instance {
   /** runs the update tick */
   private async updateInterval() {
     this.intervalModulo++
-    if (this.intervalModulo % 60 === 0) {
-      this.mapList()
+    if (this.intervalModulo % 100 === 0) {
+      const updates = [
+        this.mapList(),
+        this.getDefaultVariables()
+      ]
+      if (this.getState().version === InstanceContainer.Version.VU)
+        updates.push(this.getVuVariables())
+      await Promise.all(updates)
     }
     await this.serverInfo()
   }
@@ -151,6 +157,53 @@ export class Instance {
     const info = await this.battlefield.serverInfo()
     this.state.updateServerInfo(info)
     return info
+  }
+
+  private async getDefaultVariables() {
+    const all = [
+      "ranked", "serverName", "autoBalance",
+      "friendlyFire", "maxPlayers", "serverDescription",
+      "serverMessage", "killCam", "miniMap",
+      "hud", "3dSpotting", "miniMapSpotting",
+      "nametag", "3pCam", "regenerateHealth",
+      "teamKillCountForKick", "teamKillValueForKick", "teamKillValueIncrease",
+      "teamKillValueDecreasePerSecond", "teamKillKickForBan", "idleTimeout",
+      "idleBanRounds", "roundStartPlayerCount", "roundRestartPlayerCount",
+      "roundLockdownCountdown", "vehicleSpawnAllowed", "vehicleSpawnDelay",
+      "soldierHealth", "playerRespawnTime", "playerManDownTime", "bulletDamage",
+      "gameModeCounter", "onlySquadLeaderSpawn", "unlockMode",
+      "premiumStatus", "gunMasterWeaponsPreset"
+    ]
+    const ranked = ["gamePassword"]
+    let result = Object.fromEntries(
+      await Promise.all(all.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+    )
+    if (result.ranked) {
+      result.gamePassword = false
+    } else {
+      result = {
+        ...result,
+        ...await Promise.all(ranked.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+      }
+    }
+    this.state.updateVars("bf3", result)
+    return result
+  }
+
+  private async getVuVariables() {
+    const all = [
+      "DestructionEnabled", "SuppressionMultiplier",
+      "DesertingAllowed", "VehicleDisablingEnabled",
+      "HighPerformanceReplication", "SetTeamTicketCount",
+      "FrequencyMode", "SpectatorCount"
+    ]
+    const result = Object.fromEntries(
+      await Promise.all(
+        all.map(async key => [key, await this.connection.battlefield.var.get(key)])
+      )
+    )
+    this.state.updateVars("vu", result)
+    return result
   }
 
   /** retrieves all connected players */
