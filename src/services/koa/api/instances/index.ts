@@ -44,6 +44,7 @@ api.get("/", async ctx => {
 })
 
 api.param("instanceId", async (id, ctx, next) => {
+  if (isNaN(parseInt(id, 10))) return ctx.status = 400
   const instance = instanceManager.getInstanceById(parseInt(id, 10))
   if (!instance) return ctx.status = 404
   ctx.state.instance = instance

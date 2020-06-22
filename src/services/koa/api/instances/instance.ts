@@ -7,6 +7,7 @@ import banRouter from "./bans"
 import mapRouter from "./maps"
 import reservedslotRouter from "./reservedslot"
 import pluginRouter from "./plugins"
+import varRouter from "./vars"
 import { InstanceScope, InstanceUserScope, BanScope, PluginScope } from "@service/permissions/Scopes"
 
 const api = Router()
@@ -49,6 +50,7 @@ api.use("/players", playerRouter.middleware())
 api.use("/users", perm(InstanceUserScope.ACCESS), userRouter.middleware())
 api.use("/bans", perm(BanScope.ACCESS), banRouter.middleware())
 api.use("/maps", mapRouter.middleware())
+api.use("/vars", varRouter.middleware())
 api.use("/reservedslot", reservedslotRouter.middleware())
 api.use("/plugins", perm(PluginScope.ACCESS), pluginRouter.middleware())
 

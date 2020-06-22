@@ -59,9 +59,9 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * @param namespace namespace to save variables under
    * @param entries entries to save
    */
-  updateVars(namespace: string, entries: Record<string, any>) {
+  updateVars(entries: Record<string, any>) {
     const { vars } = this.getState()
-    this.update({ vars: { ...vars, [namespace]: entries } })
+    this.update({ vars: { ...vars, ...entries } })
     return this
   }
 
@@ -175,7 +175,7 @@ export namespace InstanceContainer {
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList
     version: InstanceContainer.Version
-    vars: Record<string, Record<string, any>>
+    vars: Record<string, string|number|boolean>
     mapInfo: {
       index: number
       next: number

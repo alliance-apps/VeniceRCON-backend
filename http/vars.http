@@ -1,0 +1,14 @@
+@id=1
+
+### lists all available variables
+GET {{$dotenv url}}/api/instances/{{id}}/vars
+Authorization: Bearer {{$dotenv jwt}}
+
+### updates a single variable
+PATCH {{$dotenv url}}/api/instances/{{id}}/vars
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "serverDescription": "Hello World!"
+}

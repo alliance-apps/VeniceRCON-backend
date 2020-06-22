@@ -10,6 +10,7 @@ import { Connection } from "./Connection"
 import { pluginManager } from "@service/plugin"
 import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
 import { PluginManager } from "@service/plugin/main/PluginManager"
+import { Variable } from "vu-rcon/lib/Variable"
 
 export class Instance {
 
@@ -138,6 +139,21 @@ export class Instance {
     this.state.remove()
   }
 
+  async updateVariable(key: string, value: any) {
+    let val: any
+    let varStore: Variable<any>
+    if (Instance.VAR_SETTER_BF3.includes(key)) {
+      varStore = this.battlefield.var
+    } else if (Instance.VAR_SETTER_VU.includes(key)) {
+      varStore = this.battlefield.vu
+    } else {
+      throw new Error(`unknown variable ${key}`)
+    }
+    await varStore.set(key, value)
+    val = await varStore.get(key)
+    return this.state.updateVars({ [key]: val })
+  }
+
   /** retrieves the current maplist */
   async mapList() {
     const maps = await this.battlefield.getMaps()
@@ -159,50 +175,45 @@ export class Instance {
     return info
   }
 
+  /* gets the default battlefield variables */
   private async getDefaultVariables() {
-    const all = [
-      "ranked", "serverName", "autoBalance",
-      "friendlyFire", "maxPlayers", "serverDescription",
-      "serverMessage", "killCam", "miniMap",
-      "hud", "3dSpotting", "miniMapSpotting",
-      "nametag", "3pCam", "regenerateHealth",
-      "teamKillCountForKick", "teamKillValueForKick", "teamKillValueIncrease",
-      "teamKillValueDecreasePerSecond", "teamKillKickForBan", "idleTimeout",
-      "idleBanRounds", "roundStartPlayerCount", "roundRestartPlayerCount",
-      "roundLockdownCountdown", "vehicleSpawnAllowed", "vehicleSpawnDelay",
-      "soldierHealth", "playerRespawnTime", "playerManDownTime", "bulletDamage",
-      "gameModeCounter", "onlySquadLeaderSpawn", "unlockMode",
-      "premiumStatus", "gunMasterWeaponsPreset"
-    ]
-    const ranked = ["gamePassword"]
-    let result = Object.fromEntries(
-      await Promise.all(all.map(async key => [key, await this.connection.battlefield.var.get(key)]))
-    )
+    let result = {
+      ...Object.fromEntries(
+        await Promise.all(Instance.VAR_BF3.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+      ),
+      ...Object.fromEntries(
+        await Promise.all(Object.keys(Instance.VAR_BF3_OPTIONAL).map(async key => {
+          try {
+            return [key, await this.connection.battlefield.var.get(key)]
+          } catch (e) {
+            //@ts-ignore
+            return [key, Instance.VAR_BF3_OPTIONAL[key]]
+          }
+        }))
+      )
+    }
     if (result.ranked) {
-      result.gamePassword = false
+      result = {
+        ...result,
+        //@ts-ignore
+        ...Object.fromEntries(Object.keys(Instance.VAR_BF3_RANKED).map(k => [k, Instance.VAR_BF3_RANKED[k]]))
+      }
     } else {
       result = {
         ...result,
-        ...await Promise.all(ranked.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+        ...await Promise.all(Object.keys(Instance.VAR_BF3_RANKED).map(async key => [key, await this.connection.battlefield.var.get(key)]))
       }
     }
-    this.state.updateVars("bf3", result)
+    this.state.updateVars(result)
     return result
   }
 
+  /* gets the default battlefield variables */
   private async getVuVariables() {
-    const all = [
-      "DestructionEnabled", "SuppressionMultiplier",
-      "DesertingAllowed", "VehicleDisablingEnabled",
-      "HighPerformanceReplication", "SetTeamTicketCount",
-      "FrequencyMode", "SpectatorCount"
-    ]
     const result = Object.fromEntries(
-      await Promise.all(
-        all.map(async key => [key, await this.connection.battlefield.var.get(key)])
-      )
+      await Promise.all(Instance.VAR_VU.map(async key => [key, await this.connection.battlefield.var.get(key)]))
     )
-    this.state.updateVars("vu", result)
+    this.state.updateVars(result)
     return result
   }
 
@@ -254,5 +265,39 @@ export namespace Instance {
     DISCONNECTED = 4,
     RECONNECTING = 5
   }
+
+  export const VAR_BF3 = [
+    "serverName", "autoBalance",
+    "friendlyFire", "maxPlayers", "serverDescription",
+    "serverMessage", "killCam", "miniMap",
+    "hud", "3dSpotting", "miniMapSpotting",
+    "nametag", "3pCam", "regenerateHealth",
+    "teamKillCountForKick", "teamKillValueForKick", "teamKillValueIncrease",
+    "teamKillValueDecreasePerSecond", "teamKillKickForBan", "idleTimeout",
+    "idleBanRounds", "roundStartPlayerCount", "roundRestartPlayerCount",
+    "roundLockdownCountdown", "vehicleSpawnAllowed", "vehicleSpawnDelay",
+    "soldierHealth", "playerRespawnTime", "playerManDownTime", "bulletDamage",
+    "gameModeCounter", "onlySquadLeaderSpawn",
+    "premiumStatus", "gunMasterWeaponsPreset"
+  ]
+
+  export const VAR_VU = [
+    "DestructionEnabled", "SuppressionMultiplier",
+    "DesertingAllowed", "VehicleDisablingEnabled",
+    "HighPerformanceReplication", "SetTeamTicketCount",
+    "FrequencyMode", "SpectatorCount"
+  ]
+
+  export const VAR_BF3_OPTIONAL = {
+    ranked: false,
+    unlockMode: 0
+  }
+
+  export const VAR_BF3_RANKED =  {
+    gamePassword: false
+  }
+
+  export const VAR_SETTER_BF3 = [...VAR_BF3, ...Object.keys(VAR_BF3_OPTIONAL), ...Object.keys(VAR_BF3_RANKED)]
+  export const VAR_SETTER_VU = [...VAR_VU]
 
 }
