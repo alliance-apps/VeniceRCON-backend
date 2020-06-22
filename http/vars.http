@@ -4,6 +4,10 @@
 GET {{$dotenv url}}/api/instances/{{id}}/vars
 Authorization: Bearer {{$dotenv jwt}}
 
+### gets a list of variables which can be set or get
+GET {{$dotenv url}}/api/instances/{{id}}/vars/options
+Authorization: Bearer {{$dotenv jwt}}
+
 ### updates a single variable
 PATCH {{$dotenv url}}/api/instances/{{id}}/vars
 Authorization: Bearer {{$dotenv jwt}}
