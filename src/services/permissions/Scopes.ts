@@ -131,7 +131,7 @@ export function getScopesFromMask(mask: string) {
         user(InstanceUserScope.REMOVE)
         return
       case "BAN":
-        const ban = validateScope(key, PlayerScope)
+        const ban = validateScope(key, BanScope)
         ban(BanScope.ACCESS)
         ban(BanScope.CREATE)
         ban(BanScope.DELETE)
