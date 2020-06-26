@@ -1,8 +1,9 @@
 import { Socket as IOSocket } from "socket.io"
 import { instanceManager } from "@service/battlefield"
-import { InstanceScope } from "@service/permissions/Scopes"
+import { InstanceScope, Scopes } from "@service/permissions/Scopes"
 import { Instance } from "@service/battlefield/Instance"
 import { SocketManager } from "./SocketManager"
+import { permissionManager } from "@service/permissions"
 
 export class Socket {
 
@@ -45,7 +46,7 @@ export class Socket {
     this.instances.push(id)
     this.socket.join(SocketManager.getInstanceRoomName(id), () => {
       this.socket.emit(SocketManager.INSTANCE.ADD, {
-        state: instanceManager.getInstanceById(id).getState()
+        state: instanceManager.getInstanceById(id).state.get()
       })
     })
   }
@@ -60,6 +61,17 @@ export class Socket {
     const name = SocketManager.getInstanceRoomName(id)
     this.socket.emit(SocketManager.INSTANCE.REMOVE, { id })
     this.socket.leave(name)
+  }
+
+  /**
+   * checks if the socket has permission to a specific instance and scope
+   * @param instanceId instance to check
+   * @param scope scope the user should have
+   */
+  async hasPermission(instanceId: number, scope: Scopes) {
+    return permissionManager.hasPermission({
+      user: this.userId, instance: instanceId, scope
+    })
   }
 
 

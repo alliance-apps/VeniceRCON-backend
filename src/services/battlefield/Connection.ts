@@ -24,7 +24,7 @@ export class Connection {
 
   /** connects to the battlefield instance */
   async start() {
-    if (this.state.getState().state !== Instance.State.DISCONNECTED)
+    if (this.state.get("state") !== Instance.State.DISCONNECTED)
       throw new Error("instance is not in state disconnected")
     this.requestStop = false
     this.state.updateConnectionState(Instance.State.CONNECTING)
@@ -45,8 +45,8 @@ export class Connection {
   }
 
   async stop() {
-    if (this.state.getState().state === Instance.State.DISCONNECTED) return this
-    if (this.state.getState().state !== Instance.State.CONNECTED)
+    if (this.state.get("state") === Instance.State.DISCONNECTED) return this
+    if (this.state.get("state") !== Instance.State.CONNECTED)
       throw new Error("instance is not in state connected")
     this.requestStop = true
     this.state.updateConnectionState(Instance.State.DISCONNECTING)

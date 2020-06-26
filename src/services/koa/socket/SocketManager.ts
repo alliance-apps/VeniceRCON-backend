@@ -1,5 +1,6 @@
 import { Socket } from "./Socket"
 import io from "socket.io"
+import { Scopes } from "@service/permissions/Scopes"
 
 export class SocketManager {
 
@@ -47,6 +48,15 @@ export class SocketManager {
    */
   getSocketsByUserId(userId: number) {
     return this.sockets.filter(s => s.userId === userId)
+  }
+
+  /** retrieves all sockets which has a specific permission scope for an instance */
+  async getSocketsWithPermission(instanceId: number, scope: Scopes) {
+    const sockets: Socket[] = []
+    await Promise.all(sockets.map(async s => {
+      if (s.hasPermission(instanceId, scope)) sockets.push(s)
+    }))
+    return sockets
   }
 
   static getInstanceRoomName(id: number) {

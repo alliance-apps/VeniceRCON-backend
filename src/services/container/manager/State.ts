@@ -8,8 +8,10 @@ export class State<T extends State.Type> {
     this.state = props
   }
 
-  getState(): T {
-    return <any>State.deepCopy(this.state)
+  get(key?: never): T
+  get<Y extends keyof T>(key: Y): T[Y]
+  get<Y extends keyof T>(key?: Y): T|T[Y] {
+    return State.deepCopy(key ? this.state[key] : this.state)
   }
 
   update(props: State.DeepPartial<T>) {
@@ -36,21 +38,24 @@ export class State<T extends State.Type> {
     return paths
   }
 
-  /**
-   * copies an object in depth
-   */
-  static deepCopy<T extends State.Type, Y extends State.DeepPartial<T>>(obj: T): Y {
-    const copy: Y = <any>{}
-    Object.keys(obj).forEach((k: keyof T & keyof Y) => {
-      const value = obj[k]
+  /** copies an object in depth */
+  static deepCopy<T>(obj: T): T {
+    const copy: Partial<T> = <any>{}
+    if (Array.isArray(obj)) return (obj as unknown[]).map(v => State.deepCopy(v)) as any
+    if ((typeof obj !== "object" || obj === null) && !Array.isArray(obj)) return obj
+    Object.keys(obj).forEach(k => {
+      const value = obj[k as keyof T]
       if (typeof value === "object") {
         //@ts-ignore
-        copy[k] = Array.isArray(value) ? [...value] : this.deepCopy(value)
+        copy[k as keyof T] =
+          Array.isArray(value) ?
+          value.map(v => State.deepCopy(v)) :
+          State.deepCopy(value)
       } else {
-        copy[k] = <any>value
+        copy[k as keyof T] = <any>value
       }
     })
-    return copy
+    return copy as T
   }
 
   static updateDeep<

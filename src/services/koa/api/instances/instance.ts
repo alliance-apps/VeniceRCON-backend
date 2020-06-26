@@ -24,7 +24,7 @@ api.delete("/", perm(InstanceScope.DELETE), async ctx => {
 })
 
 api.get("/", async ctx => {
-  ctx.body = ctx.state.instance!.getState()
+  ctx.body = ctx.state.instance!.state.get()
 })
 
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {

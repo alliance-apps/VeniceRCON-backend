@@ -2,6 +2,8 @@ import "reflect-metadata"
 import { randomBytes } from "crypto"
 import { createConnection, Connection } from "typeorm"
 import winston from "winston"
+import { WinstonLogger } from "./WinstonLogger"
+import chalk from "chalk"
 import { Instance } from "@entity/Instance"
 import { User } from "@entity/User"
 import { Config } from "@entity/Config"
@@ -10,8 +12,8 @@ import { Permission } from "@entity/Permission"
 import { createToken } from "@service/koa/jwt"
 import { Invite } from "@entity/Invite"
 import { Plugin } from "@entity/Plugin"
-import { WinstonLogger } from "./WinstonLogger"
-import chalk from "chalk"
+import { Player } from "@entity/Player"
+import { ChatMessage } from "@entity/ChatMessage"
 
 export let connection: Connection
 
@@ -29,7 +31,9 @@ export async function connect() {
       Config,
       Permission,
       Invite,
-      Plugin
+      Plugin,
+      Player,
+      ChatMessage
     ]
   })
 

@@ -4,6 +4,7 @@ import { Permission } from "./Permission"
 import { Invite } from "./Invite"
 import { config } from "@service/config"
 import { Plugin } from "./Plugin"
+import { ChatMessage } from "./ChatMessage"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -39,6 +40,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @OneToMany(type => Plugin, plugin => plugin.instance)
   plugins!: Promise<Plugin[]>
+
+  @OneToMany(type => ChatMessage, msg => msg.instance)
+  messages!: Promise<ChatMessage[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

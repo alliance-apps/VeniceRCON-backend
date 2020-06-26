@@ -11,6 +11,8 @@ import { pluginManager } from "@service/plugin"
 import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
 import { PluginManager } from "@service/plugin/main/PluginManager"
 import { Variable } from "vu-rcon/lib/Variable"
+import { Player } from "@entity/Player"
+import { StreamingContainer } from "@service/container/manager/StreamingContainer"
 
 export class Instance {
 
@@ -35,7 +37,7 @@ export class Instance {
     })
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
-        const { slots } = this.getState().serverinfo
+        const { slots } = this.state.get("serverinfo")
         return Boolean(slots && slots > 0)
       },
       execute: () => this.playerList(),
@@ -96,9 +98,14 @@ export class Instance {
     clearInterval(this.interval)
   }
 
-  /** retrieves a copy of the current state */
-  getState() {
-    return this.state.getState()
+  async getPlayerByName(name: string) {
+    let player = await Player.findOne({ name })
+    if (!player) {
+      const p = Object.values(this.state.get("players")).find(p => p.name === name)
+      if (!p) return undefined
+      player = await Player.from(p)
+    }
+    return player
   }
 
   /** checks if the specified user has the specified scope for this instance */
@@ -114,7 +121,7 @@ export class Instance {
         this.mapList(),
         this.getDefaultVariables()
       ]
-      if (this.getState().version === InstanceContainer.Version.VU)
+      if (this.state.get("version") === InstanceContainer.Version.VU)
         updates.push(this.getVuVariables())
       await Promise.all(updates)
     }

@@ -11,10 +11,20 @@ export abstract class StreamingContainer<T extends State.Type> {
   }
 
   /** retrieves the current state */
-  getState(): StreamingContainer.StateDefaults & T {
+  get(key?: never): StreamingContainer.State<T>
+  get<Y extends keyof StreamingContainer.State<T>>(key: Y): StreamingContainer.State<T>[Y]
+  get<
+    Y extends keyof StreamingContainer.State<T>
+  >(key?: Y): StreamingContainer.State<T>|StreamingContainer.State<T>[Y]  {
+    if (key) {
+      //@ts-ignore
+      if (key === "id") return this.id
+      //@ts-ignore
+      return this.state.get(key)
+    }
     return {
       id: this.id,
-      ...this.state.getState()
+      ...this.state.get()
     }
   }
 
@@ -33,6 +43,8 @@ export abstract class StreamingContainer<T extends State.Type> {
 }
 
 export namespace StreamingContainer {
+
+  export type State<T extends State.Type> = T & StreamingContainer.StateDefaults
 
   export interface StateDefaults {
     id: number

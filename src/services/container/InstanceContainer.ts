@@ -60,7 +60,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * @param entries entries to save
    */
   updateVars(entries: Record<string, any>) {
-    const { vars } = this.getState()
+    const { vars } = this.get()
     this.update({ vars: { ...vars, ...entries } })
     return this
   }
@@ -89,7 +89,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * @param props props to change
    */
   updatePlayerPropsByGuid(guid: string, props: Partial<Battlefield.Player>) {
-    const player = this.getState().players[guid]
+    const player = this.get("players")[guid]
     if (!player) return false
     return this.updatePlayerProps(player, props)
   }
@@ -100,7 +100,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    * @param props props to change
    */
   updatePlayerPropsByName(name: string, props: Partial<Battlefield.Player>) {
-    const player = Object.values(this.getState().players).find(p => p.name === name)
+    const player = Object.values(this.get("players")).find(p => p.name === name)
     if (!player) return false
     return this.updatePlayerProps(player, props)
   }
@@ -117,7 +117,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
   updatePlayers(players: Battlefield.Player[]) {
     const obj: Record<string, Battlefield.Player|undefined> = Object.fromEntries(players.map(p => [p.guid, p]))
     const guids = Object.keys(obj)
-    Object.keys(this.getState().players).forEach(guid => {
+    Object.keys(this.get("players")).forEach(guid => {
       if (guids.includes(guid)) return
       obj[guid] = undefined
     })
@@ -127,7 +127,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
 
   /** removes a single player from the array */
   removePlayer(guid: string) {
-    const { players } = this.getState()
+    const players = this.get("players")
     this.update({
       players: Object.fromEntries(
         Object.keys(players)

@@ -27,7 +27,7 @@ api.route({
         password: ctx.request.body.password
       })
       ctx.status = 200
-      ctx.body = instance.getState()
+      ctx.body = instance.state.get()
     } catch (e) {
       ctx.status = 500
       ctx.body = { message: e.message }
@@ -40,7 +40,7 @@ api.get("/", async ctx => {
     ctx.state.token!.id,
     InstanceScope.ACCESS
   )
-  ctx.body = instances.map(instance => instance.getState())
+  ctx.body = instances.map(instance => instance.state.get())
 })
 
 api.param("instanceId", async (id, ctx, next) => {

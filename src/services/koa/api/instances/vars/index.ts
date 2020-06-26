@@ -7,16 +7,16 @@ const api = Router()
 const { Joi } = Router
 
 api.get("/", async ctx => {
-  ctx.body = ctx.state.instance!.getState().vars
+  ctx.body = ctx.state.instance!.state.get("vars")
 })
 
 api.get("/options", async ctx => {
   const getters = [...Instance.VAR_BF3]
   const setters = [...Instance.VAR_SETTER_BF3]
-  if (ctx.state.instance!.getState().version === InstanceContainer.Version.BF3) {
+  if (ctx.state.instance!.state.get("version") === InstanceContainer.Version.BF3) {
     getters.push(...Object.keys(Instance.VAR_BF3_OPTIONAL))
-    if (ctx.state.instance!.getState().vars.ranked) getters.push(...Object.keys(Instance.VAR_BF3_RANKED))
-  } else if (ctx.state.instance!.getState().version === InstanceContainer.Version.VU) {
+    if (ctx.state.instance!.state.get("vars").ranked) getters.push(...Object.keys(Instance.VAR_BF3_RANKED))
+  } else if (ctx.state.instance!.state.get("version") === InstanceContainer.Version.VU) {
     setters.push(...Instance.VAR_SETTER_VU)
   }
   ctx.body = { getters, setters }
@@ -40,7 +40,7 @@ api.route({
       await Promise.all(Object.keys(ctx.request.body!)
         .map(k => instance!.updateVariable(k, ctx.request.body[k]))
       )
-      ctx.body = instance!.getState().vars
+      ctx.body = instance!.state.get("vars")
     } catch (e) {
       ctx.status = 500
       ctx.body = e.message

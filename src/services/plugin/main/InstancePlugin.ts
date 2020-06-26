@@ -35,7 +35,7 @@ export class InstancePlugin {
   }
 
   private get backend() {
-    return this.parent.getState().version
+    return this.parent.state.get("version")
   }
 
   async stop() {
