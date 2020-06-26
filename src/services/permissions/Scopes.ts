@@ -30,7 +30,9 @@ export enum BanScope {
 
 export enum PlayerScope {
   KILL = 0x01000000,
-  KICK = 0x02000000
+  KICK = 0x02000000,
+  MESSAGE = 0x04000000,
+  MOVE = 0x8000000
 }
 
 export enum MapScope {

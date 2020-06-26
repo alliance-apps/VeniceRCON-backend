@@ -8,9 +8,10 @@ import mapRouter from "./maps"
 import reservedslotRouter from "./reservedslot"
 import pluginRouter from "./plugins"
 import varRouter from "./vars"
-import { InstanceScope, InstanceUserScope, BanScope, PluginScope } from "@service/permissions/Scopes"
+import { InstanceScope, InstanceUserScope, BanScope, PluginScope, PlayerScope } from "@service/permissions/Scopes"
 
 const api = Router()
+const { Joi } = Router
 
 api.delete("/", perm(InstanceScope.DELETE), async ctx => {
   try {
@@ -43,6 +44,46 @@ api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
   } catch (e) {
     ctx.status = 500
     ctx.body = { message: e.message }
+  }
+})
+
+api.route({
+  method: "POST",
+  path: "/message",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      subset: Joi.string().allow("squad", "team", "player", "all").optional(),
+      subsetId: Joi.string().optional(),
+      message: Joi.string(),
+      yell: Joi.boolean().default(false).optional(),
+      yellDuration: Joi.number().default(8).optional()
+    })
+  },
+  pre: perm(PlayerScope.MESSAGE),
+  handler: async ctx => {
+    const { battlefield } = ctx.state.instance!
+    const { message, subset, subsetId, yell, yellDuration } = ctx.request.body
+    try {
+      const sub = (() => {
+        switch (subset) {
+          case "squad": return ["squad", subsetId]
+          case "team": return ["team", subsetId]
+          case "player": return ["player", subsetId]
+          default:
+          case "all": return ["all"]
+        }
+      })()
+      if (yell) {
+        await battlefield.yell(message, yellDuration, sub)
+      } else {
+        await battlefield.say(message, sub)
+      }
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = { message: e.message }
+    }
   }
 })
 

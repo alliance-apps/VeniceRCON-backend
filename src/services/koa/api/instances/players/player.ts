@@ -94,5 +94,70 @@ api.route({
   }
 })
 
+api.route({
+  method: "POST",
+  path: "/message",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      subset: Joi.string().allow("squad", "team", "player").optional(),
+      message: Joi.string(),
+      yell: Joi.boolean().default(false).optional(),
+      yellDuration: Joi.number().default(8).optional()
+    })
+  },
+  pre: perm(PlayerScope.MESSAGE),
+  handler: async ctx => {
+    const { battlefield } = ctx.state.instance!
+    const { player } = ctx.state
+    const { message, subset, yell, yellDuration } = ctx.request.body
+    try {
+      const sub = (() => {
+        switch (subset) {
+          case "squad": return ["squad", `${player!.squadId}`]
+          case "team": return ["team", `${player!.teamId}`]
+          default:
+          case "player": return ["player", player!.name]
+        }
+      })()
+      if (yell) {
+        await battlefield.yell(message, yellDuration, sub)
+      } else {
+        await battlefield.say(message, sub)
+      }
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = { message: e.message }
+    }
+  }
+})
+
+api.route({
+  method: "POST",
+  path: "/move",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      teamId: Joi.number(),
+      squadId: Joi.number().default(0).optional(),
+      kill: Joi.boolean().default(false).optional()
+    })
+  },
+  pre: perm(PlayerScope.MOVE),
+  handler: async ctx => {
+    const { battlefield } = ctx.state.instance!
+    const { player } = ctx.state
+    const { squadId, teamId, kill} = ctx.request.body
+    try {
+      await battlefield.playerMove(player!.name, teamId, squadId, kill)
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = { message: e.message }
+    }
+  }
+})
+
 
 export default api
