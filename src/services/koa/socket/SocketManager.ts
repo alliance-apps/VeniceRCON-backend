@@ -2,12 +2,12 @@ import { Socket } from "./Socket"
 import io from "socket.io"
 import { SocketPool } from "./SocketPool"
 
-export class SocketManager {
+export class SocketManager extends SocketPool {
 
-  pool: SocketPool = new SocketPool()
   private io: io.Server
 
   constructor(server: io.Server) {
+    super()
     this.io = server
   }
 
@@ -15,11 +15,11 @@ export class SocketManager {
    * adds a new connected socket
    * @param socket
    */
-  add(socket: io.Socket) {
-    this.pool.add(new Socket({
+  connect(socket: io.Socket) {
+    this.add(new Socket({
       socket,
       userId: socket.request.user.user.id,
-      handleClose: socket => this.pool.remove(socket)
+      handleClose: socket => this.remove(socket)
     }))
   }
 
@@ -47,6 +47,7 @@ export namespace SocketManager {
     UPDATE = "INSTANCE#UPDATE",
     REMOVE = "INSTANCE#REMOVE",
     ADD = "INSTANCE#ADD",
+    CHAT = "INSTANCE#CHAT"
   }
 
   export enum SELF {

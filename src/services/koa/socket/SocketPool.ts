@@ -1,5 +1,6 @@
 import { Socket } from "./Socket"
 import { Scopes } from "@service/permissions/Scopes"
+import { ChatMessage } from "@entity/ChatMessage"
 
 export class SocketPool {
 
@@ -27,6 +28,10 @@ export class SocketPool {
 
   emitInstanceRemove(id: number) {
     this.sockets.forEach(s => s.removeInstance(id))
+  }
+
+  emitChatMessages(message: ChatMessage[]) {
+    this.sockets.forEach(s => s.emitChatMessages(message))
   }
 
   /** retrieves all connected sockets by a specific user id */

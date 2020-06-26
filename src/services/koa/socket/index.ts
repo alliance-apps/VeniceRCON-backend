@@ -23,7 +23,7 @@ export async function initialize(server: Server) {
   server.on("connection", async socket => {
     if (!socket.request.user) throw new Error("user not authenticated but came till connection")
     socket.emit("success")
-    socketManager.add(socket)
+    socketManager.connect(socket)
   })
 
 }

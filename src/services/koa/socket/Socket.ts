@@ -4,6 +4,7 @@ import { InstanceScope, Scopes } from "@service/permissions/Scopes"
 import { Instance } from "@service/battlefield/Instance"
 import { SocketManager } from "./SocketManager"
 import { permissionManager } from "@service/permissions"
+import { ChatMessage } from "@entity/ChatMessage"
 
 export class Socket {
 
@@ -52,10 +53,12 @@ export class Socket {
     const id = typeof instance === "number" ? instance : instance.id
     if (this.instances.includes(id)) return
     this.instances.push(id)
-    this.socket.join(SocketManager.getInstanceRoomName(id), () => {
+    this.socket.join(SocketManager.getInstanceRoomName(id), async () => {
+      const instance = instanceManager.getInstanceById(id)
       this.socket.emit(SocketManager.INSTANCE.ADD, {
-        state: instanceManager.getInstanceById(id).state.get()
+        state: instance.state.get()
       })
+      this.emitChatMessages(await instance.chat.getMessages())
     })
   }
 
@@ -68,6 +71,18 @@ export class Socket {
     const name = SocketManager.getInstanceRoomName(id)
     this.socket.emit(SocketManager.INSTANCE.REMOVE, { id })
     this.socket.leave(name)
+  }
+
+  /**
+   * chat message
+   * @param instanceId 
+   * @param scope 
+   */
+  async emitChatMessages(messages: ChatMessage[]) {
+    this.socket.emit(
+      SocketManager.INSTANCE.CHAT,
+      { messages: await Promise.all(messages.map(message => message.toJSON())) }
+    )
   }
 
   /**

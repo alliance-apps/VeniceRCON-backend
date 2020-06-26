@@ -117,7 +117,7 @@ export class PermissionManager {
   }
 
   private validateSocketAccess(user: UserEntity|number) {
-    return socketManager.pool
+    return socketManager
       .getSocketsByUserId(this.getUserId(user))
       .checkAccess()
   }

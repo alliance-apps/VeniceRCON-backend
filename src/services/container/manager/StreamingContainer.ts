@@ -37,7 +37,7 @@ export abstract class StreamingContainer<T extends State.Type> {
 
   /** emits a remove event */
   remove() {
-    socketManager.pool.subscribedTo(this.id).emitInstanceRemove(this.id)
+    socketManager.subscribedTo(this.id).emitInstanceRemove(this.id)
   }
 
 }

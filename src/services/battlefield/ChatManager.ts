@@ -11,7 +11,7 @@ export class ChatManager {
 
   constructor(props: ChatManager.Props) {
     this.parent = props.instance
-    this.registerEvent()
+    this.initialize()
   }
 
   private get id() {
@@ -32,9 +32,9 @@ export class ChatManager {
     from: number|Date = Date.now()
   ) {
     const date = from instanceof Date ? from : new Date(from)
-    const messages = this.messages.filter(msg => msg.created > date)
+    const messages = this.messages.filter(msg => msg.created < date)
     if (messages.length > count) return messages.slice(0, count)
-    if (messages.length === count) return messages
+    if (messages.length === count || this.messages.length < ChatManager.MESSAGECOUNT) return messages
     return ChatMessage.find({
       where: {
         created: MoreThan(date.getTime()),
@@ -44,12 +44,13 @@ export class ChatManager {
     })
   }
 
-  private addMessage(message: ChatMessage) {
+  private async addMessage(message: ChatMessage) {
     this.messages = [...this.messages, message].slice(ChatManager.MESSAGECOUNT * -1)
-    //socketManager.pool.subscribedTo(this.id)
+    socketManager.subscribedTo(this.id).emitChatMessages([message])
   }
 
-  private registerEvent() {
+  private async initialize() {
+    this.messages = await ChatMessage.find({ where: { instanceId: this.id }, take: ChatManager.MESSAGECOUNT })
     this.battlefield.on("chat", async ev => {
       let player: Player|undefined
       if (ev.player !== "server") {

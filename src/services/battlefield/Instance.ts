@@ -12,13 +12,14 @@ import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
 import { PluginManager } from "@service/plugin/main/PluginManager"
 import { Variable } from "vu-rcon/lib/Variable"
 import { Player } from "@entity/Player"
-import { StreamingContainer } from "@service/container/manager/StreamingContainer"
+import { ChatManager } from "./ChatManager"
 
 export class Instance {
 
   readonly connection: Connection
   readonly state: InstanceContainer
   readonly plugin: InstancePlugin
+  readonly chat: ChatManager
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
@@ -31,6 +32,7 @@ export class Instance {
       battlefield: props.battlefield,
       instance: this
     })
+    this.chat = new ChatManager({ instance: this })
     this.plugin = new InstancePlugin({
       instance: this,
       manager: props.pluginManager

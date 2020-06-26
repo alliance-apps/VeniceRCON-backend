@@ -37,6 +37,21 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
   @Column()
   subset!: string
 
+  async toJSON() {
+    const player = await this.player
+    return {
+      instance: this.instanceId,
+      name: this.displayName,
+      message: this.message,
+      subset: this.subset,
+      created: this.created,
+      player: player ? {
+        name: player.name,
+        guid: player.guid
+      } : undefined
+    }
+  }
+
   setPlayer(player: Player|number) {
     return this.setRelation("player", player)
   }

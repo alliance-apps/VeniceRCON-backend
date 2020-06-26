@@ -57,6 +57,7 @@
           delete states[event.id]
           update()
         })
+        socket.on("INSTANCE#CHAT", event => console.log("INSTANCE#CHAT", event))
         socket.on("INSTANCE#UPDATE", event => {
           event.changes.forEach(change => {
             if (change[0].startsWith("player")) console.log(change)
