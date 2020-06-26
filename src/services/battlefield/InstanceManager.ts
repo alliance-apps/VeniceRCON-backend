@@ -35,7 +35,7 @@ export class InstanceManager {
       entity = await InstanceEntity.from(props)
       instance = await Instance.from({ entity })
       this.instances.push(instance)
-      await socketManager.checkAccess()
+      await socketManager.pool.checkAccess()
       return instance
     } catch (e) {
       winston.error("instance creation failed", e)

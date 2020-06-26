@@ -1,0 +1,59 @@
+import { Socket } from "./Socket"
+import { Scopes } from "@service/permissions/Scopes"
+
+export class SocketPool {
+
+  private sockets: Socket[] = []
+
+  constructor(sockets?: Socket[]) {
+    if (sockets) this.sockets = sockets
+  }
+
+  /** adds a socket to the pool */
+  add(socket: Socket) {
+    this.sockets.push(socket)
+    return this
+  }
+
+  /** removes a socket from the pool */
+  remove(socket: Socket) {
+    this.sockets = this.sockets.filter(s => s !== socket)
+    return this
+  }
+
+  checkAccess() {
+    return Promise.all(this.sockets.map(s => s.checkAccess()))
+  }
+
+  emitInstanceRemove(id: number) {
+    this.sockets.forEach(s => s.removeInstance(id))
+  }
+
+  /** retrieves all connected sockets by a specific user id */
+  getSocketsByUserId(userId: number) {
+    return new SocketPool(this.sockets.filter(s => s.userId === userId))
+  }
+
+  subscribedTo(instanceId: number) {
+    return new SocketPool(this.sockets.filter(s => s.isSubscribedTo(instanceId)))
+  }
+
+  /** emits a message to all sockets in this pool */
+  emit(event: string, data: any) {
+    this.sockets.forEach(s => s.socket.emit(event, data))
+  }
+
+  /** retrieves all sockets which has a specific permission scope for an instance */
+  async getSocketsWithPermission(instanceId: number, scope: Scopes) {
+    const pool = new SocketPool()
+    await Promise.all(this.sockets.map(async s => {
+      if (await s.hasPermission(instanceId, scope)) pool.add(s)
+    }))
+    return pool
+  }
+
+}
+
+export namespace SocketPool {
+
+}

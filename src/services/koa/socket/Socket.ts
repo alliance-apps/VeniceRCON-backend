@@ -21,6 +21,14 @@ export class Socket {
     this.checkAccess()
   }
 
+  /**
+   * checks if a socket is subscribed to a specific instance
+   * @param instanceId instance to check
+   */
+  isSubscribedTo(instanceId: number) {
+    return this.instances.includes(instanceId)
+  }
+
   /** checks access to all instances the user has and (un)subscribes if needed */
   async checkAccess() {
     const instances = await instanceManager.getInstancesWithPermissions(this.userId, InstanceScope.ACCESS)
@@ -56,7 +64,6 @@ export class Socket {
    * @param id instance id to remove to user from
    */
   removeInstance(id: number) {
-    if (!this.instances.includes(id)) return
     this.instances = this.instances.filter(i => i !== id)
     const name = SocketManager.getInstanceRoomName(id)
     this.socket.emit(SocketManager.INSTANCE.REMOVE, { id })

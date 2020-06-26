@@ -1,10 +1,10 @@
 import { Socket } from "./Socket"
 import io from "socket.io"
-import { Scopes } from "@service/permissions/Scopes"
+import { SocketPool } from "./SocketPool"
 
 export class SocketManager {
 
-  sockets: Socket[] = []
+  pool: SocketPool = new SocketPool()
   private io: io.Server
 
   constructor(server: io.Server) {
@@ -16,15 +16,11 @@ export class SocketManager {
    * @param socket
    */
   add(socket: io.Socket) {
-    this.sockets.push(new Socket({
+    this.pool.add(new Socket({
       socket,
       userId: socket.request.user.user.id,
-      handleClose: (sock: Socket) => this.sockets = this.sockets.filter(s => s !== sock)
+      handleClose: socket => this.pool.remove(socket)
     }))
-  }
-
-  async checkAccess() {
-    await Promise.all(this.sockets.map(s => s.checkAccess()))
   }
 
   /**
@@ -36,27 +32,6 @@ export class SocketManager {
     this.io
       .to(SocketManager.getInstanceRoomName(id))
       .emit(SocketManager.INSTANCE.UPDATE, { id, changes })
-  }
-
-  emitInstanceRemove(id: number) {
-    this.sockets.forEach(s => s.removeInstance(id))
-  }
-
-  /**
-   * retrieves all connected sockets by a specific user id
-   * @param userId
-   */
-  getSocketsByUserId(userId: number) {
-    return this.sockets.filter(s => s.userId === userId)
-  }
-
-  /** retrieves all sockets which has a specific permission scope for an instance */
-  async getSocketsWithPermission(instanceId: number, scope: Scopes) {
-    const sockets: Socket[] = []
-    await Promise.all(sockets.map(async s => {
-      if (s.hasPermission(instanceId, scope)) sockets.push(s)
-    }))
-    return sockets
   }
 
   static getInstanceRoomName(id: number) {

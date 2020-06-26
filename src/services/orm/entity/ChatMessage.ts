@@ -50,6 +50,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
     const msg = new ChatMessage()
     msg.message = props.message
     msg.subset = props.subset
+    msg.displayName = props.displayName
     await msg.save()
     await Promise.all([
       props.player ? msg.setPlayer(props.player) : Promise.resolve(),
@@ -66,6 +67,7 @@ export namespace ChatMessage {
   export interface ICreate {
     instance: Instance|number
     player?: Player|number
+    displayName: string
     message: string
     subset: string
   }
