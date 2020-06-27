@@ -2,7 +2,6 @@ import { Instance } from "./Instance"
 import { Instance as InstanceEntity } from "@service/orm/entity/Instance"
 import { Battlefield } from "vu-rcon"
 import { getRepository } from "typeorm"
-import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
 import { socketManager } from "@service/koa/socket"
 import winston from "winston"
@@ -76,7 +75,7 @@ export class InstanceManager {
    * @param user user to check permissions for
    * @param scope scope to check
    */
-  async getInstancesWithPermissions(user: User|number, scope: Scopes) {
+  async getInstancesWithPermissions(user: User|number, scope: bigint) {
     //copy instances so if an instance gets added while checking permissions it wont fuck with the indexes
     const instances = [...this.instances]
     const allowed = await Promise.all(instances.map(instance => instance.hasPermission(user, scope)))

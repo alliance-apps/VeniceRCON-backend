@@ -11,6 +11,10 @@ Content-Type: application/json
 GET {{$dotenv url}}/api/auth/whoami
 Authorization: Bearer {{$dotenv jwt}}
 
+### gets information about the secondary token
+GET {{$dotenv url}}/api/auth/whoami
+Authorization: Bearer {{$dotenv jwt2}}
+
 ### creates a new user with a invite token
 POST {{$dotenv url}}/api/auth/register
 Content-Type: application/json

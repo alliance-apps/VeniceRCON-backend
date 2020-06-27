@@ -1,6 +1,6 @@
 import { Socket as IOSocket } from "socket.io"
 import { instanceManager } from "@service/battlefield"
-import { InstanceScope, Scopes } from "@service/permissions/Scopes"
+import { InstanceScope } from "@service/permissions/Scopes"
 import { Instance } from "@service/battlefield/Instance"
 import { SocketManager } from "./SocketManager"
 import { permissionManager } from "@service/permissions"
@@ -90,7 +90,7 @@ export class Socket {
    * @param instanceId instance to check
    * @param scope scope the user should have
    */
-  async hasPermission(instanceId: number, scope: Scopes) {
+  async hasPermission(instanceId: number, scope: bigint) {
     return permissionManager.hasPermission({
       user: this.userId, instance: instanceId, scope
     })

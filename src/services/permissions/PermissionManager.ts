@@ -86,7 +86,7 @@ export class PermissionManager {
   async addInstanceAccess(props: PermissionManager.AddInstanceAccess) {
     const instance = this.getInstanceId(props.instance)
     const user = this.getUserId(props.user)
-    const scopes: Scopes[] = props.scopes||[]
+    const scopes: bigint[] = props.scopes||[]
     if (!scopes.includes(InstanceScope.ACCESS)) scopes.push(InstanceScope.ACCESS)
     const perm = await this.createPermission({ instance, user, scopes })
     return perm
@@ -130,24 +130,24 @@ export namespace PermissionManager {
   export interface AddInstanceAccess {
     user: UserEntity|number
     instance: InstanceEntity|number
-    scopes: Scopes[]
+    scopes: bigint[]
   }
 
   export interface AddGlobalAccess {
     user: UserEntity|number
-    scopes?: Scopes[]
+    scopes?: bigint[]
   }
 
   export interface HasPermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
-    scope: Scopes
+    scope: bigint
   }
 
   export interface UpdatePermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
-    scopes: Scopes[]
+    scopes: bigint[]
   }
 
 }

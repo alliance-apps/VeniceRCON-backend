@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance as InstanceEntity } from "./Instance"
 import { User as UserEntity } from "./User"
-import { Scopes, getScopesFromMask, hasPermission } from "@service/permissions/Scopes"
+import { getScopesFromMask, hasPermission } from "@service/permissions/Scopes"
 
 @Entity()
 export class Permission extends AbstractEntity<Permission> {
@@ -46,19 +46,19 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** sets multiple permissions */
-  async setPermissions(perms: Scopes[], save: boolean = true) {
+  async setPermissions(perms: bigint[], save: boolean = true) {
     perms.forEach(p => this.setPermission(p, false))
     if (save) return this.save({ reload: true })
     return this
   }
 
   /** sets a specific permission */
-  setPermission(perm: Scopes, save: boolean = true) {
-    const nodes = this.mask.split(":").map(hex => parseInt(hex, 16))
+  setPermission(perm: bigint, save: boolean = true) {
+    const nodes = this.mask.split(":").map(hex => BigInt(hex))
     let index = 0
-    while (perm > 255) {
+    while (perm > 255n) {
       index++
-      perm = perm >>> 8
+      perm = perm >> 8n
     }
     if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
     nodes[index] |= perm
@@ -68,19 +68,19 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** removes multiple permissions */
-  detPermissions(perms: Scopes[], save: boolean = true) {
+  detPermissions(perms: bigint[], save: boolean = true) {
     perms.forEach(p => this.setPermission(p, false))
     if (save) return this.save({ reload: true })
     return this
   }
 
   /** removes a specific permission */
-  delPermission(perm: Scopes, save: boolean = true) {
-    const nodes = this.mask.split(":").map(hex => parseInt(hex, 16))
+  delPermission(perm: bigint, save: boolean = true) {
+    const nodes = this.mask.split(":").map(hex => BigInt(hex))
     let index = 0
-    while (perm > 255) {
+    while (perm > 255n) {
       index++
-      perm = perm >>> 8
+      perm = perm >> 8n
     }
     if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
     nodes[index] &= ~perm
@@ -90,7 +90,7 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** checks if there is a permission set */
-  hasPermission(perm: Scopes) {
+  hasPermission(perm: bigint) {
     return hasPermission(this.mask, perm)
   }
 
@@ -122,7 +122,7 @@ export namespace Permission {
   export interface ICreateBase {
     user: UserEntity|number
     mask?: string
-    scopes?: Scopes[]
+    scopes?: bigint[]
   }
 
   export interface ICreateRoot extends ICreateBase {

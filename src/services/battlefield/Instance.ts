@@ -1,7 +1,6 @@
 import { Battlefield } from "vu-rcon"
 import { Instance as InstanceEntity } from "@service/orm/entity/Instance"
 import { InstanceContainer } from "@service/container/InstanceContainer"
-import { Scopes } from "@service/permissions/Scopes"
 import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../util/PrependAction"
@@ -111,7 +110,7 @@ export class Instance {
   }
 
   /** checks if the specified user has the specified scope for this instance */
-  hasPermission(user: User|number, scope: Scopes) {
+  hasPermission(user: User|number, scope: bigint) {
     return permissionManager.hasPermission({ instance: this.state.id, user, scope })
   }
 

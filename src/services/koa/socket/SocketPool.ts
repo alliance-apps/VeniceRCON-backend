@@ -1,5 +1,4 @@
 import { Socket } from "./Socket"
-import { Scopes } from "@service/permissions/Scopes"
 import { ChatMessage } from "@entity/ChatMessage"
 
 export class SocketPool {
@@ -49,7 +48,7 @@ export class SocketPool {
   }
 
   /** retrieves all sockets which has a specific permission scope for an instance */
-  async getSocketsWithPermission(instanceId: number, scope: Scopes) {
+  async getSocketsWithPermission(instanceId: number, scope: bigint) {
     const pool = new SocketPool()
     await Promise.all(this.sockets.map(async s => {
       if (await s.hasPermission(instanceId, scope)) pool.add(s)

@@ -30,7 +30,7 @@ api.route({
   },
   handler: async ctx => {
     const { scopes } = ctx.request.body
-    const bits: Scopes[] = scopes.map((s: string) => getBitFromName(s))
+    const bits: bigint[] = scopes.map((s: string) => getBitFromName(s))
     const set = await Promise.all(bits.map(async scope => permissionManager.hasPermission({
       user: ctx.state.token!.id, instance: ctx.state.instance!.id, scope
     })))
