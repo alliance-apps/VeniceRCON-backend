@@ -54,7 +54,7 @@ export class Permission extends AbstractEntity<Permission> {
 
   /** sets a specific permission */
   setPermission(perm: bigint, save: boolean = true) {
-    const nodes = this.mask.split(":").map(hex => BigInt(hex))
+    const nodes = this.mask.split(":").map(hex => BigInt(`0x${hex}`))
     let index = 0
     while (perm > 255n) {
       index++
@@ -76,7 +76,7 @@ export class Permission extends AbstractEntity<Permission> {
 
   /** removes a specific permission */
   delPermission(perm: bigint, save: boolean = true) {
-    const nodes = this.mask.split(":").map(hex => BigInt(hex))
+    const nodes = this.mask.split(":").map(hex => BigInt(`0x${hex}`))
     let index = 0
     while (perm > 255n) {
       index++

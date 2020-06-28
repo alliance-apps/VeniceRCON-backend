@@ -40,6 +40,7 @@ export class ChatManager {
         created: MoreThan(date.getTime()),
         instanceId: this.id
       },
+      order: { created: "DESC" },
       take: count
     })
   }

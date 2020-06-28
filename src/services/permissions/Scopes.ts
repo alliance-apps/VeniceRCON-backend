@@ -6,54 +6,59 @@ export type Scopes =
   typeof MapScope |
   typeof ReservedSlotScope |
   typeof PluginScope |
-  typeof VariableScope
+  typeof VariableScope |
+  typeof EventScope
 
 export const InstanceScope = {
-  ACCESS: BigInt("0x01"),
-  CREATE: BigInt("0x02"),
-  UPDATE: BigInt("0x04"),
-  DELETE: BigInt("0x08")
+  ACCESS: 0x01n,
+  CREATE: 0x02n,
+  UPDATE: 0x04n,
+  DELETE: 0x08n
 }
 
 export const InstanceUserScope = {
-  ACCESS: BigInt("0x0100"),
-  CREATE: BigInt("0x0200"),
-  UPDATE: BigInt("0x0400"),
-  REMOVE: BigInt("0x0800")
+  ACCESS: 0x0100n,
+  CREATE: 0x0200n,
+  UPDATE: 0x0400n,
+  REMOVE: 0x0800n
 }
 
 export const BanScope = {
-  ACCESS: BigInt("0x010000"),
-  CREATE: BigInt("0x020000"),
-  DELETE: BigInt("0x040000")
+  ACCESS: 0x010000n,
+  CREATE: 0x020000n,
+  DELETE: 0x040000n
 }
 
 export const PlayerScope = {
-  KILL: BigInt("0x01000000"),
-  KICK: BigInt("0x02000000"),
-  MESSAGE: BigInt("0x04000000"),
-  MOVE: BigInt("0x8000000")
+  KILL: 0x01000000n,
+  KICK: 0x02000000n,
+  MESSAGE: 0x04000000n,
+  MOVE: 0x8000000n
 }
 
 export const MapScope = {
-  SWITCH: BigInt("0x0100000000"),
-  MANAGE: BigInt("0x0200000000")
+  SWITCH: 0x0100000000n,
+  MANAGE: 0x0200000000n
 }
 
 export const ReservedSlotScope = {
-  ACCESS: BigInt("0x010000000000"),
-  CREATE: BigInt("0x020000000000"),
-  DELETE: BigInt("0x040000000000")
+  ACCESS: 0x010000000000n,
+  CREATE: 0x020000000000n,
+  DELETE: 0x040000000000n
 }
 
 export const PluginScope = {
-  ACCESS: BigInt("0x01000000000000"),
-  MODIFY: BigInt("0x02000000000000")
+  ACCESS: 0x01000000000000n,
+  MODIFY: 0x02000000000000n
 }
 
 export const VariableScope = {
-  MODIFY_BF3: BigInt("0x0100000000000000"),
-  MODIFY_VU: BigInt("0x0200000000000000")
+  MODIFY_BF3: 0x0100000000000000n,
+  MODIFY_VU: 0x0200000000000000n
+}
+
+export const EventScope = {
+  CHAT: 0x010000000000000000n
 }
 
 const translation: Record<string, Scopes> = {
@@ -63,7 +68,8 @@ const translation: Record<string, Scopes> = {
   BAN: BanScope,
   MAP: MapScope,
   RESERVEDSLOT: ReservedSlotScope,
-  VARIABLE: VariableScope
+  VARIABLE: VariableScope,
+  EVENT: EventScope
 }
 
 /** gets all available scope names */
@@ -95,7 +101,7 @@ export function getBitFromName(name: string): bigint {
  * @param scope permission to check
  */
 export function hasPermission(mask: string, scope: bigint) {
-  const nodes = mask.split(":").map(hex => BigInt(hex))
+  const nodes = mask.split(":").map(hex => BigInt(`0x${hex}`))
   let index = 0
   while (scope > 255n) {
     index++
@@ -165,6 +171,10 @@ export function getScopesFromMask(mask: string) {
         const vars = validateScope(key, VariableScope)
         vars("MODIFY_BF3")
         vars("MODIFY_VU")
+        return
+      case "VARIABLE":
+        const events = validateScope(key, EventScope)
+        events("CHAT")
         return
     }
   })

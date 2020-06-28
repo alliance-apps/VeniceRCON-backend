@@ -8,6 +8,7 @@ import mapRouter from "./maps"
 import reservedslotRouter from "./reservedslot"
 import pluginRouter from "./plugins"
 import varRouter from "./vars"
+import eventRouter from "./events"
 import { InstanceScope, InstanceUserScope, BanScope, PluginScope, PlayerScope } from "@service/permissions/Scopes"
 
 const api = Router()
@@ -94,5 +95,6 @@ api.use("/maps", mapRouter.middleware())
 api.use("/vars", varRouter.middleware())
 api.use("/reservedslot", reservedslotRouter.middleware())
 api.use("/plugins", perm(PluginScope.ACCESS), pluginRouter.middleware())
+api.use("/events", eventRouter.middleware())
 
 export default api
