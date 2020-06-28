@@ -14,6 +14,7 @@ import { Invite } from "@entity/Invite"
 import { Plugin } from "@entity/Plugin"
 import { Player } from "@entity/Player"
 import { ChatMessage } from "@entity/ChatMessage"
+import { Kill } from "@entity/Kill"
 
 export let connection: Connection
 
@@ -33,7 +34,8 @@ export async function connect() {
       Invite,
       Plugin,
       Player,
-      ChatMessage
+      ChatMessage,
+      Kill
     ]
   })
 

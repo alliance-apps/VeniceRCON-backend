@@ -3,3 +3,7 @@
 ### lists chat messages
 GET {{$dotenv url}}/api/instances/{{id}}/events/chat?from=2020-06-26T16:42:30.000Z
 Authorization: Bearer {{$dotenv jwt}}
+
+### lists kill messages
+GET {{$dotenv url}}/api/instances/{{id}}/events/kill?from=2020-06-26T16:42:30.000Z
+Authorization: Bearer {{$dotenv jwt}}

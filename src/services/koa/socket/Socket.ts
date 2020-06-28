@@ -5,6 +5,7 @@ import { Instance } from "@service/battlefield/Instance"
 import { SocketManager } from "./SocketManager"
 import { permissionManager } from "@service/permissions"
 import { ChatMessage } from "@entity/ChatMessage"
+import { Kill } from "@entity/Kill"
 
 export class Socket {
 
@@ -82,6 +83,13 @@ export class Socket {
     this.socket.emit(
       SocketManager.INSTANCE.CHAT,
       { messages: await Promise.all(messages.map(message => message.toJSON())) }
+    )
+  }
+
+  async emitKill(kills: Kill[]) {
+    this.socket.emit(
+      SocketManager.INSTANCE.KILL,
+      { kills: await Promise.all(kills.map(kill => kill.toJSON())) }
     )
   }
 

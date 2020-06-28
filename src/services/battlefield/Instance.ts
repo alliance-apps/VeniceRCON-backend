@@ -12,6 +12,7 @@ import { PluginManager } from "@service/plugin/main/PluginManager"
 import { Variable } from "vu-rcon/lib/Variable"
 import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
+import { KillFeedManager } from "./KillFeedManager"
 
 export class Instance {
 
@@ -19,6 +20,7 @@ export class Instance {
   readonly state: InstanceContainer
   readonly plugin: InstancePlugin
   readonly chat: ChatManager
+  readonly kill: KillFeedManager
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
@@ -32,6 +34,7 @@ export class Instance {
       instance: this
     })
     this.chat = new ChatManager({ instance: this })
+    this.kill = new KillFeedManager({ instance: this })
     this.plugin = new InstancePlugin({
       instance: this,
       manager: props.pluginManager

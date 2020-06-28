@@ -57,7 +57,8 @@ export const VariableScope = {
 }
 
 export const EventScope = {
-  CHAT: 0x010000000000000000n
+  CHAT: 0x010000000000000000n,
+  KILL: 0x020000000000000000n
 }
 
 const translation: Record<string, Scopes> = {

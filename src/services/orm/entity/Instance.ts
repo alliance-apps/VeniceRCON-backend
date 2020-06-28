@@ -5,6 +5,7 @@ import { Invite } from "./Invite"
 import { config } from "@service/config"
 import { Plugin } from "./Plugin"
 import { ChatMessage } from "./ChatMessage"
+import { Kill } from "./Kill"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -43,6 +44,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @OneToMany(type => ChatMessage, msg => msg.instance)
   messages!: Promise<ChatMessage[]>
+
+  @OneToMany(type => Kill, kill => kill.instance)
+  kills!: Promise<Kill[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

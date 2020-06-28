@@ -40,6 +40,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
   async toJSON() {
     const player = await this.player
     return {
+      id: this.id,
       instance: this.instanceId,
       name: this.displayName,
       message: this.message,

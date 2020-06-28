@@ -47,7 +47,8 @@ export namespace SocketManager {
     UPDATE = "INSTANCE#UPDATE",
     REMOVE = "INSTANCE#REMOVE",
     ADD = "INSTANCE#ADD",
-    CHAT = "INSTANCE#CHAT"
+    CHAT = "INSTANCE#CHAT",
+    KILL = "INSTANCE#KILL"
   }
 
   export enum SELF {
