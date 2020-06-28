@@ -3,6 +3,7 @@ import { ChatMessage } from "@entity/ChatMessage"
 import { Player } from "@entity/Player"
 import { MoreThan } from "typeorm"
 import { socketManager } from "@service/koa/socket"
+import { EventScope } from "@service/permissions/Scopes"
 
 export class ChatManager {
 
@@ -47,7 +48,7 @@ export class ChatManager {
 
   private async addMessage(message: ChatMessage) {
     this.messages = [...this.messages, message].slice(ChatManager.MESSAGECOUNT * -1)
-    socketManager.subscribedTo(this.id).emitChatMessages([message])
+    socketManager.hasPermission(this.id, EventScope.CHAT).emitChatMessages([message])
   }
 
   private async initialize() {

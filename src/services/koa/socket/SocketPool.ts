@@ -42,6 +42,13 @@ export class SocketPool {
     return new SocketPool(this.sockets.filter(s => s.isSubscribedTo(instanceId)))
   }
 
+  /** retrieves all sockets for an instance with certain permissions */
+  hasPermission(instanceId: number, permission: bigint) {
+    return new SocketPool(
+      this.subscribedTo(instanceId).sockets.filter(s => s.hasPermission(instanceId, permission))
+    )
+  }
+
   /** emits a message to all sockets in this pool */
   emit(event: string, data: any) {
     this.sockets.forEach(s => s.socket.emit(event, data))

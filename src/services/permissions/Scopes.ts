@@ -53,8 +53,7 @@ export const PluginScope = {
 }
 
 export const VariableScope = {
-  MODIFY_BF3: 0x0100000000000000n,
-  MODIFY_VU: 0x0200000000000000n
+  MODIFY: 0x0200000000000000n
 }
 
 export const EventScope = {
@@ -169,8 +168,7 @@ export function getScopesFromMask(mask: string) {
         return
       case "VARIABLE":
         const vars = validateScope(key, VariableScope)
-        vars("MODIFY_BF3")
-        vars("MODIFY_VU")
+        vars("MODIFY")
         return
       case "VARIABLE":
         const events = validateScope(key, EventScope)

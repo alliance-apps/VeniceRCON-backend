@@ -2,6 +2,8 @@ import Router from "koa-joi-router"
 import { Instance } from "@service/battlefield/Instance"
 import winston from "winston"
 import { InstanceContainer } from "@service/container/InstanceContainer"
+import { perm } from "@service/koa/permission"
+import { VariableScope } from "@service/permissions/Scopes"
 
 const api = Router()
 const { Joi } = Router
@@ -34,6 +36,7 @@ api.route({
       ))
     )
   },
+  pre: perm(VariableScope.MODIFY),
   handler: async ctx => {
     try {
       const { instance } = ctx.state
