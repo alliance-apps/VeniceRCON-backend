@@ -60,7 +60,7 @@ export class Permission extends AbstractEntity<Permission> {
       index++
       perm = perm >> 8n
     }
-    if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
+    if (nodes.length <= index) nodes.push(...Array(index - nodes.length + 1).fill(0n))
     nodes[index] |= perm
     this.mask = nodes.map(n => n.toString(16)).map(c => c.length === 1 ? `0${c}` : c).join(":")
     if (save) return this.save({ reload: true })
@@ -82,7 +82,7 @@ export class Permission extends AbstractEntity<Permission> {
       index++
       perm = perm >> 8n
     }
-    if (nodes.length < index) nodes.push(...Array(index - nodes.length).fill(0))
+    if (nodes.length <= index) nodes.push(...Array(index - nodes.length + 1).fill(0n))
     nodes[index] &= ~perm
     this.mask = nodes.map(n => n.toString(16)).map(c => c.length === 1 ? `0${c}` : c).join(":")
     if (save) return this.save({ reload: true })

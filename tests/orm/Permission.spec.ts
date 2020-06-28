@@ -1,7 +1,7 @@
 jest.mock("../../src/services/config/index.ts", () => ({ config: { instance: { syncInterval: 1000 } } }))
 
-import { Permission } from "@entity/Permission"
-import { InstanceScope, InstanceUserScope } from "@service/permissions/Scopes"
+import { Permission } from "../../src/services/orm/entity/Permission"
+import { InstanceScope, InstanceUserScope } from "../../src/services/permissions/Scopes"
 
 describe("Permission", () => {
 
