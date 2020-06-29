@@ -8,7 +8,7 @@ export class Config extends AbstractEntity<Config> {
 
   protected entityClass = Config
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 100 })
   name!: string
 
   @Column()

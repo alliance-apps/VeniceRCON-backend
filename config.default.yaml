@@ -1,5 +1,4 @@
 # enables some development features
-# if set to true then you can access via route /swagger the api docs
 development: false
 database:
   #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
