@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Player } from "./Player"
 import { Instance } from "./Instance"
+import { Weapon } from "./Weapon"
 
 @Entity()
 export class Kill extends AbstractEntity<Kill> {
@@ -13,7 +14,7 @@ export class Kill extends AbstractEntity<Kill> {
     player => player.chats,
     { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
   )
-  killer?: Promise<Player>
+  killer?: Player
 
   @Column({ nullable: true })
   killerId?: number
@@ -31,9 +32,9 @@ export class Kill extends AbstractEntity<Kill> {
   @ManyToOne(
     type => Instance,
     instance => instance.kills,
-    { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
+    { nullable: true, cascade: true, onDelete: "CASCADE" }
   )
-  instance?: Instance
+  instance?: Promise<Instance>
 
   @Column({ nullable: true })
   instanceId?: number
@@ -41,24 +42,29 @@ export class Kill extends AbstractEntity<Kill> {
   @Column()
   headshot!: boolean
 
-  @Column()
-  weapon!: string
+  @ManyToOne(
+    type => Weapon,
+    { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
+  )
+  weapon!: Weapon
+
+  @Column({ nullable: true })
+  weaponId!: number
 
   async toJSON() {
-    const [killer, killed] = await Promise.all([ this.killer, this.killed ])
     return {
       id: this.id,
       instance: this.instanceId,
-      weapon: this.weapon,
+      weapon: this.weapon.name,
       headshot: this.headshot,
       created: this.created,
-      killer: killer ? {
-        name: killer.name,
-        guid: killer.guid
+      killer: this.killer ? {
+        name: this.killer.name,
+        guid: this.killer.guid
       } : undefined,
       killed: {
-        name: killed!.name,
-        guid: killed!.guid
+        name: this.killed!.name,
+        guid: this.killed!.guid
       }
     }
   }
@@ -71,6 +77,10 @@ export class Kill extends AbstractEntity<Kill> {
     return this.setRelation("killed", player)
   }
 
+  setWeapon(weapon: Weapon|number) {
+    return this.setRelation("weapon", weapon)
+  }
+
   setInstance(instance: Instance|number) {
     return this.setRelation("instance", instance)
   }
@@ -78,13 +88,13 @@ export class Kill extends AbstractEntity<Kill> {
   /** creates a new instance */
   static async from(props: Kill.ICreate) {
     const kill = new Kill()
-    kill.weapon = props.weapon
     kill.headshot = props.headshot
     await kill.save()
     await Promise.all([
       props.killer ? kill.setKiller(props.killer) : Promise.resolve(),
       kill.setKilled(props.killed),
-      kill.setInstance(props.instance)
+      kill.setInstance(props.instance),
+      kill.setWeapon(typeof props.weapon === "string" ? await Weapon.getWeapon(props.weapon) : props.weapon)
     ])
     await kill.reload()
     return kill
@@ -98,7 +108,7 @@ export namespace Kill {
     killer?: Player|number
     killed: Player|number
     headshot: boolean
-    weapon: string
+    weapon: string|Weapon|number
     instance: Instance|number
   }
 }
