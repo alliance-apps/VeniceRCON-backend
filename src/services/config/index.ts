@@ -24,6 +24,10 @@ export interface Configuration {
   }
   webserver: {
     listenport: number
+    jwt: {
+      maxAge: number
+      sendRefresh: number
+    }
     cors: Record<string, string|string[]>
   }
   instance: {

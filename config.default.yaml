@@ -14,6 +14,11 @@ database:
 webserver:
   #port which the webserver listens to
   listenport: 8000
+  jwt:
+    #maxmimum token age in days
+    maxAge: 7
+    #time in days after a new token gets issued
+    sendRefresh: 5
   #cors are only being set when development has been set to true
   cors:
     Access-Control-Allow-Credentials: "true"

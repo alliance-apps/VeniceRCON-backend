@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
-import { User } from "@entity/User"
 import { Config } from "@entity/Config"
 import koaJwt from "koa-jwt"
+import { config } from "@service/config"
 
 
 /**
@@ -10,6 +10,7 @@ import koaJwt from "koa-jwt"
  */
 export async function createToken(props: CreateTokenProps) {
   const token: Partial<JsonWebToken> = {
+    v: 1,
     id: props.user.id,
     username: props.user.username
   }
@@ -28,15 +29,40 @@ export async function getSecret() {
  * @param opts
  */
 export async function jwtMiddleware(opts: Partial<koaJwt.Options> = {}) {
-  return koaJwt({ ...opts, secret: await getSecret(), key: "token" })
+  return koaJwt({
+    ...opts,
+    secret: await getSecret(),
+    key: "token",
+    isRevoked: async (ctx, token: JsonWebToken) => {
+      if (token.v !== 1) return true
+      const { maxAge, sendRefresh } = config.webserver.jwt
+      const now = Math.floor(Date.now() / 1000)
+      if (token.iat < now - maxAge * 24 * 60 * 60) return true
+      if (token.iat < now - sendRefresh * 24 * 60 * 60) {
+        ctx.set("Authorization", `Bearer ${await createToken({
+          user: { id: token.id, username: token.username }
+        })}`)
+      }
+      return false
+    }
+  })
 }
 
 
 export interface CreateTokenProps {
-  user: User
+  user: {
+    id: number
+    username: string
+  }
 }
 
 export interface JsonWebToken {
+  //version of the token
+  v: number
+  //user id
   id: number
+  //username
   username: string
+  //issued at
+  iat: number
 }
