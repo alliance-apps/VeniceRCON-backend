@@ -71,5 +71,8 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
         .remove(typeof id === "number" ? id : id.id)
   }
 
+  static fetchId(entity: AbstractEntity<any>|number) {
+    return typeof entity === "number" ? entity : entity.id
+  }
 
 }

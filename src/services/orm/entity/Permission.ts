@@ -100,17 +100,14 @@ export class Permission extends AbstractEntity<Permission> {
   }
 
   /** creates a new instance */
-  static async from(props: Permission.ICreate) {
+  static from(props: Permission.ICreate) {
     const perm = new Permission()
     perm.mask = props.mask || "00"
     if (props.scopes) perm.setPermissions(props.scopes, false)
     if ("root" in props) perm.root = true
-    await perm.save()
-    const update = [perm.setUser(props.user)]
-    if ("instance" in props) update.push(perm.setInstance(props.instance))
-    await Promise.all(update)
-    await perm.reload()
-    return perm
+    perm.userId = AbstractEntity.fetchId(props.user)
+    if ("instance" in props) perm.instanceId = AbstractEntity.fetchId(props.instance)
+    return perm.save()
   }
 
 }

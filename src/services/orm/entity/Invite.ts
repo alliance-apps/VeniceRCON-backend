@@ -67,16 +67,12 @@ export class Invite extends AbstractEntity<Invite> {
   }
 
   /** creates a new instance */
-  static async from(props: Invite.ICreate) {
+  static from(props: Invite.ICreate) {
     const invite = new Invite()
     invite.token = randomBytes(16).toString("hex")
-    await invite.save()
-    await Promise.all([
-      invite.setInstance(props.instance),
-      invite.setIssuer(props.issuer)
-    ])
-    await invite.reload()
-    return invite
+    invite.instanceId = AbstractEntity.fetchId(props.instance)
+    invite.issuerId = AbstractEntity.fetchId(props.issuer)
+    return invite.save()
   }
 
 }

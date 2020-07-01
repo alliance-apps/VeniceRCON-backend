@@ -44,10 +44,8 @@ export class Plugin extends AbstractEntity<Plugin> {
     plugin.name = props.name
     plugin.version = props.version
     plugin.config = props.config || "{}"
-    await plugin.save()
-    plugin.setInstance(props.instance)
-    await plugin.reload()
-    return plugin
+    plugin.instanceId = AbstractEntity.fetchId(props.instance)
+    return plugin.save()
   }
 
 }

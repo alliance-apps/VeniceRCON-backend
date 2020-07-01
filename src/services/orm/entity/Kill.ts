@@ -89,15 +89,12 @@ export class Kill extends AbstractEntity<Kill> {
   static async from(props: Kill.ICreate) {
     const kill = new Kill()
     kill.headshot = props.headshot
-    await kill.save()
-    await Promise.all([
-      props.killer ? kill.setKiller(props.killer) : Promise.resolve(),
-      kill.setKilled(props.killed),
-      kill.setInstance(props.instance),
-      kill.setWeapon(typeof props.weapon === "string" ? await Weapon.getWeapon(props.weapon) : props.weapon)
-    ])
-    await kill.reload()
-    return kill
+    kill.instanceId = AbstractEntity.fetchId(props.instance)
+    if (props.killer) kill.killerId = AbstractEntity.fetchId(props.killer)
+    if (props.killed) kill.killedId = AbstractEntity.fetchId(props.killed)
+    const weapon = typeof props.weapon === "string" ? await Weapon.getWeapon(props.weapon) : props.weapon
+    kill.weaponId = AbstractEntity.fetchId(weapon)
+    return kill.save()
   }
 
 }
