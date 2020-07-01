@@ -21,7 +21,7 @@ export class Invite extends AbstractEntity<Invite> {
   )
   issuer!: Promise<User>
 
-  @Column({ nullable: true })
+  @Column()
   issuerId!: number
 
   @ManyToOne(
@@ -31,7 +31,7 @@ export class Invite extends AbstractEntity<Invite> {
   )
   instance!: Promise<Instance>
 
-  @Column({ nullable: true })
+  @Column()
   instanceId!: number
 
   @ManyToOne(type => User, { nullable: true })
@@ -45,25 +45,11 @@ export class Invite extends AbstractEntity<Invite> {
    */
   async consume(user: User) {
     if (this.userId) throw new Error(`can not use this token, it already has been used by someone else`)
-    await this.setUser(user)
+    await this.setRelation("user", user)
     await this.reload()
     return permissionManager.addInstanceAccess({
       user, instance: this.instanceId, scopes: [InstanceScope.ACCESS]
     })
-  }
-
-  setUser(user: User|number) {
-    return this.setRelation("user", user)
-  }
-
-  /** sets the issuer of the invite link */
-  setIssuer(issuer: User|number) {
-    return this.setRelation("issuer", issuer)
-  }
-
-  /** sets the instance for the invite link */
-  setInstance(instance: Instance|number) {
-    return this.setRelation("instance", instance)
   }
 
   /** creates a new instance */

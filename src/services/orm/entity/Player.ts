@@ -1,6 +1,7 @@
 import { Entity, Column, OneToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { ChatMessage } from "./ChatMessage"
+import { Kill } from "./Kill"
 
 @Entity()
 export class Player extends AbstractEntity<Player> {
@@ -15,6 +16,12 @@ export class Player extends AbstractEntity<Player> {
 
   @OneToMany(type => ChatMessage, msg => msg.player)
   chats!: ChatMessage
+
+  @OneToMany(type => Kill, kill => kill.killer)
+  kills!: ChatMessage
+
+  @OneToMany(type => Kill, kill => kill.killed)
+  killed!: ChatMessage
 
   /** creates a new instance */
   static async from(props: Player.ICreate) {

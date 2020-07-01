@@ -29,21 +29,11 @@ export class Permission extends AbstractEntity<Permission> {
   )
   user!: Promise<UserEntity>
 
-  @Column({ nullable: true })
+  @Column()
   userId!: number
 
   @Column({ default: "0" })
   mask!: string
-
-  /** sets the user of the permission */
-  setUser(user: UserEntity|number) {
-    return this.setRelation("user", user)
-  }
-
-  /** sets the instance of the permission */
-  setInstance(instance: InstanceEntity|number) {
-    return this.setRelation("instance", instance)
-  }
 
   /** sets multiple permissions */
   async setPermissions(perms: bigint[], save: boolean = true) {

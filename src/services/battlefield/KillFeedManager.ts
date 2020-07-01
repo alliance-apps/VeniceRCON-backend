@@ -53,16 +53,11 @@ export class KillFeedManager {
   private async initialize() {
     this.feed = await Kill.find({ where: { instanceId: this.id }, take: KillFeedManager.MESSAGECOUNT })
     this.battlefield.on("kill", async ev => {
-      let killer = ev.killer ? await this.parent.getPlayerByName(ev.killer) : undefined
+      const killer = ev.killer ? await this.parent.getPlayerByName(ev.killer) : undefined
       if (ev.killer && !killer) throw new Error(`could not find killer with name "${ev.killer}"`)
       const killed = await this.parent.getPlayerByName(ev.killed)
       if (!killed) throw new Error(`Could not find killed player with name "${ev.killed}"`)
-      this.addKill(await Kill.from({
-        ...ev,
-        killed,
-        killer,
-        instance: this.id
-      }))
+      this.addKill(await Kill.from({ ...ev, killed, killer, instance: this.id }))
     })
   }
 }

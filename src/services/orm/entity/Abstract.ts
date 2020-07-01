@@ -27,19 +27,6 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
     return super.save({ ...defaults, ...options })
   }
 
-  /**
-   * updates the own entity
-   * @param data
-   */
-  protected update(data: QueryDeepPartialEntity<T>): Promise<UpdateResult> {
-    return getRepository(this.entityClass)
-      .createQueryBuilder()
-      .update()
-      .where({ id: this.id })
-      .set(data)
-      .execute()
-  }
-
   protected setRelation(name: keyof T, id: number|{ id: number }) {
     if (typeof this.id !== "number")
       throw new Error(`can not create relation, id is not a number (has the entity been saved?)`)
@@ -60,7 +47,6 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
       .add(typeof id === "number" ? id : id.id)
   }
 
-
   protected delRelation(name: keyof T, id: number|{ id: number }) {
     if (typeof this.id !== "number")
       throw new Error(`can not remove relation, id is not a number (has the entity been saved?)`)
@@ -69,6 +55,19 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
         .relation(this.entityClass, name as string)
         .of({ id: this.id })
         .remove(typeof id === "number" ? id : id.id)
+  }
+
+  /**
+   * updates the own entity without reloading
+   * @param data fields to update
+   */
+  protected update(data: QueryDeepPartialEntity<T>): Promise<UpdateResult> {
+    return getRepository(this.entityClass)
+      .createQueryBuilder()
+      .update()
+      .where({ id: this.id })
+      .set(data)
+      .execute()
   }
 
   static fetchId(entity: AbstractEntity<any>|number) {

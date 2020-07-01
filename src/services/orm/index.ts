@@ -22,7 +22,7 @@ export let connection: Connection
 export async function connect() {
   connection = await createConnection({
     type: config.database.use,
-    synchronize: true,
+    synchronize: config.development,
     logging: config.development,
     maxQueryExecutionTime: 200,
     ...config.database[config.database.use] as any,

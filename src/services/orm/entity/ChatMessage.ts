@@ -21,12 +21,12 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
   @ManyToOne(
     type => Instance,
     instance => instance.messages,
-    { eager: true, cascade: true, onDelete: "CASCADE" }
+    { cascade: true, onDelete: "CASCADE" }
   )
-  instance?: Instance
+  instance!: Promise<Instance>
 
   @Column()
-  instanceId?: number
+  instanceId!: number
 
   @Column()
   displayName!: string
@@ -51,14 +51,6 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
         guid: player.guid
       } : undefined
     }
-  }
-
-  setPlayer(player: Player|number) {
-    return this.setRelation("player", player)
-  }
-
-  setInstance(instance: Instance|number) {
-    return this.setRelation("instance", instance)
   }
 
   /** creates a new instance */

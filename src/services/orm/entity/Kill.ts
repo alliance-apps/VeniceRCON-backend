@@ -11,7 +11,7 @@ export class Kill extends AbstractEntity<Kill> {
 
   @ManyToOne(
     type => Player,
-    player => player.chats,
+    player => player.kills,
     { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
   )
   killer?: Player
@@ -21,23 +21,23 @@ export class Kill extends AbstractEntity<Kill> {
 
   @ManyToOne(
     type => Player,
-    player => player.chats,
-    { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
+    player => player.killed,
+    { eager: true, cascade: true, onDelete: "CASCADE" }
   )
-  killed?: Player
+  killed!: Player
 
-  @Column({ nullable: true })
-  killedId?: number
+  @Column()
+  killedId!: number
 
   @ManyToOne(
     type => Instance,
     instance => instance.kills,
-    { nullable: true, cascade: true, onDelete: "CASCADE" }
+    { cascade: true, onDelete: "CASCADE" }
   )
-  instance?: Promise<Instance>
+  instance!: Promise<Instance>
 
-  @Column({ nullable: true })
-  instanceId?: number
+  @Column()
+  instanceId!: number
 
   @Column()
   headshot!: boolean
@@ -67,22 +67,6 @@ export class Kill extends AbstractEntity<Kill> {
         guid: this.killed!.guid
       }
     }
-  }
-
-  setKiller(player: Player|number) {
-    return this.setRelation("killer", player)
-  }
-
-  setKilled(player: Player|number) {
-    return this.setRelation("killed", player)
-  }
-
-  setWeapon(weapon: Weapon|number) {
-    return this.setRelation("weapon", weapon)
-  }
-
-  setInstance(instance: Instance|number) {
-    return this.setRelation("instance", instance)
   }
 
   /** creates a new instance */

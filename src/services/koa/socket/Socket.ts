@@ -76,8 +76,8 @@ export class Socket {
 
   /**
    * chat message
-   * @param instanceId 
-   * @param scope 
+   * @param instanceId
+   * @param scope
    */
   async emitChatMessages(messages: ChatMessage[]) {
     this.socket.emit(

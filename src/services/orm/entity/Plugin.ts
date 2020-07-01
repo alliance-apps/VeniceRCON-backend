@@ -19,15 +19,11 @@ export class Plugin extends AbstractEntity<Plugin> {
   @Column({ default: false })
   start!: boolean
 
-  @Column({ nullable: true })
-  instanceId?: number
+  @Column()
+  instanceId!: number
 
   @Column({ default: "{}" })
   config!: string
-
-  setInstance(instance: Instance|number) {
-    return this.setRelation("instance", instance)
-  }
 
   getConfig() {
     return JSON.parse(this.config)
