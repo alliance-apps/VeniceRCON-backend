@@ -1,6 +1,6 @@
 import { SharedClass } from "./SharedClass"
 import { Battlefield } from "vu-rcon"
-import { Messenger } from "../Messenger"
+import { Messenger } from "../messenger/Messenger"
 
 export class SharedRcon extends SharedClass<Battlefield> {
 

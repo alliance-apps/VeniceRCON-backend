@@ -5,7 +5,7 @@ export const metaSchema = Joi.object({
   description: Joi.string().optional(),
   version: Joi.string().regex(/^\d+\.\d+\.\d+$/).required(),
   backend: Joi.string().allow("VU", "BF3").required(),
-  language: Joi.string().allow("JS").required(),
+  //language: Joi.string().allow("JS").required(),
   entry: Joi.string().required(),
   vars: Joi.array().items(Joi.object({
     name: Joi.string().required(),

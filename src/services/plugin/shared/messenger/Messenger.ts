@@ -3,8 +3,7 @@ import { EventEmitter } from "events"
 import { Message } from "./Message"
 
 export interface Messenger {
-  on(event: "*", cb: (event: Messenger.Event) => void): this
-  on(event: string, cb: (event: any & { done: (data: any) => void}) => void): this
+  on(event: string, cb: (event: Messenger.Event) => void): this
 }
 
 export class Messenger extends EventEmitter {

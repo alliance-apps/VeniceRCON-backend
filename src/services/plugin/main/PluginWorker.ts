@@ -3,11 +3,9 @@ import { InstancePlugin } from "./InstancePlugin"
 import path from "path"
 import winston from "winston"
 import { Plugin } from "./Plugin"
-import { Messenger } from "../shared/Messenger"
-import { SharedRcon } from "../shared/classes/Rcon"
+import { Messenger } from "../shared/messenger/Messenger"
 
 export class PluginWorker {
-  private sharedRcon: SharedRcon|undefined
   private worker: Worker|undefined
   private messenger: Messenger|undefined
   private parent: InstancePlugin
@@ -30,7 +28,6 @@ export class PluginWorker {
       worker.once("message", async msg => {
         if (msg !== "ready") throw new Error(`expected message to be "ready" received ${msg}`)
         messenger = await Messenger.create(p => worker.postMessage(p, [p]))
-        this.createSharedRcon(messenger)
         this.messenger = messenger
         fulfill()
       })
@@ -38,25 +35,10 @@ export class PluginWorker {
       worker.on("error", err => winston.error(err))
       worker.on("exit", code => {
         winston.info(`worker exited with code ${code}`)
-        if (this.sharedRcon) {
-          this.sharedRcon.$remove()
-          this.sharedRcon = undefined
-        }
         worker.removeAllListeners()
         messenger.removeAllListeners()
       })
     })
-  }
-
-  private createSharedRcon(messenger: Messenger) {
-    this.sharedRcon = SharedRcon.create({
-      rcon: this.getRconConnection(),
-      messenger
-    })
-  }
-
-  private getRconConnection() {
-    return this.parent.parent.connection.battlefield
   }
 
   private sendMessage(action: string, data: any) {

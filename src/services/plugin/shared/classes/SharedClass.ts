@@ -1,4 +1,4 @@
-import { Messenger } from "../Messenger"
+import { Messenger } from "../messenger/Messenger"
 
 export abstract class SharedClass<T extends {}> {
 
