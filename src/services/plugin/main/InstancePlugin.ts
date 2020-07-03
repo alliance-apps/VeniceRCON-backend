@@ -52,6 +52,21 @@ export class InstancePlugin {
     return this.plugins
   }
 
+  enabled() {
+    return PluginEntity.find
+  }
+
+  async getEnabledPlugins() {
+    const ids = (await PluginEntity.find({
+      where: {
+        instanceId: this.parent.id,
+        start: true
+      },
+      select: ["id"]
+    })).map(({ id }) => id)
+    return this.created().filter(plugin => ids.includes(plugin.id))
+  }
+
   /** retrieves a single plugin for this instance */
   findId(id: number) {
     return this.plugins.find(p => p.id === id)

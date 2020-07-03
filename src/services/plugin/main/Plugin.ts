@@ -31,15 +31,22 @@ export class Plugin {
     }
   }
 
-  async start() {
+  async setAutostart(start: boolean) {
+    const entity = await PluginEntity.findOneOrFail({ where: { id: this.id } })
+    if (entity.start === start) return
+    await entity.update({ start })
+  }
+
+  start() {
     if (this.state === Plugin.State.STARTED) return null
     this.state = Plugin.State.STARTED
     return this.worker.startPlugin(this)
   }
 
-  async stop() {
+  stop() {
     if (this.state === Plugin.State.STOPPED) return null
-    return await this.worker.stopPlugin(this)
+    this.state = Plugin.State.STOPPED
+    return this.worker.stopPlugin(this)
   }
 
   toJSON() {

@@ -17,7 +17,17 @@ export class PluginWorker {
     this.start()
   }
 
-  private start() {
+  get instance() {
+    return this.parent.parent
+  }
+
+  private async start() {
+    await this.createWorker()
+    const plugins = await this.parent.getEnabledPlugins()
+    await Promise.all(plugins.map(p => p.start()))
+  }
+
+  private createWorker() {
     return new Promise(fulfill => {
       const worker = new Worker(
         path.join(__dirname, "../worker/worker.js"),
@@ -31,19 +41,14 @@ export class PluginWorker {
         this.messenger = messenger
         fulfill()
       })
-      worker.on("online", () => winston.info("Plugin worker started"))
+      worker.on("online", () => winston.info(`Plugin worker started (instance ${this.instance.id})`))
       worker.on("error", err => winston.error(err))
       worker.on("exit", code => {
-        winston.info(`worker exited with code ${code}`)
+        winston.info(`worker exited with code ${code} )instance ${this.instance.id})`)
         worker.removeAllListeners()
         messenger.removeAllListeners()
       })
     })
-  }
-
-  private sendMessage(action: string, data: any) {
-    if (!this.messenger) throw new Error("messenger not ready!")
-    return this.messenger.send(action, data)
   }
 
   stop() {
@@ -51,12 +56,25 @@ export class PluginWorker {
     this.worker.terminate()
   }
 
-  startPlugin(plugin: Plugin) {
+  async restart() {
+    this.stop()
+    await this.start()
+  }
+
+  private sendMessage(action: string, data: any) {
+    if (!this.messenger) throw new Error("messenger not ready!")
+    return this.messenger.send(action, data)
+  }
+
+  async startPlugin(plugin: Plugin) {
+    winston.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`)
+    await plugin.setAutostart(true)
     return this.sendMessage("startPlugin", plugin.toJSON())
   }
 
-  stopPlugin(plugin: Plugin) {
-    return this.sendMessage("stopPlugin", plugin.toJSON())
+  async stopPlugin(plugin: Plugin) {
+    await plugin.setAutostart(false)
+    this.restart()
   }
 }
 
