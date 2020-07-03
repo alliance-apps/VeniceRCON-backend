@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne } from "typeorm"
+import { Entity, Column, ManyToOne, MoreThan } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Player } from "./Player"
 import { Instance } from "./Instance"
@@ -79,6 +79,20 @@ export class Kill extends AbstractEntity<Kill> {
     const weapon = typeof props.weapon === "string" ? await Weapon.getWeapon(props.weapon) : props.weapon
     kill.weaponId = AbstractEntity.fetchId(weapon)
     return kill.save()
+  }
+
+  static getFeed(
+    instanceId: number,
+    count: number = 10,
+    from: number|Date = Date.now()
+  ) {
+    const date = from instanceof Date ? from : new Date(from)
+    return this.createQueryBuilder()
+      .select()
+      .where({ created: MoreThan(date.getTime()), instanceId })
+      .orderBy({ created: "DESC" })
+      .limit(count)
+      .getMany()
   }
 
 }

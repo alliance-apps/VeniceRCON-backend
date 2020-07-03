@@ -34,15 +34,8 @@ export class KillFeedManager {
     const date = from instanceof Date ? from : new Date(from)
     const feed = this.feed.filter(msg => msg.created < date)
     if (feed.length > count) return feed.slice(0, count)
-    if (feed.length === count || this.feed.length < KillFeedManager.MESSAGECOUNT) return feed
-    return Kill.find({
-      where: {
-        created: MoreThan(date.getTime()),
-        instanceId: this.id
-      },
-      order: { created: "DESC" },
-      take: count
-    })
+    if (feed.length === count) return feed
+    return Kill.getFeed(this.id, count, date)
   }
 
   private async addKill(kill: Kill) {
@@ -51,7 +44,7 @@ export class KillFeedManager {
   }
 
   private async initialize() {
-    this.feed = await Kill.find({ where: { instanceId: this.id }, take: KillFeedManager.MESSAGECOUNT })
+    this.feed = await this.getFeed()
     this.battlefield.on("kill", async ev => {
       const killer = ev.killer ? await this.parent.getPlayerByName(ev.killer) : undefined
       if (ev.killer && !killer) throw new Error(`could not find killer with name "${ev.killer}"`)
