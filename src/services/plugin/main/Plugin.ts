@@ -49,7 +49,7 @@ export class Plugin {
     return this.worker.stopPlugin(this)
   }
 
-  toJSON() {
+  toJSON(): Plugin.Info {
     return {
       id: this.id,
       name: this.name,
@@ -62,10 +62,19 @@ export class Plugin {
 }
 
 export namespace Plugin {
+
   export interface Props {
     worker: PluginWorker
     entity: PluginEntity
     blueprint: PluginBlueprint
+  }
+
+  export interface Info {
+    id: number
+    name: string
+    state: number
+    meta: PluginBlueprint.Meta
+    config: Record<string, any>
   }
 
   export enum State {

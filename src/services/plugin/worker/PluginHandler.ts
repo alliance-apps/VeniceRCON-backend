@@ -15,9 +15,8 @@ export class PluginHandler {
   }
 
   private async onStartPlugin({ message }: Messenger.Event) {
-    console.log("start plugin", message.data)
     const file = path.join(this.basePath, message.data.name, message.data.meta.entry)
-    const plugin = await Plugin.from({ path: file })
+    const plugin = await Plugin.from({ path: file, info: message.data })
     this.plugins.push(plugin)
     plugin.start()
     message.done()

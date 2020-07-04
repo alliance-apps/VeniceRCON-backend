@@ -1,5 +1,5 @@
 # enables some development features
-development: false
+development: true
 database:
   #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
   use: "sqlite"
