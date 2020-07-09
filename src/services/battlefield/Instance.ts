@@ -102,14 +102,26 @@ export class Instance {
     clearInterval(this.interval)
   }
 
+  /** retrieves a single player entity by its name */
   async getPlayerByName(name: string) {
     let player = await Player.findOne({ name })
-    if (!player) {
-      const p = Object.values(this.state.get("players")).find(p => p.name === name)
-      if (!p) return undefined
-      player = await Player.from(p)
-    }
-    return player
+    return player ? player : this.createPlayerFromName(name)
+  }
+
+  /** creates a player entity from its name */
+  async createPlayerFromName(name: string) {
+    const player = Object.values(this.state.get("players")).find(p => p.name === name)
+    if (!player) return undefined
+    return Player.from(player)
+  }
+
+  async getPlayerDataByName(name: string) {
+    return Object.values(this.state.get("players")).find(p => p.name === name)
+  }
+
+  /** retrieves multiple player ids by their name */
+  async getPlayerIdsByName(names: Record<string, string|undefined>): Promise<Record<string, number|undefined>> {
+    return Player.getPlayerIds(names, this.getPlayerDataByName.bind(this))
   }
 
   /** checks if the specified user has the specified scope for this instance */
