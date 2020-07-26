@@ -26,6 +26,11 @@ export class Message<T = any> {
   done(data?: any) {
     return this.parent.sendAck(this.id, data)
   }
+
+  /** acknowledges the message with an error */
+  except(error: string) {
+    return this.parent.sendErrorAck(this.id, error)
+  }
 }
 
 export namespace Message {

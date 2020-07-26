@@ -37,7 +37,7 @@ export class Messenger extends EventEmitter {
   }
 
   /** send data */
-  send<T = any>(action: string, data: T, timeout: number = 2000) {
+  send<T = any>(action: string, data?: T, timeout: number = 2000) {
     const ack = this.createAcknowledgeItem(timeout)
     this.post(<Messenger.DataMessage>{
       type: Messenger.MessageType.DATA,
@@ -49,7 +49,19 @@ export class Messenger extends EventEmitter {
   }
 
   sendAck(id: number, data?: any) {
-    return this.post(<Messenger.AckMessage>{ type: Messenger.MessageType.ACK, id, data })
+    return this.post(<Messenger.AckMessage>{
+      type: Messenger.MessageType.ACK,
+      id,
+      data
+    })
+  }
+
+  sendErrorAck(id: number, message: string) {
+    return this.post(<Messenger.ErrorAckMessage>{
+      type: Messenger.MessageType.ERROR_ACK,
+      id,
+      message
+    })
   }
 
   /** receive data from the message port */
@@ -57,6 +69,7 @@ export class Messenger extends EventEmitter {
     switch (ev.type) {
       case Messenger.MessageType.READY: return this.handleReady()
       case Messenger.MessageType.ACK: return this.handleAck(ev)
+      case Messenger.MessageType.ERROR_ACK: return this.handleErrorAck(ev)
       case Messenger.MessageType.DATA: return this.handleMessage(ev)
     }
   }
@@ -83,6 +96,15 @@ export class Messenger extends EventEmitter {
     if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id} for action ${ev.action}`)
     clearTimeout(this.acks[id].timeout)
     this.acks[id].fulfill(ev.data)
+    return delete this.acks[id]
+  }
+
+  /** handles an incoming acknowledge message with an exception */
+  private handleErrorAck(ev: Messenger.ErrorAckMessage) {
+    const { id } = ev
+    if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id}`)
+    clearTimeout(this.acks[id].timeout)
+    this.acks[id].reject(new Error(ev.message))
     return delete this.acks[id]
   }
 
@@ -149,12 +171,14 @@ export namespace Messenger {
 
   export enum MessageType {
     ACK = "ACK",
+    ERROR_ACK = "ERR_ACK",
     DATA = "DATA",
     READY = "READY"
   }
 
   export type MessageData =
     AckMessage |
+    ErrorAckMessage |
     DataMessage |
     ReadyMessage
 
@@ -168,6 +192,12 @@ export namespace Messenger {
     action: string
     id: number
     data: any
+  }
+
+  export interface ErrorAckMessage {
+    type: MessageType.ERROR_ACK
+    id: number
+    message: string
   }
 
   export interface DataMessage {

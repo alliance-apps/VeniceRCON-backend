@@ -2,9 +2,11 @@ import vm from "vm"
 import { promises as fs } from "fs"
 import type { Plugin as PluginType } from "../main/Plugin"
 import { ContextHelper } from "./ContextHelper"
+import { PluginHandler } from "./PluginHandler"
 
 export class Plugin {
 
+  parent: PluginHandler
   path: string
   script: vm.Script
   state: Plugin.State = Plugin.State.STOPPED
@@ -12,6 +14,7 @@ export class Plugin {
   context: ContextHelper
 
   constructor(props: Plugin.Props) {
+    this.parent = props.parent
     this.path = props.path
     this.info = props.info
     this.context = new ContextHelper({ parent: this })
@@ -22,14 +25,18 @@ export class Plugin {
     return new vm.Script(code, { filename: this.path })
   }
 
-  start() {
+  async start() {
     if (this.state !== Plugin.State.STOPPED)
       throw new Error(`Plugin is not in state stopped! got state ${this.state}`)
     this.state = Plugin.State.STARTED
-    this.script.runInNewContext(this.context.create(), {
+    this.script.runInNewContext(await this.context.create(), {
       displayErrors: true,
       breakOnSigint: true
     })
+  }
+
+  getConfig(): Promise<Record<string, any>> {
+    return this.parent.messenger.send("GET_PLUGIN_CONFIG", { id: this.info.id })
   }
 
   static async from(props: Plugin.Create) {
@@ -42,6 +49,7 @@ export class Plugin {
 
 export namespace Plugin {
   export interface Props {
+    parent: PluginHandler
     path: string
     code: string
     info: PluginType.Info

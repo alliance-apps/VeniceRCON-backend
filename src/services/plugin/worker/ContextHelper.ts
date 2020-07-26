@@ -35,9 +35,11 @@ export class ContextHelper {
     }
   }
 
-  create() {
+  async create() {
     return createContext({
-      console: this.createConsole()
+      console: this.createConsole(),
+      battlefield: this.parent.parent.battlefield,
+      config: await this.parent.getConfig()
     })
   }
 
