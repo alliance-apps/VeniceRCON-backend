@@ -4,11 +4,12 @@ import { Instance } from "@service/battlefield/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Plugin } from "./Plugin"
 import { PluginWorker } from "./PluginWorker"
+import { Meta } from "../schema"
 
 export class PluginBlueprint {
 
   readonly id: string
-  meta: PluginBlueprint.Meta
+  meta: Meta
   readonly basePath: string
 
   constructor(props: PluginBlueprint.Props) {
@@ -19,7 +20,7 @@ export class PluginBlueprint {
   }
 
   async stop() {
-    throw new Error("Plugin#stop not implemented")
+    throw new Error("PluginBlueprint#stop not implemented")
   }
 
   /**
@@ -57,7 +58,7 @@ export class PluginBlueprint {
     return new Plugin({ worker, entity, blueprint: this })
   }
 
-  static validateMeta(meta: PluginBlueprint.Meta) {
+  static validateMeta(meta: Meta) {
     return metaSchema.validate(meta, { allowUnknown: true })
   }
 }
@@ -69,38 +70,4 @@ export namespace PluginBlueprint {
     basePath: string
   }
 
-  export interface Meta {
-    name: string
-    description?: string
-    version: string
-    backend: "BF3"|"VU"
-    language: "JS"
-    entry: string
-    vars?: PluginVariable[]
-  }
-
-  export type PluginVariable =
-    PluginStringVariable |
-    PluginNumberVariable |
-    PluginBooleanVariable
-
-  export interface PluginBaseVariable {
-    name: string
-    description: string
-  }
-
-  export interface PluginStringVariable extends PluginBaseVariable {
-    type: "string"
-    default: string
-  }
-
-  export interface PluginNumberVariable extends PluginBaseVariable {
-    type: "number"
-    default: number
-  }
-
-  export interface PluginBooleanVariable extends PluginBaseVariable {
-    type: "boolean"
-    default: boolean
-  }
 }

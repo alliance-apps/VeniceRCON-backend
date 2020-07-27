@@ -4,6 +4,9 @@ import path from "path"
 import { parse } from "yaml"
 import { PluginBlueprint } from "./PluginBlueprint"
 
+/**
+ * handles plugin blueprints
+ */
 export class PluginManager {
 
   readonly baseDir: string
@@ -13,6 +16,9 @@ export class PluginManager {
     this.baseDir = props.path
   }
 
+  /**
+   * initializes the manager
+   */
   async init() {
     try {
       const stat = await fs.stat(this.baseDir)
@@ -26,21 +32,29 @@ export class PluginManager {
   }
 
   /** retrieves all available plugins for a specific backend */
-  getPlugins(backend: "BF3"|"VU"|"ALL" = "ALL") {
+  getPlugins(backend: "BF3"|"VU"|"*" = "*") {
     return Object.values(this.blueprints).filter(({ meta }) => {
       switch (backend) {
         default:
         case "BF3": return meta.backend === "BF3"
-        case "ALL":
+        case "*":
         case "VU": return true
       }
     })
   }
 
-  getBlueprint(name: string, backend?: "BF3"|"VU"|"ALL") {
+  /**
+   * gets a specific blueprint entity by its name
+   * @param name blueprint name to find
+   * @param backend backend which gets used
+   */
+  getBlueprint(name: string, backend?: "BF3"|"VU"|"*") {
     return this.getPlugins(backend).find(bp => bp.id === name)
   }
 
+  /**
+   * reloads all plugins from disk
+   */
   private async reloadPlugins() {
     const plugins = await fs.readdir(this.baseDir)
     for (const name of plugins) {

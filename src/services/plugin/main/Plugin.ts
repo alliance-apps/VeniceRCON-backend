@@ -1,6 +1,7 @@
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { PluginBlueprint } from "./PluginBlueprint"
 import { PluginWorker } from "./PluginWorker"
+import { Meta } from "../schema"
 
 export class Plugin {
 
@@ -31,6 +32,22 @@ export class Plugin {
     }
   }
 
+  /**
+   * updates the current configuration and saves it back to db
+   * @param config updated values from the config
+   */
+  updateConfig(config: Record<string, any>) {
+    this.config = {
+      ...this.getConfig(),
+      ...config
+    }
+    return PluginEntity.updateConfig(this.id, config)
+  }
+
+  /**
+   * enables or disables autostart of the plugin
+   * @param start true or false wether autostart should be enabled or disabled
+   */
   async setAutostart(start: boolean) {
     const entity = await PluginEntity.findOneOrFail({ where: { id: this.id } })
     if (entity.start === start) return
@@ -73,7 +90,7 @@ export namespace Plugin {
     id: number
     name: string
     state: number
-    meta: PluginBlueprint.Meta
+    meta: Meta
     config: Record<string, any>
   }
 

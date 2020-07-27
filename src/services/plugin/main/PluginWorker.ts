@@ -5,8 +5,11 @@ import winston from "winston"
 import { Plugin } from "./Plugin"
 import { Messenger } from "../shared/messenger/Messenger"
 import { State } from "../shared/state"
-import { pluginManager } from ".."
+import { PluginQueue } from "./PluginQueue"
 
+/**
+ * Handles communication between worker and main thread
+ */
 export class PluginWorker {
   private worker: Worker|undefined
   private messenger: Messenger|undefined
@@ -20,22 +23,33 @@ export class PluginWorker {
     this.start()
   }
 
+  /**
+   * gets the instance which the worker is intended for
+   */
   get instance() {
     return this.parent.parent
   }
 
+  /**
+   * spawns the worker and loads all enabled plugins
+   */
   private async start() {
     await this.createWorker()
     const plugins = await this.parent.getEnabledPlugins()
-    await Promise.all(plugins.map(p => p.start()))
+    const queue = new PluginQueue(plugins)
+    while (true) {
+      const plugin = queue.next()
+      if (!plugin) return
+      await plugin.start()
+    }
   }
 
+  /**
+   * creates the worker and initiates the messenger
+   */
   private createWorker() {
     return new Promise(async fulfill => {
-      const worker = new Worker(
-        path.join(__dirname, "../worker/worker.js"),
-        { workerData: await this.getWorkerData() }
-      )
+      const worker = new Worker(path.join(__dirname, "../worker/worker.js"), { workerData: await this.getWorkerData() })
       this.worker = worker
       let messenger: Messenger
       worker.once("message", async msg => {
@@ -46,19 +60,23 @@ export class PluginWorker {
           this.state = State.READY
           this.registerEvents()
           message.done()
+          fulfill()
         })
         this.state = State.INIT
       })
       worker.on("online", () => winston.info(`Plugin worker started (instance ${this.instance.id})`))
       worker.on("error", err => winston.error(err))
       worker.on("exit", code => {
-        winston.info(`worker exited with code ${code} )instance ${this.instance.id})`)
+        winston.info(`worker exited with code ${code} (instance ${this.instance.id})`)
         worker.removeAllListeners()
         messenger.removeAllListeners()
       })
     })
   }
 
+  /**
+   * register events for various commands from the worker
+   */
   private registerEvents() {
     this.messenger!.on("GET_PLUGIN_CONFIG", ({ message }) => {
       const plugin = this.parent.findId(message.data.id)
@@ -67,6 +85,9 @@ export class PluginWorker {
     })
   }
 
+  /**
+   * basic workerdata
+   */
   private async getWorkerData() {
     const { host, port, password } = this.parent.parent.battlefield.options
     return {
@@ -76,27 +97,47 @@ export class PluginWorker {
     }
   }
 
+  /**
+   * terminates the worker
+   */
   stop() {
     if (!this.worker) return
     this.worker.terminate()
   }
 
+  /**
+   * restarts the worker
+   */
   async restart() {
     this.stop()
     await this.start()
   }
 
+  /**
+   * sends a message to the worker
+   * @param action action name to identify the intention
+   * @param data data to send to the worker
+   */
   private sendMessage(action: string, data: any) {
     if (!this.messenger) throw new Error("messenger not ready!")
     return this.messenger.send(action, data)
   }
 
+  /**
+   * sends a specific plugin which should be started to the worker
+   * @param plugin plugin which should get started
+   */
   async startPlugin(plugin: Plugin) {
     winston.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`)
     await plugin.setAutostart(true)
     return this.sendMessage("startPlugin", plugin.toJSON())
   }
 
+  /**
+   * stops a specific plugin
+   * in order to stop a plugin the worker gets terminated and all plugins which should run get started
+   * @param plugin plugin which should get stopped
+   */
   async stopPlugin(plugin: Plugin) {
     await plugin.setAutostart(false)
     this.restart()

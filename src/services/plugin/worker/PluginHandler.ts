@@ -30,15 +30,18 @@ export class PluginHandler {
 
   private async onStartPlugin({ message }: Messenger.Event) {
     if (this.state !== State.READY) return message.except("Worker not ready")
-    const file = path.join(this.basePath, message.data.name, message.data.meta.entry)
-    const plugin = await Plugin.from({
+    const plugin = new Plugin({
       parent: this,
-      path: file,
+      path: path.join(this.basePath, message.data.name, message.data.meta.entry),
       info: message.data
     })
     this.plugins.push(plugin)
-    plugin.start()
-    message.done()
+    try {
+      await plugin.start()
+      message.done()
+    } catch (e) {
+      message.except(e.message)
+    }
   }
 }
 

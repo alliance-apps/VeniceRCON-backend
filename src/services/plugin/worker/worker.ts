@@ -4,6 +4,7 @@ import "../../../util/winston"
 import winston from "winston"
 import { PluginHandler } from "./PluginHandler"
 import { State } from "../shared/state"
+//import "./console"
 
 if (isMainThread) throw new Error("worker can not be main thread")
 if (!parentPort) throw new Error("did not receive any message parentPort")

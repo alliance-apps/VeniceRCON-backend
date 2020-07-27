@@ -58,10 +58,7 @@ export class InstancePlugin {
 
   async getEnabledPlugins() {
     const ids = (await PluginEntity.find({
-      where: {
-        instanceId: this.parent.id,
-        start: true
-      },
+      where: { instanceId: this.parent.id, start: true },
       select: ["id"]
     })).map(({ id }) => id)
     return this.created().filter(plugin => ids.includes(plugin.id))

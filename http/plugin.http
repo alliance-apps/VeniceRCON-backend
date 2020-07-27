@@ -22,6 +22,15 @@ Content-Type: application/json
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}
 Authorization: Bearer {{$dotenv jwt}}
 
+### updates the configuration of a plugin
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}/config
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "foo": "non default"
+}
+
 ### starts a plugin
 POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}/start
 Authorization: Bearer {{$dotenv jwt}}

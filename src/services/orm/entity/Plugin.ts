@@ -29,9 +29,16 @@ export class Plugin extends AbstractEntity<Plugin> {
     return JSON.parse(this.config)
   }
 
-  setConfig(config: {}) {
+  setConfig(config: Record<string, any>) {
     this.config = JSON.stringify(config)
     return this
+  }
+
+  static updateConfig(id: number, config: Record<string, any>) {
+    return Plugin.createQueryBuilder()
+      .update()
+      .where({ id })
+      .update({ config: JSON.stringify(config) })
   }
 
   /** creates a new plugin */
