@@ -36,8 +36,7 @@ export class PluginManager {
     return Object.values(this.blueprints).filter(({ meta }) => {
       switch (backend) {
         default:
-        case "BF3": return meta.backend === "BF3"
-        case "*":
+        case "BF3": return ["BF3", "*"].includes(meta.backend)
         case "VU": return true
       }
     })

@@ -24,6 +24,7 @@ export class InstancePlugin {
     this.plugins = await this.loadPlugins()
   }
 
+  /** loads all available plugins and retrieves the Plugin instance */
   private async loadPlugins() {
     const entities = await PluginEntity.find({ instanceId: this.parent.id })
     return entities
@@ -34,12 +35,16 @@ export class InstancePlugin {
       .filter(bp => bp instanceof Plugin) as Plugin[]
   }
 
+  /**
+   * gets the current backend this instance is running on
+   */
   private get backend() {
     return this.parent.state.get("version")
   }
 
+  /** stops the plugin interface for the instance */
   async stop() {
-    throw new Error("not implemented")
+    return this.worker.stop()
   }
 
   /** retrieves a list of useable plugins */
@@ -52,10 +57,7 @@ export class InstancePlugin {
     return this.plugins
   }
 
-  enabled() {
-    return PluginEntity.find
-  }
-
+  /** retrieves a list of enabled plugins for this instance */
   async getEnabledPlugins() {
     const ids = (await PluginEntity.find({
       where: { instanceId: this.parent.id, start: true },

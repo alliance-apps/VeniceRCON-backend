@@ -15,7 +15,7 @@ export const metaSchema = Joi.object({
   })).optional()
 })
 
-export function checkVariableSchema(vars: PluginVariable[], data: any) {
+export function checkVariableSchema(vars: PluginVariable[], data: Record<string, any>) {
   return Joi.validate(data, buildVariableSchema(vars))
 }
 
@@ -37,9 +37,9 @@ export interface Meta {
   name: string
   description?: string
   version: string
-  backend: "BF3"|"VU"
+  backend: "BF3"|"VU"|"*"
   entry: string
-  dependecies?: string[]
+  dependency?: string[]
   vars?: PluginVariable[]
 }
 

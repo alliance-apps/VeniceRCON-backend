@@ -1,6 +1,6 @@
 import { Messenger } from "../shared/messenger/Messenger"
 import path from "path"
-import { Plugin } from "./Plugin"
+import { WorkerPlugin } from "./WorkerPlugin"
 import { State } from "../shared/state"
 import { Battlefield } from "vu-rcon"
 
@@ -8,7 +8,7 @@ export class PluginHandler {
 
   private basePath: string
   readonly messenger: Messenger
-  private plugins: Plugin[] = []
+  private plugins: WorkerPlugin[] = []
   private instanceId: number
   battlefield!: Battlefield
   private state: State = State.UNKNOWN
@@ -28,9 +28,17 @@ export class PluginHandler {
     await this.messenger.send("STATE", State.READY)
   }
 
+  /**
+   * retrieves a specific plugin by its name
+   * @param name the name of the plugin
+   */
+  getPluginByName(name: string) {
+    return this.plugins.find(p => p.info.name === name)
+  }
+
   private async onStartPlugin({ message }: Messenger.Event) {
     if (this.state !== State.READY) return message.except("Worker not ready")
-    const plugin = new Plugin({
+    const plugin = new WorkerPlugin({
       parent: this,
       path: path.join(this.basePath, message.data.name, message.data.meta.entry),
       info: message.data

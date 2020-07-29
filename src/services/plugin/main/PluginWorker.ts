@@ -30,18 +30,18 @@ export class PluginWorker {
     return this.parent.parent
   }
 
-  /**
-   * spawns the worker and loads all enabled plugins
-   */
+  /** spawns the worker and loads all enabled plugins */
   private async start() {
     await this.createWorker()
-    const plugins = await this.parent.getEnabledPlugins()
-    const queue = new PluginQueue(plugins)
+    const queue = new PluginQueue(await this.parent.getEnabledPlugins())
     while (true) {
       const plugin = queue.next()
-      if (!plugin) return
+      if (!plugin) break
       await plugin.start()
     }
+    queue.missingDependencies().forEach(({ plugin, missing }) => {
+      winston.warn(`refusing to load plugin ${plugin.name} because of missing dependencies: ${missing.join(", ")}`)
+    })
   }
 
   /**

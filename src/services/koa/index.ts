@@ -44,8 +44,14 @@ export async function initialize() {
     )
   })
 
-  server.listen(config.webserver.listenport, () => {
-    winston.info(`webserver listening on ${chalk.bold(config.webserver.listenport)}`)
-  })
+  //post init
+  return () => {
+    return new Promise(fulfill => {
+      server.listen(config.webserver.listenport, () => {
+        winston.info(`webserver listening on ${chalk.bold(config.webserver.listenport)}`)
+        fulfill()
+      })
+    })
+  }
 
 }
