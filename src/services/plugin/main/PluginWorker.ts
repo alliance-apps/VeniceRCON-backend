@@ -1,11 +1,11 @@
 import { Worker } from "worker_threads"
 import { InstancePlugin } from "./InstancePlugin"
 import path from "path"
-import winston from "winston"
 import { Plugin } from "./Plugin"
 import { Messenger } from "../shared/messenger/Messenger"
 import { State } from "../shared/state"
 import { PluginQueue } from "./PluginQueue"
+import { LogMessage } from "@entity/LogMessage"
 
 /**
  * Handles communication between worker and main thread
@@ -40,7 +40,7 @@ export class PluginWorker {
       await plugin.start()
     }
     queue.missingDependencies().forEach(({ plugin, missing }) => {
-      winston.warn(`refusing to load plugin ${plugin.name} because of missing dependencies: ${missing.join(", ")}`)
+      this.instance.log.warn(`refusing to load plugin ${plugin.name} because of missing dependencies: ${missing.join(", ")}`, LogMessage.Source.PLUGIN, plugin.name)
     })
   }
 
@@ -64,10 +64,10 @@ export class PluginWorker {
         })
         this.state = State.INIT
       })
-      worker.on("online", () => winston.info(`Plugin worker started (instance ${this.instance.id})`))
-      worker.on("error", err => winston.error(err))
+      worker.on("online", () => this.instance.log.info(`Plugin worker started (instance ${this.instance.id})`))
+      worker.on("error", err => this.instance.log.error(err))
       worker.on("exit", code => {
-        winston.info(`worker exited with code ${code} (instance ${this.instance.id})`)
+        this.instance.log.info(`worker exited with code ${code} (instance ${this.instance.id})`)
         worker.removeAllListeners()
         messenger.removeAllListeners()
       })
@@ -78,10 +78,42 @@ export class PluginWorker {
    * register events for various commands from the worker
    */
   private registerEvents() {
-    this.messenger!.on("GET_PLUGIN_CONFIG", ({ message }) => {
+    if (!this.messenger) throw new Error(`no messenger has been registered`)
+    this.messenger.on("GET_PLUGIN_CONFIG", ({ message }) => {
       const plugin = this.parent.findId(message.data.id)
       if (!plugin) return message.except(`could not find plugin with id ${message.data.id}`)
       message.done(plugin.getConfig())
+    })
+    this.messenger.on("LOG_MESSAGE", async ({ message }) => {
+      try {
+        switch (message.data.level) {
+          default:
+          case "info":
+            await this.instance.log.info(
+              message.data.message,
+              LogMessage.Source.PLUGIN,
+              message.data.pluginName
+            )
+            break
+          case "warn":
+            await this.instance.log.warn(
+              message.data.message,
+              LogMessage.Source.PLUGIN,
+              message.data.pluginName
+            )
+            break
+          case "error":
+            await this.instance.log.error(
+              message.data.message,
+              LogMessage.Source.PLUGIN,
+              message.data.pluginName
+            )
+            break
+        }
+        message.done()
+      } catch (e) {
+        message.except(e.message)
+      }
     })
   }
 
@@ -128,7 +160,7 @@ export class PluginWorker {
    * @param plugin plugin which should get started
    */
   async startPlugin(plugin: Plugin) {
-    winston.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`)
+    this.instance.log.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`, LogMessage.Source.PLUGIN, plugin.name)
     await plugin.setAutostart(true)
     return this.sendMessage("startPlugin", plugin.toJSON())
   }

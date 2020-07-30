@@ -1,4 +1,4 @@
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 import { PluginManager } from "./PluginManager"
 import { Plugin } from "./Plugin"
 import { Plugin as PluginEntity } from "@entity/Plugin"

@@ -13,7 +13,8 @@ export const InstanceScope = {
   ACCESS: 0x01n,
   CREATE: 0x02n,
   UPDATE: 0x04n,
-  DELETE: 0x08n
+  DELETE: 0x08n,
+  LOGS: 0x10n
 }
 
 export const InstanceUserScope = {
@@ -49,7 +50,8 @@ export const ReservedSlotScope = {
 
 export const PluginScope = {
   ACCESS: 0x01000000000000n,
-  MODIFY: 0x02000000000000n
+  MODIFY: 0x02000000000000n,
+  LOGS: 0x10n
 }
 
 export const VariableScope = {
@@ -132,6 +134,7 @@ export function getScopesFromMask(mask: string) {
         instance("CREATE")
         instance("DELETE")
         instance("UPDATE")
+        instance("LOGS")
         return
       case "INSTANCEUSER":
         const user = validateScope(key, InstanceUserScope)
@@ -166,6 +169,7 @@ export function getScopesFromMask(mask: string) {
         const plugin = validateScope(key, PluginScope)
         plugin("ACCESS")
         plugin("MODIFY")
+        plugin("LOGS")
         return
       case "VARIABLE":
         const vars = validateScope(key, VariableScope)

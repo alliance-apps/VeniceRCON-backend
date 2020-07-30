@@ -19,11 +19,34 @@ export class WorkerPlugin {
     if (this.state !== WorkerPlugin.State.STOPPED)
       throw new Error(`Plugin is not in state stopped! got state ${this.state}`)
     this.state = WorkerPlugin.State.STARTED
-    this.exported = await require(this.path)({
+    const callback = require(this.path)
+    if (typeof callback !== "function") throw new Error(`expected a function as export in plugin ${this.info.name} but received ${typeof callback}`)
+    this.exported = await callback(await this.getPluginProps())
+  }
+
+  private async getPluginProps() {
+    return {
       config: await this.getConfig(),
       battlefield: this.parent.battlefield,
-      dependency: this.getDependencies()
-    })
+      dependency: this.getDependencies(),
+      logger: this.getLogger()
+    }
+  }
+
+  private getLogger() {
+    const log = async (message: string, level: string) => {
+      try {
+        await this.parent.messenger.send("LOG_MESSAGE", { message: JSON.stringify(message, null, 2), level, pluginName: this.info.name })
+      } catch (e) {
+        // tslint:disable-next-line: no-console
+        console.log(`could not log message "${message}" with loglevel ${level}`, e)
+      }
+    }
+    return {
+      info: (message: string) => log(message, "info"),
+      warn: (message: string) => log(message, "warn"),
+      error: (message: string) => log(message, "error")
+    }
   }
 
   private getDependencies(): Record<string, any> {

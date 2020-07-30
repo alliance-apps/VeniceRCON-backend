@@ -1,7 +1,7 @@
 import Router from "koa-joi-router"
 import { perm } from "@service/koa/permission"
 import { PluginScope } from "@service/permissions/Scopes"
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 import pluginRouter from "./plugin"
 
 const api = Router()

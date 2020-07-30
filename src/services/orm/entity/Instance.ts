@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Permission } from "./Permission"
 import { Invite } from "./Invite"
@@ -6,6 +6,7 @@ import { config } from "@service/config"
 import { Plugin } from "./Plugin"
 import { ChatMessage } from "./ChatMessage"
 import { Kill } from "./Kill"
+import { LogMessage } from "./LogMessage"
 
 @Entity()
 export class Instance extends AbstractEntity<Instance> {
@@ -47,6 +48,9 @@ export class Instance extends AbstractEntity<Instance> {
 
   @OneToMany(type => Kill, kill => kill.instance)
   kills!: Promise<Kill[]>
+
+  @OneToMany(type => LogMessage, msg => msg.instance)
+  logs!: Promise<LogMessage[]>
 
   /** creates a new instance */
   static from(props: Instance.ICreate) {

@@ -2,6 +2,7 @@ import Router from "koa-joi-router"
 import { instanceManager } from "@service/battlefield"
 import { perm } from "@service/koa/permission"
 import userRouter from "./users"
+import logRouter from "./logs"
 import playerRouter from "./players"
 import banRouter from "./bans"
 import mapRouter from "./maps"
@@ -88,6 +89,7 @@ api.route({
   }
 })
 
+api.use("/logs", logRouter.middleware())
 api.use("/players", playerRouter.middleware())
 api.use("/users", perm(InstanceUserScope.ACCESS), userRouter.middleware())
 api.use("/bans", perm(BanScope.ACCESS), banRouter.middleware())

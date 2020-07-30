@@ -4,9 +4,7 @@ import path from "path"
 import { parse } from "yaml"
 import { PluginBlueprint } from "./PluginBlueprint"
 
-/**
- * handles plugin blueprints
- */
+/** handles plugin blueprints */
 export class PluginManager {
 
   readonly baseDir: string

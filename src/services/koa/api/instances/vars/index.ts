@@ -1,6 +1,5 @@
 import Router from "koa-joi-router"
-import { Instance } from "@service/battlefield/Instance"
-import winston from "winston"
+import { Instance } from "@service/battlefield/libs/Instance"
 import { InstanceContainer } from "@service/container/InstanceContainer"
 import { perm } from "@service/koa/permission"
 import { VariableScope } from "@service/permissions/Scopes"
@@ -47,7 +46,7 @@ api.route({
     } catch (e) {
       ctx.status = 500
       ctx.body = e.message
-      winston.error(e)
+      ctx.state.instance!.log.error(e)
     }
   }
 })

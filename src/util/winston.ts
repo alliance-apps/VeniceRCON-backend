@@ -1,7 +1,7 @@
 import winston, { format, transports } from "winston"
 import chalk from "chalk"
 
-const errorLog = format(info => {
+export const errorLog = format(info => {
   if (info instanceof Error) info.error = info
   if (info.stack) {
     info.error = new Error(info.message)
@@ -10,7 +10,7 @@ const errorLog = format(info => {
   return info
 })
 
-const prettyLog = format(info => {
+export const prettyLog = format(info => {
   const messages: string[] = []
   let meta = ""
   if (info.message !== undefined) messages.push(info.message)
@@ -51,7 +51,6 @@ winston.configure({
       level: "info",
       format: format.combine(
         format.timestamp({format: "DD.MM.YYYY HH:mm:ss.SSS"}),
-        //errorLog(),
         prettyLog(),
         format.printf(opts => opts.message)
       )

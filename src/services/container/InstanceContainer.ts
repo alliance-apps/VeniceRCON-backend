@@ -1,4 +1,4 @@
-import { Instance } from "../battlefield/Instance"
+import { Instance } from "../battlefield/libs/Instance"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity"
 import { Battlefield } from "vu-rcon"

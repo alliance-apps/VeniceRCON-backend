@@ -1,6 +1,6 @@
 import winston from "winston"
 import { metaSchema } from "../schema"
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Plugin } from "./Plugin"
 import { PluginWorker } from "./PluginWorker"

@@ -2,7 +2,7 @@ import Router from "koa-joi-router"
 import { perm } from "@service/koa/permission"
 import { MapScope } from "@service/permissions/Scopes"
 import mapRouter from "./map"
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 
 const api = Router()
 const { Joi } = Router

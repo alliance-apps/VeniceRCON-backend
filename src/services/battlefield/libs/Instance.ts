@@ -3,8 +3,7 @@ import { Instance as InstanceEntity } from "@service/orm/entity/Instance"
 import { InstanceContainer } from "@service/container/InstanceContainer"
 import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
-import { PrependAction } from "../../util/PrependAction"
-import winston from "winston"
+import { PrependAction } from "../../../util/PrependAction"
 import { Connection } from "./Connection"
 import { pluginManager } from "@service/plugin"
 import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
@@ -13,6 +12,7 @@ import { Variable } from "vu-rcon/lib/Variable"
 import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
+import { InstanceLogger } from "./InstanceLogger"
 
 export class Instance {
 
@@ -21,6 +21,7 @@ export class Instance {
   readonly plugin: InstancePlugin
   readonly chat: ChatManager
   readonly kill: KillFeedManager
+  readonly log: InstanceLogger
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
@@ -28,6 +29,7 @@ export class Instance {
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
+    this.log = new InstanceLogger({ instance: this })
     this.syncInterval = props.entity.syncInterval
     this.connection = new Connection({
       battlefield: props.battlefield,
@@ -104,7 +106,7 @@ export class Instance {
 
   /** retrieves a single player entity by its name */
   async getPlayerByName(name: string) {
-    let player = await Player.findOne({ name })
+    const player = await Player.findOne({ name })
     return player ? player : this.createPlayerFromName(name)
   }
 
@@ -259,7 +261,7 @@ export class Instance {
       try {
         await instance.start()
       } catch (e) {
-        winston.warn(`could not connect to battlefield server with id ${instance.id} message: ${e.message}`)
+        instance.log.warn(`could not connect to battlefield server with id ${instance.id} message: ${e.message}`)
       }
     }
     return instance

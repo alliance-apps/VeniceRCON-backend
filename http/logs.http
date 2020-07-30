@@ -1,0 +1,14 @@
+@instanceId=1
+@userId=2
+
+### retrieves instance specific logs from an instance
+GET {{$dotenv url}}/api/instances/{{instanceId}}/logs/instance
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieves plugin related logs
+GET {{$dotenv url}}/api/instances/{{instanceId}}/logs/plugins
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieves logs from a single plugin
+GET {{$dotenv url}}/api/instances/{{instanceId}}/logs/plugins/store
+Authorization: Bearer {{$dotenv jwt}}

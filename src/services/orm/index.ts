@@ -16,6 +16,7 @@ import { Player } from "@entity/Player"
 import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
 import { Weapon } from "@entity/Weapon"
+import { LogMessage } from "@entity/LogMessage"
 
 export let connection: Connection
 
@@ -37,7 +38,8 @@ export async function connect() {
       Player,
       ChatMessage,
       Kill,
-      Weapon
+      Weapon,
+      LogMessage
     ]
   })
 

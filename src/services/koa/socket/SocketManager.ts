@@ -1,6 +1,7 @@
 import { Socket } from "./Socket"
 import io from "socket.io"
 import { SocketPool } from "./SocketPool"
+import { LogMessage } from "@entity/LogMessage"
 
 export class SocketManager extends SocketPool {
 
@@ -34,6 +35,17 @@ export class SocketManager extends SocketPool {
       .emit(SocketManager.INSTANCE.UPDATE, { id, changes })
   }
 
+  emitInstanceLogMessage(id: number, entity: LogMessage) {
+    this.io
+      .to(SocketManager.getInstanceRoomName(id))
+      .emit(SocketManager.INSTANCE.LOG, {
+        id: entity.instanceId,
+        date: entity.created,
+        message: entity.message,
+        level: entity.level
+      })
+  }
+
   static getInstanceRoomName(id: number) {
     return `${SocketManager.INSTANCE.NAMESPACE}#${id}`
   }
@@ -48,7 +60,8 @@ export namespace SocketManager {
     REMOVE = "INSTANCE#REMOVE",
     ADD = "INSTANCE#ADD",
     CHAT = "INSTANCE#CHAT",
-    KILL = "INSTANCE#KILL"
+    KILL = "INSTANCE#KILL",
+    LOG = "INSTANCE#LOG"
   }
 
   export enum SELF {

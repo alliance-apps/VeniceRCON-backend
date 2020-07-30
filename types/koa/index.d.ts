@@ -1,4 +1,4 @@
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 import { JsonWebToken } from "@service/koa/jwt"
 import { Permission } from "@entity/Permission"
 import { Battlefield } from "vu-rcon"

@@ -1,7 +1,7 @@
 import { Socket as IOSocket } from "socket.io"
 import { instanceManager } from "@service/battlefield"
 import { InstanceScope } from "@service/permissions/Scopes"
-import { Instance } from "@service/battlefield/Instance"
+import { Instance } from "@service/battlefield/libs/Instance"
 import { SocketManager } from "./SocketManager"
 import { permissionManager } from "@service/permissions"
 import { ChatMessage } from "@entity/ChatMessage"

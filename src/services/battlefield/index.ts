@@ -1,4 +1,4 @@
-import { InstanceManager } from "./InstanceManager"
+import { InstanceManager } from "./libs/InstanceManager"
 
 export let instanceManager: InstanceManager
 
