@@ -29,6 +29,17 @@ export class LogMessage extends AbstractEntity<LogMessage> {
   @Column({ nullable: true })
   sourceLocation?: string
 
+  toJSON() {
+    return {
+      instanceId: this.instanceId,
+      created: this.created,
+      message: this.message,
+      level: this.level,
+      source: this.source,
+      sourceLocation: this.sourceLocation
+    }
+  }
+
   /** creates a new instance */
   static async from(props: LogMessage.ICreate) {
     const msg = new LogMessage()

@@ -6,6 +6,7 @@ import { SocketManager } from "./SocketManager"
 import { permissionManager } from "@service/permissions"
 import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
+import { LogMessage } from "@entity/LogMessage"
 
 export class Socket {
 
@@ -90,6 +91,20 @@ export class Socket {
     this.socket.emit(
       SocketManager.INSTANCE.KILL,
       { kills: await Promise.all(kills.map(kill => kill.toJSON())) }
+    )
+  }
+
+  emitInstanceUpdate(id: number, changes: [string, any][]) {
+    this.socket.emit(
+      SocketManager.INSTANCE.UPDATE,
+      { id, changes }
+    )
+  }
+
+  emitInstanceLogMessages(messages: LogMessage[]) {
+    this.socket.emit(
+      SocketManager.INSTANCE.LOG,
+      { messages: messages.map(msg => msg.toJSON()) }
     )
   }
 

@@ -31,7 +31,11 @@ export abstract class StreamingContainer<T extends State.Type> {
   /** updates an entity */
   update(props: State.DeepPartial<T>) {
     const changes = this.state.update(props)
-    if (changes.length > 0) socketManager.emitInstanceUpdate(this.id, changes)
+    if (changes.length > 0) {
+      socketManager
+        .subscribedTo(this.id)
+        .emitInstanceUpdate(this.id, changes)
+    }
     return changes
   }
 

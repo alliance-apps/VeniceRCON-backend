@@ -8,7 +8,7 @@ export let socketManager: SocketManager
 
 export async function initialize(server: Server) {
 
-  socketManager = new SocketManager(server)
+  socketManager = new SocketManager()
 
   server.use(
     ioJWT.authenticate({ secret: await getSecret() },

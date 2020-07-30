@@ -1,6 +1,7 @@
 import { Socket } from "./Socket"
 import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
+import { LogMessage } from "@entity/LogMessage"
 
 export class SocketPool {
 
@@ -36,6 +37,14 @@ export class SocketPool {
 
   emitKill(kills: Kill[]) {
     this.sockets.forEach(s => s.emitKill(kills))
+  }
+
+  emitInstanceLogMessages(entities: LogMessage[]) {
+    this.sockets.forEach(s => s.emitInstanceLogMessages(entities))
+  }
+
+  emitInstanceUpdate(id: number, changes: [string, any][]) {
+    this.sockets.forEach(s => s.emitInstanceUpdate(id, changes))
   }
 
   /** retrieves all connected sockets by a specific user id */

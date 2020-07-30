@@ -3,6 +3,7 @@ import { Instance } from "./Instance"
 import { errorLog, prettyLog } from "util/winston"
 import { LogMessage } from "@entity/LogMessage"
 import { socketManager } from "@service/koa/socket"
+import { InstanceScope, PluginScope } from "@service/permissions/Scopes"
 
 export class InstanceLogger {
 
@@ -30,7 +31,12 @@ export class InstanceLogger {
 
   private async createDBEntry(message: string, level: string, source: LogMessage.Source, sourceLocation?: string) {
     const entity = await LogMessage.from({ message, level, instanceId: this.parent.id, source, sourceLocation })
-    socketManager.emitInstanceLogMessage(this.parent.id, entity)
+    let pool = socketManager.subscribedTo(this.parent.id)
+    if (entity.source === LogMessage.Source.INSTANCE)
+      pool = pool.hasPermission(this.parent.id, InstanceScope.LOGS)
+    if (entity.source === LogMessage.Source.PLUGIN)
+      pool = pool.hasPermission(this.parent.id, PluginScope.LOGS)
+    pool.emitInstanceLogMessages([entity])
   }
 
   async info(
