@@ -23,6 +23,8 @@ webserver:
   cors:
     Access-Control-Allow-Credentials: "true"
     Access-Control-Allow-Origin: "*"
+    Access-Control-Allow-Methods: "*"
+    Access-Control-Max-Age: 7200
     Access-Control-Allow-Headers: 
       - Authorization
       - Content-Type
