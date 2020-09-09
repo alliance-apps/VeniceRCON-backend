@@ -9,6 +9,9 @@ Authorization: Bearer {{$dotenv jwt}}
 GET {{$dotenv url}}/api/instances/{{instanceId}}/maps/current
 Authorization: Bearer {{$dotenv jwt}}
 
+### updates the map index of the specified map
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/maps/5/position/4
+Authorization: Bearer {{$dotenv jwt}}
 
 ### sets the next map index
 POST {{$dotenv url}}/api/instances/{{instanceId}}/maps/0/next
