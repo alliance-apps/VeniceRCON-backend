@@ -16,16 +16,21 @@ api.patch("/position/:toIndex", perm(MapScope.MANAGE), async ctx => {
     return ctx.body = { message: "invalid index given, expected a number" }
   }
   //maximum allowed map index
-  const maximum =  ctx.state.instance!.state.get("maps").length + 1
+  const maximum = ctx.state.instance!.state.get("maps").length
   if (toIndex < 0 || toIndex > maximum) {
     ctx.status = 400
     return ctx.body = { message: `invalid index given, expected a number within 0-${maximum}` }
   }
   const { battlefield } = ctx.state.instance!
   try {
-    console.log({ index, toIndex, map })
     await battlefield.delMap(index)
-    await battlefield.addMap(map, mode, rounds, toIndex)
+    try {
+      await battlefield.addMap(map, mode, rounds, maximum < toIndex ? toIndex : undefined)
+    } catch (e) {
+      //try to restore the old state
+      await battlefield.addMap(map, mode, rounds, index)
+      throw e
+    }
     await ctx.state.instance!.mapList()
     ctx.status = 200
   } catch (e) {
