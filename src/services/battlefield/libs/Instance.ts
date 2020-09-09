@@ -94,7 +94,8 @@ export class Instance {
     this.playerListAction.unpause()
     await Promise.all([
       this.playerListAction.execute(),
-      this.updateInterval()
+      this.updateInterval(),
+      this.currentMapIndices()
     ])
   }
 
