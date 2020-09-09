@@ -1,0 +1,73 @@
+
+export class StateService<T> {
+  constructor(props: StateService.Props) {
+
+  }
+}
+
+export namespace StateService {
+  export interface Props {
+    state: ObjectState
+  }
+
+  export enum Type {
+    STRING = "string",
+    NUMBER = "number",
+    BOOLEAN = "boolean",
+    OBJECT = "object",
+    ARRAY = "array"
+  }
+
+  export type StateInfo =
+    StringState | NumberState | BooleanState | ObjectState | ArrayState<any>
+
+  export interface StringState {
+    type: Type.STRING
+    default: string|null
+  }
+
+  export interface NumberState {
+    type: Type.NUMBER
+    default: number|null
+  }
+
+  export interface BooleanState {
+    type: Type.BOOLEAN
+    default: boolean|null
+  }
+
+  export interface ObjectState {
+    type: Type.OBJECT
+    default: {}|null
+    state: StateInfo
+  }
+
+  export interface ArrayState<T extends StateInfo> {
+    type: Type.ARRAY
+    default: T[]|null
+    state: StateInfo
+  }
+
+  export type StateObject<T extends State> = {
+    [P in keyof T]: (
+      T[P]["type"] extends Type.OBJECT ? StateObject<T[P]["state"]> :
+      T[P]["type"] extends Type.ARRAY ? StateObject<T[P]["state"]>[] :
+      T[P]["default"]
+    )
+  }
+
+}
+
+const state = new StateService({
+  state: {
+    foo: {
+      type: StateService.Type.STRING,
+      default: ""
+    },
+    maps: {
+      type: StateService.Type.ARRAY,
+      default: [],
+      state: { type: StateService.Type.STRING, default: "maps" }
+    }
+  }
+})

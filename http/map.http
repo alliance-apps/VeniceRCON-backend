@@ -8,3 +8,13 @@ Authorization: Bearer {{$dotenv jwt}}
 ### retrieves the current map index
 GET {{$dotenv url}}/api/instances/{{instanceId}}/maps/current
 Authorization: Bearer {{$dotenv jwt}}
+
+
+### sets the next map index
+POST {{$dotenv url}}/api/instances/{{instanceId}}/maps/0/next
+Authorization: Bearer {{$dotenv jwt}}
+
+### starts the next round
+POST {{$dotenv url}}/api/instances/{{instanceId}}/maps/nextRound
+Authorization: Bearer {{$dotenv jwt}}
+
