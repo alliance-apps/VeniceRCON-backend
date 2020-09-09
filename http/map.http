@@ -10,7 +10,7 @@ GET {{$dotenv url}}/api/instances/{{instanceId}}/maps/current
 Authorization: Bearer {{$dotenv jwt}}
 
 ### updates the map index of the specified map
-PATCH {{$dotenv url}}/api/instances/{{instanceId}}/maps/4/position/6
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/maps/5/position/2
 Authorization: Bearer {{$dotenv jwt}}
 
 ### sets the next map index
