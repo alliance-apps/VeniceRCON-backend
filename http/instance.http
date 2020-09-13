@@ -1,17 +1,6 @@
-@id=1
+@id=3
 
-### create a new instance
-POST {{$dotenv url}}/api/instances
-Authorization: Bearer {{$dotenv jwt}}
-Content-Type: application/json
-
-{
-  "host": "{{$dotenv instance_host}}",
-  "port": {{$dotenv instance_port}},
-  "password": "{{$dotenv instance_pass}}"
-}
-
-### create a new instance
+### create a new instance1
 POST {{$dotenv url}}/api/instances
 Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
@@ -20,6 +9,17 @@ Content-Type: application/json
   "host": "{{$dotenv instance1_host}}",
   "port": {{$dotenv instance1_port}},
   "password": "{{$dotenv instance1_pass}}"
+}
+
+### create a new instance2
+POST {{$dotenv url}}/api/instances
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "host": "{{$dotenv instance2_host}}",
+  "port": {{$dotenv instance2_port}},
+  "password": "{{$dotenv instance2_pass}}"
 }
 
 ### lists all available instances

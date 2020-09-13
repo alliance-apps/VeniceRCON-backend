@@ -28,7 +28,8 @@ api.patch("/position/:toIndex", perm(MapScope.MANAGE), async ctx => {
       await battlefield.addMap(map, mode, rounds, toIndex < maximum ? toIndex : undefined)
     } catch (e) {
       //try to restore the old state
-      await battlefield.addMap(map, mode, rounds, index)
+      //without map index
+      await battlefield.addMap(map, mode, rounds)
       throw e
     }
     await ctx.state.instance!.mapList()

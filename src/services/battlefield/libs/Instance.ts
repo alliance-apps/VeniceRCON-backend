@@ -221,13 +221,18 @@ export class Instance {
     if (result.ranked) {
       result = {
         ...result,
-        //@ts-ignore
-        ...Object.fromEntries(Object.keys(Instance.VAR_BF3_RANKED).map(k => [k, Instance.VAR_BF3_RANKED[k]]))
+        ...Object.fromEntries(
+          //@ts-ignore
+          Object.keys(Instance.VAR_BF3_RANKED).map(k => [k, Instance.VAR_BF3_RANKED[k]])
+        )
       }
     } else {
       result = {
         ...result,
-        ...await Promise.all(Object.keys(Instance.VAR_BF3_RANKED).map(async key => [key, await this.connection.battlefield.var.get(key)]))
+        ...Object.fromEntries(await Promise.all(
+          //@ts-ignore
+          Object.keys(Instance.VAR_BF3_RANKED).map(async k => [k, await this.connection.battlefield.var.get(k)])
+        ))
       }
     }
     this.state.updateVars(result)
@@ -237,7 +242,7 @@ export class Instance {
   /* gets the default battlefield variables */
   private async getVuVariables() {
     const result = Object.fromEntries(
-      await Promise.all(Instance.VAR_VU.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+      await Promise.all(Instance.VAR_VU.map(async key => [key, await this.connection.battlefield.vu.get(key)]))
     )
     this.state.updateVars(result)
     return result
@@ -310,7 +315,7 @@ export namespace Instance {
   export const VAR_VU = [
     "DestructionEnabled", "SuppressionMultiplier",
     "DesertingAllowed", "VehicleDisablingEnabled",
-    "HighPerformanceReplication", "SetTeamTicketCount",
+    "HighPerformanceReplication",
     "FrequencyMode", "SpectatorCount"
   ]
 

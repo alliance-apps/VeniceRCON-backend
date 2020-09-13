@@ -37,27 +37,20 @@ api.route({
 })
 
 
-api.route({
-  method: "DELETE",
-  path: "/",
-  validate: {
-    type: "json",
-    body: Joi.object({
-      subset: Joi.string().allow("guid", "name", "ip").required(),
-      id: Joi.string().min(1)
-    })
-  },
-  pre: perm(BanScope.DELETE),
-  handler: async ctx => {
-    const { battlefield } = ctx.state.instance!
-    const { subset, id } = ctx.request.body
-    try {
-      await battlefield.delBan([subset, id])
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+api.delete("/:subset/:id", perm(BanScope.DELETE), async ctx => {
+  const validSubsets = ["guid", "name", "ip"]
+  const { subset, id } = ctx.request.params
+  if (!validSubsets.includes(subset)) {
+    ctx.body = { message: `subset needs to be one of: ${validSubsets.join(", ")}` }
+    return ctx.status = 400
+  }
+  const { battlefield } = ctx.state.instance!
+  try {
+    await battlefield.delBan([subset, id])
+    ctx.status = 200
+  } catch (e) {
+    ctx.status = 500
+    ctx.body = { message: e.message }
   }
 })
 
