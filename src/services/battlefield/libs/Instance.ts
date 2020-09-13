@@ -316,7 +316,7 @@ export namespace Instance {
     "DestructionEnabled", "SuppressionMultiplier",
     "DesertingAllowed", "VehicleDisablingEnabled",
     "HighPerformanceReplication",
-    "FrequencyMode", "SpectatorCount"
+    "FrequencyMode", "SpectatorCount",
     "SunFlareEnabled", "ColorCorrectionEnabled",
     "TimeScale", "SpawnProtectionEnabled",
     "SquadSize"
