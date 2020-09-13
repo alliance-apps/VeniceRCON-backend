@@ -317,6 +317,10 @@ export namespace Instance {
     "DesertingAllowed", "VehicleDisablingEnabled",
     "HighPerformanceReplication",
     "FrequencyMode", "SpectatorCount"
+    "SunFlareEnabled", "ColorCorrectionEnabled",
+    "TimeScale", "SpawnProtectionEnabled",
+    "SquadSize"
+    
   ]
 
   export const VAR_BF3_OPTIONAL = {
