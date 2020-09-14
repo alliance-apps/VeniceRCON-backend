@@ -1,0 +1,18 @@
+@instanceId=2
+@name=ADS
+
+### retrieves a list of enabled and available mods
+GET {{$dotenv url}}/api/instances/{{instanceId}}/mods
+Authorization: Bearer {{$dotenv jwt}}
+
+### clears all mods
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/mods/clear
+Authorization: Bearer {{$dotenv jwt}}
+
+### adds a mod to the game
+POST {{$dotenv url}}/api/instances/{{instanceId}}/mods/{{name}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### removes a mod from the game
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/mods/{{name}}
+Authorization: Bearer {{$dotenv jwt}}

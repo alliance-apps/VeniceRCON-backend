@@ -7,7 +7,8 @@ export type Scopes =
   typeof ReservedSlotScope |
   typeof PluginScope |
   typeof VariableScope |
-  typeof EventScope
+  typeof EventScope |
+  typeof ModScope
 
 export const InstanceScope = {
   ACCESS: 0x01n,
@@ -61,6 +62,13 @@ export const VariableScope = {
 export const EventScope = {
   CHAT: 0x010000000000000000n,
   KILL: 0x020000000000000000n
+}
+
+export const ModScope = {
+  ACCESS: 0x0100000000000000000n,
+  CREATE: 0x0200000000000000000n,
+  UPDATE: 0x0400000000000000000n,
+  DELETE: 0x0800000000000000000n
 }
 
 const translation: Record<string, Scopes> = {
@@ -178,6 +186,13 @@ export function getScopesFromMask(mask: string) {
       case "VARIABLE":
         const events = validateScope(key, EventScope)
         events("CHAT")
+        return
+      case "VARIABLE":
+        const mods = validateScope(key, ModScope)
+        mods("ACCESS")
+        mods("CREATE")
+        mods("DELETE")
+        mods("UPDATE")
         return
     }
   })

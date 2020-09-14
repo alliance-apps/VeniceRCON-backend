@@ -14,6 +14,7 @@ declare module "koa" {
     map?: Battlefield.MapEntry
     name?: string
     plugin?: Plugin
+    mod?: string
   }
 
 }
