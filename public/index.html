@@ -13,12 +13,14 @@
 
       async function requestToken() {
         const token = prompt("Please enter a valid JWT Token", "")
-        if (!token) requestToken()
+        if (!token) return requestToken()
         await whoami(token)
         localStorage.setItem("token", token)
+        return token
       }
   
       async function whoami(token = localStorage.getItem("token")) {
+        if (!token) token = requestToken()
         const res = await fetch("/api/auth/whoami", {
           headers: { "Authorization": `Bearer ${token}` }
         })
@@ -72,7 +74,7 @@
       }
   
       connect()
-  
+
     </script>
   </body> 
 </html>

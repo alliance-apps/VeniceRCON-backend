@@ -1,6 +1,6 @@
 import winston, { format, transports } from "winston"
 import { Instance } from "./Instance"
-import { errorLog, prettyLog } from "util/winston"
+import { errorLog, prettyLog } from "../../../util/winston"
 import { LogMessage } from "@entity/LogMessage"
 import { socketManager } from "@service/koa/socket"
 import { InstanceScope, PluginScope } from "@service/permissions/Scopes"

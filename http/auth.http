@@ -20,9 +20,9 @@ POST {{$dotenv url}}/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "foobar",
-  "password": "foobar",
-  "token": "b5010a35b55a30df7e14d77a70a5ac1d"
+  "username": "{{$dotenv username}}",
+  "password": "{{$dotenv username}}",
+  "token": "373d562730c79bdb6bf39c63d56f2c49"
 }
 
 ### invites an existing user via invite token

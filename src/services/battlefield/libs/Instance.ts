@@ -13,6 +13,7 @@ import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
+import winston from "winston"
 
 export class Instance {
 
@@ -230,8 +231,7 @@ export class Instance {
       result = {
         ...result,
         ...Object.fromEntries(await Promise.all(
-          //@ts-ignore
-          Object.keys(Instance.VAR_BF3_RANKED).map(async k => [k, await this.connection.battlefield.var.get(k)])
+          Object.keys(Instance.VAR_BF3_RANKED).map(key => this.getVariable(key, "var"))
         ))
       }
     }
@@ -242,10 +242,20 @@ export class Instance {
   /* gets the default battlefield variables */
   private async getVuVariables() {
     const result = Object.fromEntries(
-      await Promise.all(Instance.VAR_VU.map(async key => [key, await this.connection.battlefield.vu.get(key)]))
+      await Promise.all(Instance.VAR_VU.map(key => this.getVariable(key, "vu")))
     )
     this.state.updateVars(result)
     return result
+  }
+
+  /** tries to retrieve a variable with namespace and key */
+  private async getVariable(key: string, namespace: "vu"|"var") {
+    try {
+      return [key, await this.connection.battlefield[namespace].get(key)]
+    } catch (e) {
+      winston.error(`Could not get variable "${namespace}.${key}": ${e.message}`)
+      return [key, undefined]
+    }
   }
 
   /** retrieves all connected players */
@@ -320,7 +330,6 @@ export namespace Instance {
     "SunFlareEnabled", "ColorCorrectionEnabled",
     "TimeScale", "SpawnProtectionEnabled",
     "SquadSize"
-    
   ]
 
   export const VAR_BF3_OPTIONAL = {

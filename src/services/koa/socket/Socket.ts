@@ -36,7 +36,7 @@ export class Socket {
   async checkAccess() {
     const instances = await instanceManager.getInstancesWithPermissions(this.userId, InstanceScope.ACCESS)
     const access = [...this.instances]
-    instances.map(instance => {
+    instances.forEach(instance => {
       if (access.includes(instance.id)) {
         access.splice(access.indexOf(instance.id), 1)
       } else {
