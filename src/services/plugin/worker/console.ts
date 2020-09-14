@@ -25,5 +25,6 @@ global.console = {
 
 setTimeout(() => {
   winston.info("going to log")
+  // tslint:disable-next-line
   console.log("foo")
 }, 1000)

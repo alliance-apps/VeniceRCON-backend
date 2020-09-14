@@ -18,6 +18,9 @@ jobs:
     - name: install dependencies
       run: |
         npm ci
+    - name: run linter
+      run: |
+        npm run tslint
     - name: run tests
       run: |
         npm test
