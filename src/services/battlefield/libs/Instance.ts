@@ -325,7 +325,7 @@ export namespace Instance {
   export const VAR_VU = [
     "DestructionEnabled", "SuppressionMultiplier",
     "DesertingAllowed", "VehicleDisablingEnabled",
-    "HighPerformanceReplication",
+    "HighPerformanceReplication", "ServerBanner",
     "FrequencyMode", "SpectatorCount",
     "SunFlareEnabled", "ColorCorrectionEnabled",
     "TimeScale", "SpawnProtectionEnabled",
