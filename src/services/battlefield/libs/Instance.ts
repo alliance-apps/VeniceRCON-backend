@@ -328,7 +328,7 @@ export namespace Instance {
     "HighPerformanceReplication",
     "FrequencyMode", "SpectatorCount",
     "SunFlareEnabled", "ColorCorrectionEnabled",
-    "TimeScale", "SpawnProtectionEnabled",
+    "TimeScale", "serverBanner",
     "SquadSize"
   ]
 
