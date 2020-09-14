@@ -20,7 +20,11 @@ api.get("/", async ctx => {
     ctx.state.instance!.battlefield.getRunningMods(),
     ctx.state.instance!.battlefield.getMods()
   ])
-  ctx.body = { available, running, next }
+  ctx.body = {
+    available: available.map(mod => mod.toLowerCase()),
+    running: running.map(mod => mod.toLowerCase()),
+    next: next.map(mod => mod.toLowerCase())
+  }
 })
 
 api.patch("/clear", perm(ModScope.DELETE), async ctx => {
@@ -34,8 +38,8 @@ api.patch("/reload", perm(ModScope.UPDATE), async ctx => {
 })
 
 api.param("name", async (name, ctx, next) => {
-  const mods = await ctx.state.instance!.battlefield.getAvailableMods()
-  if (!mods.includes(name)) return ctx.status = 404
+  const mods: string[] = await ctx.state.instance!.battlefield.getAvailableMods()
+  if (!mods.some(mod => mod.toLowerCase() === name)) return ctx.status = 404
   ctx.state.mod = name
   await next()
 })

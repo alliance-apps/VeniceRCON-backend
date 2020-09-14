@@ -1,4 +1,4 @@
-import { StateService } from "../../src/services/container/manager/state/StateService"
+import { StateService } from "../../src/services/container/manager/StateService"
 
 const { Type } = StateService
 

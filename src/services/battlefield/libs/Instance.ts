@@ -328,8 +328,7 @@ export namespace Instance {
     "HighPerformanceReplication", "ServerBanner",
     "FrequencyMode", "SpectatorCount",
     "SunFlareEnabled", "ColorCorrectionEnabled",
-    "TimeScale", "serverBanner",
-    "SquadSize"
+    "TimeScale", "SquadSize"
   ]
 
   export const VAR_BF3_OPTIONAL = {

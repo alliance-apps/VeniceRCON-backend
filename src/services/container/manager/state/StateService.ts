@@ -84,7 +84,7 @@ export namespace StateService {
     state: State
   }
 
-  export interface ArrayState<T extends StateInfo = StateInfo> {
+  export interface ArrayState<T extends AcceptableType = AcceptableType> {
     type: Type.ARRAY
     state: T
     unique?: string
@@ -92,8 +92,10 @@ export namespace StateService {
   }
 
   export type State = {
-    [key: string]: StateInfo
+    [key: string]: AcceptableType
   }
+
+  export type AcceptableType = StateInfo|Type
 
   export type ExtractStateInfoType<T extends StateInfo> =
     //@ts-ignore
