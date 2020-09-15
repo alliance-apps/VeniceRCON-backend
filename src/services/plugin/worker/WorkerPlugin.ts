@@ -20,7 +20,7 @@ export class WorkerPlugin {
       throw new Error(`Plugin is not in state stopped! got state ${this.state}`)
     this.state = WorkerPlugin.State.STARTED
     const callback = require(this.path)
-    if (typeof callback !== "function") throw new Error(`expected a function as export in plugin ${this.info.name} but received ${typeof callback}`)
+    if (typeof callback !== "function") throw new Error(`expected a function as export in plugin "${this.info.name}" but received ${typeof callback}`)
     this.exported = await callback(await this.getPluginProps())
   }
 

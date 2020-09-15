@@ -56,11 +56,10 @@ export class Messenger extends EventEmitter {
     })
   }
 
-  sendErrorAck(id: number, message: string) {
+  sendErrorAck(id: number, message: string, stack?: string) {
     return this.post(<Messenger.ErrorAckMessage>{
       type: Messenger.MessageType.ERROR_ACK,
-      id,
-      message
+      id, message, stack
     })
   }
 
@@ -104,7 +103,9 @@ export class Messenger extends EventEmitter {
     const { id } = ev
     if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id}`)
     clearTimeout(this.acks[id].timeout)
-    this.acks[id].reject(new Error(ev.message))
+    const error = new Error(ev.message)
+    error.stack = ev.stack
+    this.acks[id].reject(error)
     return delete this.acks[id]
   }
 
@@ -198,6 +199,7 @@ export namespace Messenger {
     type: MessageType.ERROR_ACK
     id: number
     message: string
+    stack: string
   }
 
   export interface DataMessage {

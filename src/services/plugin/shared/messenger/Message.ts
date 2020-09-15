@@ -28,8 +28,8 @@ export class Message<T = any> {
   }
 
   /** acknowledges the message with an error */
-  except(error: string) {
-    return this.parent.sendErrorAck(this.id, error)
+  except(message: string) {
+    return this.parent.sendErrorAck(this.id, message, new Error().stack)
   }
 }
 

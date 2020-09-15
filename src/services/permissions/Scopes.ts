@@ -79,7 +79,8 @@ const translation: Record<string, Scopes> = {
   MAP: MapScope,
   RESERVEDSLOT: ReservedSlotScope,
   VARIABLE: VariableScope,
-  EVENT: EventScope
+  EVENT: EventScope,
+  MOD: ModScope
 }
 
 /** gets all available scope names */
@@ -187,7 +188,7 @@ export function getScopesFromMask(mask: string) {
         const events = validateScope(key, EventScope)
         events("CHAT")
         return
-      case "VARIABLE":
+      case "MOD":
         const mods = validateScope(key, ModScope)
         mods("ACCESS")
         mods("CREATE")

@@ -54,10 +54,15 @@ export class Plugin {
     await entity.update({ start })
   }
 
-  start() {
+  async start() {
     if (this.state === Plugin.State.STARTED) return null
     this.state = Plugin.State.STARTED
-    return this.worker.startPlugin(this)
+    try {
+      await this.worker.startPlugin(this)
+    } catch (e) {
+      this.worker.instance.log.error(e.message)
+      throw e
+    }
   }
 
   stop() {

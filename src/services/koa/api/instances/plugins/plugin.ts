@@ -4,7 +4,6 @@ import { perm } from "@service/koa/permission"
 import { checkVariableSchema } from "@service/plugin/schema"
 
 const api = Router()
-const { Joi } = Router
 
 api.get("/", async ctx => {
   ctx.body = ctx.state.plugin!.toJSON()
@@ -34,8 +33,13 @@ api.route({
   path: "/start",
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {
-    await ctx.state.plugin!.start()
-    ctx.status = 200
+    try {
+      await ctx.state.plugin!.start()
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = { message: e.message }
+    }
   }
 })
 
@@ -44,8 +48,13 @@ api.route({
   path: "/stop",
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {
-    await ctx.state.plugin!.stop()
-    ctx.status = 200
+    try {
+      await ctx.state.plugin!.stop()
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = { message: e.message }
+    }
   }
 })
 

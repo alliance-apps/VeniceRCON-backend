@@ -1,4 +1,5 @@
 import { deepStrictEqual } from "assert"
+import _ from "lodash"
 
 export class State<T extends State.Type> {
 
@@ -40,22 +41,7 @@ export class State<T extends State.Type> {
 
   /** copies an object in depth */
   static deepCopy<T>(obj: T): T {
-    const copy: Partial<T> = <any>{}
-    if (Array.isArray(obj)) return (obj as unknown[]).map(v => State.deepCopy(v)) as any
-    if ((typeof obj !== "object" || obj === null) && !Array.isArray(obj)) return obj
-    Object.keys(obj).forEach(k => {
-      const value = obj[k as keyof T]
-      if (typeof value === "object") {
-        //@ts-ignore
-        copy[k as keyof T] =
-          Array.isArray(value) ?
-          value.map(v => State.deepCopy(v)) :
-          State.deepCopy(value)
-      } else {
-        copy[k as keyof T] = <any>value
-      }
-    })
-    return copy as T
+    return _.cloneDeep(obj)
   }
 
   static updateDeep<
