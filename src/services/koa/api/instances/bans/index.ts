@@ -1,6 +1,7 @@
 import Router from "koa-joi-router"
 import { perm } from "@service/koa/permission"
 import { BanScope } from "@service/permissions/Scopes"
+import { Battlefield } from "vu-rcon"
 
 const api = Router()
 const { Joi } = Router
@@ -27,7 +28,9 @@ api.route({
     const { battlefield } = ctx.state.instance!
     const { reason, subset, id, durationType, duration } = ctx.request.body
     try {
-      await battlefield.addBan([subset, id], [durationType, duration],  reason, true)
+      const time: Battlefield.Timeout = [durationType]
+      if (durationType !== "perm") time.push(duration)
+      await battlefield.addBan([subset, id], time, reason, true)
       ctx.status = 200
     } catch (e) {
       ctx.status = 500
