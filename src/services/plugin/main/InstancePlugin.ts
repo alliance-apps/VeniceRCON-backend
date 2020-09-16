@@ -1,7 +1,7 @@
 import { Instance } from "@service/battlefield/libs/Instance"
+import { Plugin as PluginEntity } from "@entity/Plugin"
 import { PluginManager } from "./PluginManager"
 import { Plugin } from "./Plugin"
-import { Plugin as PluginEntity } from "@entity/Plugin"
 import { PluginWorker } from "./PluginWorker"
 
 export class InstancePlugin {

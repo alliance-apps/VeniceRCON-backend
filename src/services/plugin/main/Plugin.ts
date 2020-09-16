@@ -1,13 +1,14 @@
 import { Plugin as PluginEntity } from "@entity/Plugin"
-import { PluginBlueprint } from "./PluginBlueprint"
+import { PluginBlueprint } from "./util/PluginBlueprint"
 import { PluginWorker } from "./PluginWorker"
-import { Meta } from "../schema"
+import { Meta, RouteMethod } from "../schema"
+import { Context } from "koa"
 
 export class Plugin {
 
   readonly id: number
   readonly name: string
-  private blueprint: PluginBlueprint
+  readonly blueprint: PluginBlueprint
   private worker: PluginWorker
   state: Plugin.State = Plugin.State.STOPPED
   private config: Record<string, any>
@@ -22,6 +23,10 @@ export class Plugin {
 
   get meta() {
     return this.blueprint.meta
+  }
+
+  isRunning() {
+    return this.state === Plugin.State.STARTED
   }
 
   getConfig() {
@@ -69,6 +74,12 @@ export class Plugin {
     if (this.state === Plugin.State.STOPPED) return null
     this.state = Plugin.State.STOPPED
     return this.worker.stopPlugin(this)
+  }
+
+  async executeRoute(method: RouteMethod, path: string, ctx: Context) {
+    const route = this.blueprint.getRouteBy(method, path)
+    if (!route) throw new Error(`could not find route in plugin "${this.name}" (${method} ${path})`)
+    return this.worker.executeRoute({ method, path, plugin: this.name, body: ctx.body })
   }
 
   toJSON(): Plugin.Info {

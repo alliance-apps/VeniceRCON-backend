@@ -104,7 +104,7 @@ export class Messenger extends EventEmitter {
     if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id}`)
     clearTimeout(this.acks[id].timeout)
     const error = new Error(ev.message)
-    error.stack = ev.stack
+    error.stack = [error.stack!.split("\n")[0], ...ev.stack.split("\n").slice(1)].join("\n")
     this.acks[id].reject(error)
     return delete this.acks[id]
   }

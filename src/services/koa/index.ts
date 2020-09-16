@@ -36,6 +36,7 @@ export async function initialize() {
   app.use(router.middleware())
 
   app.use(async ctx => {
+    if (ctx.path.startsWith("/api")) return ctx.status = 404
     await koaSend(
       ctx, ctx.path, {
         root: path.join(__dirname, "/../../../public/"),

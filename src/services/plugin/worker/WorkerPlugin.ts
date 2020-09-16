@@ -1,5 +1,6 @@
 import type { Plugin as PluginType } from "../main/Plugin"
 import { PluginHandler } from "./PluginHandler"
+import { PluginRouter } from "./util/PluginRouter"
 
 export class WorkerPlugin {
 
@@ -8,6 +9,7 @@ export class WorkerPlugin {
   state: WorkerPlugin.State = WorkerPlugin.State.STOPPED
   readonly info: PluginType.Info
   exported: any
+  router: PluginRouter = new PluginRouter()
 
   constructor(props: WorkerPlugin.Props) {
     this.parent = props.parent
@@ -29,7 +31,8 @@ export class WorkerPlugin {
       config: await this.getConfig(),
       battlefield: this.parent.battlefield,
       dependency: this.getDependencies(),
-      logger: this.getLogger()
+      logger: this.getLogger(),
+      router: this.router
     }
   }
 

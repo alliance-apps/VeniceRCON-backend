@@ -3,6 +3,7 @@ import path from "path"
 import { WorkerPlugin } from "./WorkerPlugin"
 import { State } from "../shared/state"
 import { Battlefield } from "vu-rcon"
+import type { PluginWorker } from "../main/PluginWorker"
 
 export class PluginHandler {
 
@@ -18,6 +19,7 @@ export class PluginHandler {
     this.basePath = props.basePath
     this.instanceId = props.instanceId
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
+    this.messenger.on("executeRoute", this.executeRoute.bind(this))
     this.state = State.INIT
     this.init(props.rcon)
   }
@@ -34,6 +36,16 @@ export class PluginHandler {
    */
   getPluginByName(name: string) {
     return this.plugins.find(p => p.info.name === name)
+  }
+
+  private async executeRoute({ message }: Messenger.Event<PluginWorker.ExecuteRouteProps>) {
+    const plugin = this.getPluginByName(message.data.plugin)
+    if (!plugin) return message.except("Plugin not running on worker!")
+    try {
+      message.done(await plugin.router.executeRoute(message.data))
+    } catch (e) {
+      message.except(e.message)
+    }
   }
 
   private async onStartPlugin({ message }: Messenger.Event) {

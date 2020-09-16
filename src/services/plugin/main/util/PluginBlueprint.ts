@@ -1,10 +1,9 @@
 import winston from "winston"
-import { metaSchema } from "../schema"
+import { metaSchema, Meta, RouteMethod } from "../../schema"
 import { Instance } from "@service/battlefield/libs/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
-import { Plugin } from "./Plugin"
-import { PluginWorker } from "./PluginWorker"
-import { Meta } from "../schema"
+import { Plugin } from "../Plugin"
+import { PluginWorker } from "../PluginWorker"
 
 export class PluginBlueprint {
 
@@ -41,6 +40,23 @@ export class PluginBlueprint {
       })
     }
     return entity
+  }
+
+  getRouteBy(method: string, path: string) {
+    if (!this.meta.routes) return undefined
+    return this.meta.routes.find(route => (
+      route.method === method.toUpperCase() &&
+      route.name === path
+    ))
+  }
+
+  /**
+   * checks if a specific method and path exists as route
+   * @param method
+   * @param path
+   */
+  hasRoute(method: string, path: string) {
+    return this.getRouteBy(method, path) !== undefined
   }
 
   /**

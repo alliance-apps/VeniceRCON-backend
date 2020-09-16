@@ -2,7 +2,7 @@ import { promises as fs } from "fs"
 import winston from "winston"
 import path from "path"
 import { parse } from "yaml"
-import { PluginBlueprint } from "./PluginBlueprint"
+import { PluginBlueprint } from "./util/PluginBlueprint"
 
 /** handles plugin blueprints */
 export class PluginManager {

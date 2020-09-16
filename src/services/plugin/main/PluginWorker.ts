@@ -4,7 +4,7 @@ import path from "path"
 import { Plugin } from "./Plugin"
 import { Messenger } from "../shared/messenger/Messenger"
 import { State } from "../shared/state"
-import { PluginQueue } from "./PluginQueue"
+import { PluginQueue } from "./util/PluginQueue"
 import { LogMessage } from "@entity/LogMessage"
 
 /**
@@ -174,11 +174,22 @@ export class PluginWorker {
     await plugin.setAutostart(false)
     this.restart()
   }
+
+  async executeRoute(props: PluginWorker.ExecuteRouteProps) {
+    return this.sendMessage("executeRoute", props)
+  }
 }
 
 export namespace PluginWorker {
   export interface Props {
     parent: InstancePlugin
     baseDir: string
+  }
+
+  export interface ExecuteRouteProps {
+    method: string
+    path: string
+    plugin: string
+    body: any
   }
 }
