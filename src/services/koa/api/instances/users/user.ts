@@ -28,6 +28,7 @@ api.route({
       scopes: Joi.array().allow(...getScopeNames())
     })
   },
+  pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
     const { scopes } = ctx.request.body
     const bits: bigint[] = scopes.map((s: string) => getBitFromName(s))
