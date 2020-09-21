@@ -32,10 +32,10 @@ export const BanScope = {
 }
 
 export const PlayerScope = {
-  KILL: 0x01000000n,
-  KICK: 0x02000000n,
-  MESSAGE: 0x04000000n,
-  MOVE: 0x8000000n
+  KILL:     0x01000000n,
+  KICK:     0x02000000n,
+  MESSAGE:  0x04000000n,
+  MOVE:     0x08000000n
 }
 
 export const MapScope = {
@@ -162,6 +162,7 @@ export function getScopesFromMask(mask: string) {
         const player = validateScope(key, PlayerScope)
         player("KILL")
         player("KICK")
+        player("MOVE")
         return
       case "MAP":
         const map = validateScope(key, MapScope)
@@ -184,9 +185,10 @@ export function getScopesFromMask(mask: string) {
         const vars = validateScope(key, VariableScope)
         vars("MODIFY")
         return
-      case "VARIABLE":
+      case "EVENT":
         const events = validateScope(key, EventScope)
         events("CHAT")
+        events("KILL")
         return
       case "MOD":
         const mods = validateScope(key, ModScope)
