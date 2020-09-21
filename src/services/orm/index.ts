@@ -51,16 +51,18 @@ export async function connect(args: Record<string, string>) {
       .map(c => Config.from(c))
   )
 
-  //create default user
-  if (!await User.findOne({ username: "admin" })) {
+  //create and update default "admin" user
+  let admin = await User.findOne({ username: "admin" })
+  if (!admin) {
     const password = randomBytes(15).toString("base64")
-    const user = await User.from({ username: "admin", password })
-    await user.save()
+    admin = await User.from({ username: "admin", password })
+    await admin.save()
     await Permission.from({
-      user, root: true, mask: Array(32).fill("ff").join(":")
+      user: admin, root: true, mask: Array(32).fill("ff").join(":")
     })
     setTimeout(async () => {
-      const token = await createToken({ user })
+      if (!admin) throw new Error("admin user not defined")
+      const token = await createToken({ user: admin })
       winston.info(`created default user "${chalk.red.bold("admin")}" with password "${chalk.red.bold(password)}"`)
       winston.info(`jwt token: ${chalk.red.bold(token)}`)
     }, 1000)
@@ -69,8 +71,6 @@ export async function connect(args: Record<string, string>) {
   if (Object.keys(args).includes("--override-password")) {
     const password = args["--override-password"]
     if (password.length < 6) throw new Error(`override password should have a minimum length of 6 characters! (got ${password.length})`)
-    const admin = await User.findOne({ username: "admin" })
-    if (!admin) throw new Error("could not find admin user")
     await admin.updatePassword(password)
     await admin.save()
     winston.info("admin password has been overwritten")
