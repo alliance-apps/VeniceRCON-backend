@@ -20,7 +20,7 @@ import { LogMessage } from "@entity/LogMessage"
 
 export let connection: Connection
 
-export async function connect() {
+export async function connect(args: Record<string, string>) {
   connection = await createConnection({
     type: config.database.use,
     synchronize: config.development,
@@ -64,5 +64,15 @@ export async function connect() {
       winston.info(`created default user "${chalk.red.bold("admin")}" with password "${chalk.red.bold(password)}"`)
       winston.info(`jwt token: ${chalk.red.bold(token)}`)
     }, 1000)
+  }
+
+  if (Object.keys(args).includes("--override-password")) {
+    const password = args["--override-password"]
+    if (password.length < 6) throw new Error(`override password should have a minimum length of 6 characters! (got ${password.length})`)
+    const admin = await User.findOne({ username: "admin" })
+    if (!admin) throw new Error("could not find admin user")
+    await admin.updatePassword(password)
+    await admin.save()
+    winston.info("admin password has been overwritten")
   }
 }
