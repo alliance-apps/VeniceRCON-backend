@@ -45,7 +45,7 @@ export class Instance {
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
         const { slots } = this.state.get("serverinfo")
-        return Boolean(slots && slots > 0)
+        return (slots && slots > 0) || Object.keys(this.state.get("players")).length > 0
       },
       execute: () => this.playerList(),
       minimumInterval: this.syncInterval * 4,
