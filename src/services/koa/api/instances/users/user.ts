@@ -3,7 +3,7 @@ import { perm } from "@service/koa/permission"
 import { getCustomRepository } from "typeorm"
 import { PermissionRepository } from "@repository/PermissionRepository"
 import { permissionManager } from "@service/permissions"
-import { InstanceUserScope, getScopeNames, getBitFromName, Scopes } from "@service/permissions/Scopes"
+import { InstanceUserScope, getScopeNames, getBitFromName, Scopes, getBitMaskFromScopes } from "@service/permissions/Scopes"
 
 const { Joi } = Router
 const api = Router()
@@ -30,17 +30,18 @@ api.route({
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
-    const { scopes } = ctx.request.body
-    const bits: bigint[] = scopes.map((s: string) => getBitFromName(s))
-    const set = await Promise.all(bits.map(async scope => permissionManager.hasPermission({
-      user: ctx.state.token!.id, instance: ctx.state.instance!.id, scope
-    })))
-    if (!set.every(s => s)) {
+    const mask = getBitMaskFromScopes(ctx.request.body.scopes)
+    const ok = await permissionManager.hasPermissions({
+      user: ctx.state.token!.id,
+      instance: ctx.state.instance!.id,
+      scope: mask
+    })
+    if (!ok) {
       ctx.body = { message: "you tried to set a permission which you do not have access to"}
       return ctx.status = 403
     }
-    ctx.state.permission!.mask = "00"
-    await ctx.state.permission!.setPermissions(scopes.map((s: string) => getBitFromName(s)))
+    ctx.state.permission!.mask = mask
+    await ctx.state.permission!.save()
     ctx.status = 200
   }
 })

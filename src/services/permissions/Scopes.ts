@@ -107,6 +107,24 @@ export function getBitFromName(name: string): bigint {
 }
 
 /**
+ * gets a valid bitmask for an array of scopes
+ * @param scopes scopes to generate the bitmask from
+ */
+export function getBitMaskFromScopes(scopes: string[]) {
+  const groups: Record<string, bigint> = {}
+  scopes.forEach(scope => {
+    const prefix = scope.split("#")[0]
+    if (typeof groups[prefix] !== "bigint") groups[prefix] = 0n
+    groups[prefix] |= getBitFromName(scope)
+  })
+  const keys = Object.keys(translation)
+  return Array(keys.length)
+    .fill(0n)
+    .map((_, index) => Object.keys(groups).includes(keys[index]) ? groups[keys[index]] : 0n)
+    .join(":")
+}
+
+/**
  * checks if the mask has a specific permission
  * @param mask mask to check
  * @param scope permission to check
@@ -120,6 +138,19 @@ export function hasPermission(mask: string, scope: bigint) {
   }
   if (nodes.length - 1 < index) return false
   return (nodes[index] & scope) === scope
+}
+
+/**
+ * checks if the mask has specific permissions
+ * @param mask mask to check
+ * @param scope permissions to check
+ */
+export function hasPermissions(mask: string, scope: string) {
+  const nodes = mask.split(":").map(hex => BigInt(`0x${hex}`))
+  const scopes = scope.split(":").map(hex => BigInt(`0x${hex}`))
+  return scopes.every((scope, i) => {
+    return (nodes[i] & scope) === scope
+  })
 }
 
 /**

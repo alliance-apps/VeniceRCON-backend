@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance as InstanceEntity } from "./Instance"
 import { User as UserEntity } from "./User"
-import { getScopesFromMask, hasPermission } from "@service/permissions/Scopes"
+import { getScopesFromMask, hasPermission, hasPermissions } from "@service/permissions/Scopes"
 
 @Entity()
 export class Permission extends AbstractEntity<Permission> {
@@ -82,6 +82,11 @@ export class Permission extends AbstractEntity<Permission> {
   /** checks if there is a permission set */
   hasPermission(perm: bigint) {
     return hasPermission(this.mask, perm)
+  }
+
+  /** checks if multiple scopes have been set */
+  hasPermissions(perm: string) {
+    return hasPermissions(this.mask, perm)
   }
 
   /** retrieves readable scope names */

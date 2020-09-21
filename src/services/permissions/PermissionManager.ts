@@ -2,7 +2,7 @@ import { User as UserEntity } from "@entity/User"
 import { Instance as InstanceEntity } from "@entity/Instance"
 import { Permission } from "@entity/Permission"
 import { PermissionCache } from "./PermissionCache"
-import { Scopes, InstanceScope } from "./Scopes"
+import { InstanceScope } from "./Scopes"
 import { socketManager } from "@service/koa/socket"
 
 export class PermissionManager {
@@ -16,6 +16,15 @@ export class PermissionManager {
   hasPermission(props: PermissionManager.HasPermissionProps) {
     const instanceId = props.instance instanceof InstanceEntity ? props.instance.id : props.instance
     return this.cache.getUser(props.user).hasPermission(instanceId, props.scope)
+  }
+
+  /**
+   * checks if multiple permissions are present
+   * @param props
+   */
+  hasPermissions(props: PermissionManager.HasPermissionsProps) {
+    const instanceId = props.instance instanceof InstanceEntity ? props.instance.id : props.instance
+    return this.cache.getUser(props.user).hasPermissions(instanceId, props.scope)
   }
 
   /**
@@ -142,6 +151,12 @@ export namespace PermissionManager {
     user: UserEntity|number
     instance: InstanceEntity|number|true
     scope: bigint
+  }
+
+  export interface HasPermissionsProps {
+    user: UserEntity|number
+    instance: InstanceEntity|number|true
+    scope: string
   }
 
   export interface UpdatePermissionProps {

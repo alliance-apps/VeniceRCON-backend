@@ -1,4 +1,4 @@
-@instanceId=1
+@instanceId=2
 @userId=2
 
 ### retrieve a single user
@@ -15,5 +15,5 @@ Content-Type: application/json
 Authorization: Bearer {{$dotenv jwt}}
 
 {
-  "scopes": ["INSTANCE#ACCESS", "INSTANCE#UDATE"]
+  "scopes": ["INSTANCE#ACCESS", "INSTANCE#UPDATE"]
 }
