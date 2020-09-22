@@ -83,22 +83,11 @@ export class CacheItem {
   }
 
   /**
-   * checks if the user has a valid permission node for the specified instance
+   * checks if the user has valid permissions for the specified instance
    * @param instance instance to check the permission if set to true then only root perms get searched
    * @param scope scope to check
    */
-  async hasPermission(instance: number|true, scope: bigint) {
-    return (await this.permissions)
-      .filter(p => p.root || p.instanceId === instance)
-      .some(p => p.hasPermission(scope))
-  }
-
-  /**
-   * checks if the user has a valid permission node for the specified instance
-   * @param instance instance to check the permission if set to true then only root perms get searched
-   * @param scope scope to check
-   */
-  async hasPermissions(instance: number|true, scope: string) {
+  async hasPermissions(instance: number|true, scope: bigint) {
     return (await this.permissions)
       .filter(p => p.root || p.instanceId === instance)
       .some(p => p.hasPermissions(scope))

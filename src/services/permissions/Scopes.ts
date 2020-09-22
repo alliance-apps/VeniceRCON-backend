@@ -51,8 +51,7 @@ export const ReservedSlotScope = {
 
 export const PluginScope = {
   ACCESS: 0x01000000000000n,
-  MODIFY: 0x02000000000000n,
-  LOGS: 0x10n
+  MODIFY: 0x02000000000000n
 }
 
 export const VariableScope = {
@@ -77,10 +76,17 @@ const translation: Record<string, Scopes> = {
   PLAYER: PlayerScope,
   BAN: BanScope,
   MAP: MapScope,
+  PLUGIN: PluginScope,
   RESERVEDSLOT: ReservedSlotScope,
   VARIABLE: VariableScope,
   EVENT: EventScope,
   MOD: ModScope
+}
+
+export function getBitMaskWithAllPermissions() {
+  return Object.keys(translation).reduce((mask, key) => {
+    return mask | Object.values(translation[key]).reduce((mask, bit) => mask | bit, 0n)
+  }, 0n)
 }
 
 /** gets all available scope names */
@@ -111,33 +117,9 @@ export function getBitFromName(name: string): bigint {
  * @param scopes scopes to generate the bitmask from
  */
 export function getBitMaskFromScopes(scopes: string[]) {
-  const groups: Record<string, bigint> = {}
-  scopes.forEach(scope => {
-    const prefix = scope.split("#")[0]
-    if (typeof groups[prefix] !== "bigint") groups[prefix] = 0n
-    groups[prefix] |= getBitFromName(scope)
-  })
-  const keys = Object.keys(translation)
-  return Array(keys.length)
-    .fill(0n)
-    .map((_, index) => Object.keys(groups).includes(keys[index]) ? groups[keys[index]] : 0n)
-    .join(":")
-}
-
-/**
- * checks if the mask has a specific permission
- * @param mask mask to check
- * @param scope permission to check
- */
-export function hasPermission(mask: string, scope: bigint) {
-  const nodes = mask.split(":").map(hex => BigInt(`0x${hex}`))
-  let index = 0
-  while (scope > 255n) {
-    index++
-    scope = scope >> 8n
-  }
-  if (nodes.length - 1 < index) return false
-  return (nodes[index] & scope) === scope
+  return scopes.reduce((mask, scope) => {
+    return mask | getBitFromName(scope)
+  }, 0n)
 }
 
 /**
@@ -145,24 +127,20 @@ export function hasPermission(mask: string, scope: bigint) {
  * @param mask mask to check
  * @param scope permissions to check
  */
-export function hasPermissions(mask: string, scope: string) {
-  const nodes = mask.split(":").map(hex => BigInt(`0x${hex}`))
-  const scopes = scope.split(":").map(hex => BigInt(`0x${hex}`))
-  return scopes.every((scope, i) => {
-    return (nodes[i] & scope) === scope
-  })
+export function hasPermissions(mask: bigint, scopes: bigint) {
+  return (mask & scopes) === scopes
 }
 
 /**
  * gets an array of scope names from a mask
  * @param mask mask to retrieve scope names from
  */
-export function getScopesFromMask(mask: string) {
+export function getScopesFromMask(mask: bigint) {
   const scopes: string[] = []
   const validateScope = <T extends Scopes>(prefix: string, scope: T) => {
     return (key: keyof T) => {
       const bit = scope[key]
-      if (!hasPermission(mask, <any>bit)) return
+      if (!hasPermissions(mask, <any>bit)) return
       scopes.push(`${prefix}#${key}`)
     }
   }
@@ -210,7 +188,6 @@ export function getScopesFromMask(mask: string) {
         const plugin = validateScope(key, PluginScope)
         plugin("ACCESS")
         plugin("MODIFY")
-        plugin("LOGS")
         return
       case "VARIABLE":
         const vars = validateScope(key, VariableScope)

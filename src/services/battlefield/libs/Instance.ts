@@ -130,7 +130,7 @@ export class Instance {
 
   /** checks if the specified user has the specified scope for this instance */
   hasPermission(user: User|number, scope: bigint) {
-    return permissionManager.hasPermission({ instance: this.state.id, user, scope })
+    return permissionManager.hasPermissions({ instance: this.state.id, user, scope })
   }
 
   /** runs the update tick */

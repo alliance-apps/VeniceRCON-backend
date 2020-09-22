@@ -17,6 +17,7 @@ import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
 import { Weapon } from "@entity/Weapon"
 import { LogMessage } from "@entity/LogMessage"
+import { getBitMaskWithAllPermissions } from "@service/permissions/Scopes"
 
 export let connection: Connection
 
@@ -57,9 +58,6 @@ export async function connect(args: Record<string, string>) {
     const password = randomBytes(15).toString("base64")
     admin = await User.from({ username: "admin", password })
     await admin.save()
-    await Permission.from({
-      user: admin, root: true, mask: Array(32).fill("ff").join(":")
-    })
     setTimeout(async () => {
       if (!admin) throw new Error("admin user not defined")
       const token = await createToken({ user: admin })
@@ -67,6 +65,13 @@ export async function connect(args: Record<string, string>) {
       winston.info(`jwt token: ${chalk.red.bold(token)}`)
     }, 1000)
   }
+
+  //find permission node
+  let permission = await Permission.findOne({ userId: admin.id, root: true })
+  if (!permission) permission = await Permission.from({ user: admin, root: true, mask: 0n })
+  //update it and assign all permissions
+  permission.mask = getBitMaskWithAllPermissions()
+  await permission.save()
 
   if (Object.keys(args).includes("--override-password")) {
     const password = args["--override-password"]

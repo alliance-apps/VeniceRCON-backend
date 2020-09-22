@@ -114,7 +114,7 @@ export class Socket {
    * @param scope scope the user should have
    */
   async hasPermission(instanceId: number, scope: bigint) {
-    return permissionManager.hasPermission({
+    return permissionManager.hasPermissions({
       user: this.userId, instance: instanceId, scope
     })
   }

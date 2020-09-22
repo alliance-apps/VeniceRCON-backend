@@ -10,15 +10,6 @@ export class PermissionManager {
   private cache = new PermissionCache()
 
   /**
-   * checks if a specific permission for an instance and user has been set
-   * @param props
-   */
-  hasPermission(props: PermissionManager.HasPermissionProps) {
-    const instanceId = props.instance instanceof InstanceEntity ? props.instance.id : props.instance
-    return this.cache.getUser(props.user).hasPermission(instanceId, props.scope)
-  }
-
-  /**
    * checks if multiple permissions are present
    * @param props
    */
@@ -51,7 +42,8 @@ export class PermissionManager {
     const perms = await this.getPermissions(props.user)
     const perm = perms.find(p => p.instanceId === props.instance || p.root === props.instance)
     if (!perm) throw new Error(`can not add permission, user does not have access to the instance`)
-    await perm.setPermissions(props.scopes)
+    perm.mask = props.scopes
+    await perm.save()
     this.removeUserFromCache(props.user)
     await this.validateSocketAccess(props.user)
   }
@@ -147,22 +139,16 @@ export namespace PermissionManager {
     scopes?: bigint[]
   }
 
-  export interface HasPermissionProps {
+  export interface HasPermissionsProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
     scope: bigint
   }
 
-  export interface HasPermissionsProps {
-    user: UserEntity|number
-    instance: InstanceEntity|number|true
-    scope: string
-  }
-
   export interface UpdatePermissionProps {
     user: UserEntity|number
     instance: InstanceEntity|number|true
-    scopes: bigint[]
+    scopes: bigint
   }
 
 }

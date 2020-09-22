@@ -31,12 +31,10 @@ export class InstanceLogger {
 
   private async createDBEntry(message: string, level: string, source: LogMessage.Source, sourceLocation?: string) {
     const entity = await LogMessage.from({ message, level, instanceId: this.parent.id, source, sourceLocation })
-    let pool = socketManager.subscribedTo(this.parent.id)
-    if (entity.source === LogMessage.Source.INSTANCE)
-      pool = pool.hasPermission(this.parent.id, InstanceScope.LOGS)
-    if (entity.source === LogMessage.Source.PLUGIN)
-      pool = pool.hasPermission(this.parent.id, PluginScope.LOGS)
-    pool.emitInstanceLogMessages([entity])
+    socketManager
+      .subscribedTo(this.parent.id)
+      .hasPermission(this.parent.id, InstanceScope.LOGS)
+      .emitInstanceLogMessages([entity])
   }
 
   async info(
