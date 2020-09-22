@@ -21,6 +21,7 @@ const timeout = setTimeout(() => {
 parentPort.once("message", async port => {
   if (!(port instanceof MessagePort)) throw new Error(`expected MessagePort but got ${port}`)
   clearTimeout(timeout)
+  //@ts-ignore
   const handler = new PluginHandler({
     messenger: new Messenger({ port }),
     basePath: workerData.baseDir,

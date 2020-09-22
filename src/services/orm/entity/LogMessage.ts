@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, MoreThan, DeepPartial } from "typeorm"
+import { Entity, Column, ManyToOne, MoreThan } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance } from "./Instance"
 

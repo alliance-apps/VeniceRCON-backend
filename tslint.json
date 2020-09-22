@@ -15,8 +15,7 @@
     "radix": true,
     "no-console": [true, "log", "warn"],
     "no-angle-bracket-type-assertion": false,
-    "no-shadowed-variable": false,
-    "no-unused-variable": [true, "warn"]
+    "no-shadowed-variable": false
   },
   "rulesDirectory": []
 }

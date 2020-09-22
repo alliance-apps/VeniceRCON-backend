@@ -1,5 +1,4 @@
 import { Instance } from "./Instance"
-import { MoreThan } from "typeorm"
 import { socketManager } from "@service/koa/socket"
 import { EventScope } from "@service/permissions/Scopes"
 import { Kill } from "@entity/Kill"

@@ -1,5 +1,5 @@
 import winston from "winston"
-import { metaSchema, Meta, RouteMethod } from "../../schema"
+import { metaSchema, Meta } from "../../schema"
 import { Instance } from "@service/battlefield/libs/Instance"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Plugin } from "../Plugin"

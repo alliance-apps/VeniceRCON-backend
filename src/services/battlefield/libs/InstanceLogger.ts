@@ -3,7 +3,7 @@ import { Instance } from "./Instance"
 import { errorLog, prettyLog } from "../../../util/winston"
 import { LogMessage } from "@entity/LogMessage"
 import { socketManager } from "@service/koa/socket"
-import { InstanceScope, PluginScope } from "@service/permissions/Scopes"
+import { InstanceScope } from "@service/permissions/Scopes"
 
 export class InstanceLogger {
 

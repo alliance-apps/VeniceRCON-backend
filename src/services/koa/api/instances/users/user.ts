@@ -3,7 +3,7 @@ import { perm } from "@service/koa/permission"
 import { getCustomRepository } from "typeorm"
 import { PermissionRepository } from "@repository/PermissionRepository"
 import { permissionManager } from "@service/permissions"
-import { InstanceUserScope, getScopeNames, getBitFromName, Scopes, getBitMaskFromScopes } from "@service/permissions/Scopes"
+import { InstanceUserScope, getScopeNames, getBitMaskFromScopes } from "@service/permissions/Scopes"
 
 const { Joi } = Router
 const api = Router()

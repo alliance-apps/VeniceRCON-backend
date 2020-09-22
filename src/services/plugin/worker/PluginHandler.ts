@@ -10,14 +10,14 @@ export class PluginHandler {
   private basePath: string
   readonly messenger: Messenger
   private plugins: WorkerPlugin[] = []
-  private instanceId: number
+  //private instanceId: number
   battlefield!: Battlefield
   private state: State = State.UNKNOWN
 
   constructor(props: PluginHandler.Props) {
     this.messenger = props.messenger
     this.basePath = props.basePath
-    this.instanceId = props.instanceId
+    //this.instanceId = props.instanceId
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
     this.messenger.on("executeRoute", this.executeRoute.bind(this))
     this.state = State.INIT
