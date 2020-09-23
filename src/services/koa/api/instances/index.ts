@@ -13,10 +13,10 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      host: Joi.string(),
-      port: Joi.number().min(1024).max(65536),
-      password: Joi.string()
-    })
+      host: Joi.string().required(),
+      port: Joi.number().min(1024).max(65536).required(),
+      password: Joi.string().required()
+    }).required()
   },
   pre: perm(InstanceScope.CREATE),
   handler: async ctx => {

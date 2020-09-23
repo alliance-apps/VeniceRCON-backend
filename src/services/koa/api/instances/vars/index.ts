@@ -33,7 +33,7 @@ api.route({
         [...Instance.VAR_SETTER_BF3, ...Instance.VAR_SETTER_VU]
           .map(k => [k, Joi.alternatives(Joi.string(), Joi.number(), Joi.boolean()).optional()]
       ))
-    )
+    ).required()
   },
   pre: perm(VariableScope.MODIFY),
   handler: async ctx => {

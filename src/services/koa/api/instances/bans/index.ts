@@ -17,11 +17,11 @@ api.route({
     type: "json",
     body: Joi.object({
       subset: Joi.string().allow("guid", "name", "ip").required(),
-      id: Joi.string().min(1),
+      id: Joi.string().min(1).required(),
       durationType: Joi.string().allow("rounds", "seconds", "perm").required(),
       duration: Joi.number().optional(),
       reason: Joi.string().optional()
-    })
+    }).required()
   },
   pre: perm(BanScope.CREATE),
   handler: async ctx => {

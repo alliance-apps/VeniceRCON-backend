@@ -15,9 +15,9 @@ router.route({
   validate: {
     type: "json",
     body: Joi.object({
-      username: Joi.string(),
-      password: Joi.string()
-    })
+      username: Joi.string().required(),
+      password: Joi.string().required()
+    }).required()
   },
   handler: async ({ request, response }) => {
     const user = await User.findOne({ username: request.body.username })
@@ -36,10 +36,10 @@ router.route({
   validate: {
     type: "json",
     body: Joi.object({
-      username: Joi.string().min(3).max(64),
-      password: Joi.string().min(6).max(64),
-      token: Joi.string().hex()
-    })
+      username: Joi.string().min(3).max(64).required(),
+      password: Joi.string().min(6).max(64).required(),
+      token: Joi.string().hex().required()
+    }).required()
   },
   handler: async ctx => {
     const invite = await Invite.findOne({ token: ctx.request.body.token, userId: IsNull() })
@@ -68,8 +68,8 @@ router.route({
   validate: {
     type: "json",
     body: Joi.object({
-      token: Joi.string().hex()
-    })
+      token: Joi.string().hex().required()
+    }).required()
   },
   handler: async ctx => {
     if (!ctx.state.token) return ctx.status = 401

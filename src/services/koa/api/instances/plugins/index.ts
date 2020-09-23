@@ -23,7 +23,9 @@ api.route({
   path: "/",
   validate: {
     type: "json",
-    body: Joi.object({ identifier: Joi.string() })
+    body: Joi.object({
+      identifier: Joi.string().required()
+    })
   },
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {

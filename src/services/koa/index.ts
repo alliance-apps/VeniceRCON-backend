@@ -22,10 +22,23 @@ export async function initialize() {
 
     app.use(async (ctx, next) => {
       const { cors } = config.webserver
-      Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
-      //firefox
       if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
-      await next()
+      try {
+        Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
+        await next()
+      } catch (error) {
+        if (error.isJoi) {
+          Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
+          ctx.status = error.status
+          ctx.body = {
+            message: error.message,
+            validationError: true,
+            details: error.details
+          }
+        } else {
+          throw error
+        }
+      }
     })
 
   }

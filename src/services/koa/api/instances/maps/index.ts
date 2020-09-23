@@ -37,7 +37,7 @@ api.route({
     type: "json",
     body: Joi.object({
       winner: Joi.number().required()
-    })
+    }).required()
   },
   pre: perm(MapScope.SWITCH),
   handler: async ctx => {
@@ -64,7 +64,7 @@ api.route({
       mode: Joi.string().required(),
       rounds: Joi.number().required(),
       index: Joi.number().optional()
-    })
+    }).required()
   },
   pre: perm(MapScope.MANAGE),
   handler: async ctx => {

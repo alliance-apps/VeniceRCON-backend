@@ -15,7 +15,9 @@ api.route({
   path: "/",
   validate: {
     type: "json",
-    body: Joi.object({ name: Joi.string() })
+    body: Joi.object({
+      name: Joi.string().required()
+    }).required()
   },
   pre: perm(ReservedSlotScope.CREATE),
   handler: async ctx => {

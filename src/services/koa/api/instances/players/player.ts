@@ -65,7 +65,7 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      subset: Joi.string().allow("guid", "name", "ip"),
+      subset: Joi.string().allow("guid", "name", "ip").required(),
       durationType: Joi.string().allow("rounds", "seconds", "perm").required(),
       duration: Joi.number().optional(),
       reason: Joi.string().optional()
