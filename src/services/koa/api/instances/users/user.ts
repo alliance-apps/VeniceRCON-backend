@@ -25,8 +25,8 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      scopes: Joi.array().allow(...getScopeNames())
-    })
+      scopes: Joi.array().allow(...getScopeNames()).required()
+    }).required()
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
