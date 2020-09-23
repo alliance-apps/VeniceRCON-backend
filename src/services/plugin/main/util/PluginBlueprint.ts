@@ -42,23 +42,6 @@ export class PluginBlueprint {
     return entity
   }
 
-  getRouteBy(method: string, path: string) {
-    if (!this.meta.routes) return undefined
-    return this.meta.routes.find(route => (
-      route.method === method.toUpperCase() &&
-      route.name === path
-    ))
-  }
-
-  /**
-   * checks if a specific method and path exists as route
-   * @param method
-   * @param path
-   */
-  hasRoute(method: string, path: string) {
-    return this.getRouteBy(method, path) !== undefined
-  }
-
   /**
    * creates a new plugin instance for this specific plugin
    * @param instance

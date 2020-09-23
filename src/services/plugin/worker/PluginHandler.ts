@@ -42,7 +42,7 @@ export class PluginHandler {
     const plugin = this.getPluginByName(message.data.plugin)
     if (!plugin) return message.except("Plugin not running on worker!")
     try {
-      message.done(await plugin.router.executeRoute(message.data))
+      message.done(await plugin.router._executeRoute(message.data))
     } catch (e) {
       message.except(e.message)
     }

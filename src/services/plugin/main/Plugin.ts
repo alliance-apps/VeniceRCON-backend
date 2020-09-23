@@ -1,7 +1,7 @@
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { PluginBlueprint } from "./util/PluginBlueprint"
 import { PluginWorker } from "./PluginWorker"
-import { Meta, RouteMethod } from "../schema"
+import { Meta } from "../schema"
 import { Context } from "koa"
 
 export class Plugin {
@@ -76,10 +76,8 @@ export class Plugin {
     return this.worker.stopPlugin(this)
   }
 
-  async executeRoute(method: RouteMethod, path: string, ctx: Context) {
-    const route = this.blueprint.getRouteBy(method, path)
-    if (!route) throw new Error(`could not find route in plugin "${this.name}" (${method} ${path})`)
-    return this.worker.executeRoute({ method, path, plugin: this.name, body: ctx.body })
+  async executeRoute(method: string, path: string, ctx: Context) {
+    return this.worker.executeRoute({ method, path, plugin: this.name, body: ctx.request.body })
   }
 
   toJSON(): Plugin.Info {

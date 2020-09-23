@@ -7,10 +7,7 @@ export const metaSchema = Joi.object({
   backend: Joi.string().valid("VU", "BF3", "*").required(),
   entry: Joi.string().required(),
   dependency: Joi.array().items(Joi.string()).optional(),
-  routes: Joi.array().items(Joi.object({
-    method: Joi.string().valid("GET", "POST", "PATCH", "DELETE").uppercase().required(),
-    name: Joi.string().regex(/^[\w\d]+$/i).required()
-  })).optional(),
+  features: Joi.array().items(Joi.string().valid("router")).optional(),
   vars: Joi.array().items(Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),
@@ -43,16 +40,9 @@ export interface Meta {
   version: string
   backend: "BF3"|"VU"|"*"
   entry: string
-  routes?: Route[]
+  features?: ("router")[]
   dependency?: string[]
   vars?: PluginVariable[]
-}
-
-export type RouteMethod = "GET"|"POST"|"PATCH"|"DELETE"
-
-export type Route = {
-  method: RouteMethod,
-  name: string
 }
 
 export type PluginVariable =

@@ -1,5 +1,7 @@
+import { Battlefield } from "vu-rcon"
 import type { Plugin as PluginType } from "../main/Plugin"
 import { PluginHandler } from "./PluginHandler"
+import { PluginLogger } from "./util/PluginLogger"
 import { PluginRouter } from "./util/PluginRouter"
 
 export class WorkerPlugin {
@@ -17,6 +19,10 @@ export class WorkerPlugin {
     this.info = props.info
   }
 
+  get meta() {
+    return this.info.meta
+  }
+
   async start() {
     if (this.state !== WorkerPlugin.State.STOPPED)
       throw new Error(`Plugin is not in state stopped! got state ${this.state}`)
@@ -27,29 +33,16 @@ export class WorkerPlugin {
   }
 
   private async getPluginProps() {
-    return {
+    const props: WorkerPlugin.PluginProps = {
       config: await this.getConfig(),
       battlefield: this.parent.battlefield,
       dependency: this.getDependencies(),
-      logger: this.getLogger(),
-      router: this.router
+      logger: new PluginLogger(this.parent.messenger, this.info.name),
     }
-  }
-
-  private getLogger() {
-    const log = async (message: string, level: string) => {
-      try {
-        await this.parent.messenger.send("LOG_MESSAGE", { message: JSON.stringify(message, null, 2), level, pluginName: this.info.name })
-      } catch (e) {
-        // tslint:disable-next-line: no-console
-        console.log(`could not log message "${message}" with loglevel ${level}`, e)
-      }
+    if (Array.isArray(this.meta.features)) {
+      if (this.meta.features.includes("router")) props.router = this.router
     }
-    return {
-      info: (message: string) => log(message, "info"),
-      warn: (message: string) => log(message, "warn"),
-      error: (message: string) => log(message, "error")
-    }
+    return props
   }
 
   private getDependencies(): Record<string, any> {
@@ -73,6 +66,14 @@ export namespace WorkerPlugin {
     parent: PluginHandler
     path: string
     info: PluginType.Info
+  }
+
+  export interface PluginProps {
+    config: Record<string, any>
+    battlefield: Battlefield
+    dependency: Record<string, any>
+    logger: PluginLogger
+    router?: PluginRouter
   }
 
   export type Create = Omit<Props, "code">

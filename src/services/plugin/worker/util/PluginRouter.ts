@@ -1,4 +1,5 @@
 import type { PluginWorker } from "@service/plugin/main/PluginWorker"
+import { PluginRouterResponse } from "./PluginRouterResponse"
 
 export class PluginRouter {
 
@@ -6,14 +7,15 @@ export class PluginRouter {
     get: {}, post: {}, patch: {}, delete: {}
   }
 
-  executeRoute(props: PluginWorker.ExecuteRouteProps) {
+  _executeRoute(props: PluginWorker.ExecuteRouteProps) {
     return new Promise(async (fulfill, reject) => {
+      const response = new PluginRouterResponse(fulfill)
       const method = props.method.toLowerCase()
-      if (!(method in this.methods)) throw new Error(`method with name "${method}" not found`)
+      if (!(method in this.methods)) return response.send(404)
       const cb = this.methods[method as keyof PluginRouter.MethodProps][props.path]
-      if (typeof cb !== "function") throw new Error("no handler has been registered for this route")
+      if (typeof cb !== "function") return response.send(404)
       try {
-        await cb({ body: props.body, send: fulfill })
+        await cb({ body: props.body, res: response })
       } catch (e) {
         reject(e)
       }
@@ -54,6 +56,6 @@ export namespace PluginRouter {
 
   export interface Context {
     body: any
-    send: (data: any) => void
+    res: PluginRouterResponse
   }
 }

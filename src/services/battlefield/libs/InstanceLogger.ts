@@ -29,7 +29,21 @@ export class InstanceLogger {
     })
   }
 
+  private buildMessage(message: string|Error|undefined, sourceLocation?: string) {
+    if (message === undefined) {
+      if (sourceLocation) return `[${sourceLocation}] undefined`
+      return "undefined"
+    }
+    if (message instanceof Error) {
+      if (sourceLocation) return `[${sourceLocation}] ${message.stack}`
+      return message.stack
+    }
+    if (sourceLocation) return `[${sourceLocation}] ${message}`
+    return message
+  }
+
   private async createDBEntry(message: string, level: string, source: LogMessage.Source, sourceLocation?: string) {
+    if (message === undefined) message = "undefined"
     const entity = await LogMessage.from({ message, level, instanceId: this.parent.id, source, sourceLocation })
     socketManager
       .subscribedTo(this.parent.id)
@@ -42,7 +56,7 @@ export class InstanceLogger {
     source: LogMessage.Source = LogMessage.Source.INSTANCE,
     sourceLocation?: string
   ) {
-    this.logger.info(message)
+    this.logger.info(this.buildMessage(message, sourceLocation))
     await this.createDBEntry(message, "info", source, sourceLocation)
   }
 
@@ -51,7 +65,7 @@ export class InstanceLogger {
     source: LogMessage.Source = LogMessage.Source.INSTANCE,
     sourceLocation?: string
   ) {
-    this.logger.warn(message)
+    this.logger.warn(this.buildMessage(message, sourceLocation))
     await this.createDBEntry(message, "warn", source, sourceLocation)
   }
 
@@ -60,7 +74,7 @@ export class InstanceLogger {
     source: LogMessage.Source = LogMessage.Source.INSTANCE,
     sourceLocation?: string
   ) {
-    this.logger.error(message)
+    this.logger.error(this.buildMessage(message, sourceLocation))
     await this.createDBEntry(
       message instanceof Error ? message.stack! : message,
       "error",
