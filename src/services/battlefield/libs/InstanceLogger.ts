@@ -4,6 +4,7 @@ import { errorLog, prettyLog } from "../../../util/winston"
 import { LogMessage } from "@entity/LogMessage"
 import { socketManager } from "@service/koa/socket"
 import { InstanceScope } from "@service/permissions/Scopes"
+import chalk from "chalk"
 
 export class InstanceLogger {
 
@@ -30,15 +31,9 @@ export class InstanceLogger {
   }
 
   private buildMessage(message: string|Error|undefined, sourceLocation?: string) {
-    if (message === undefined) {
-      if (sourceLocation) return `[${sourceLocation}] undefined`
-      return "undefined"
-    }
-    if (message instanceof Error) {
-      if (sourceLocation) return `[${sourceLocation}] ${message.stack}`
-      return message.stack
-    }
-    if (sourceLocation) return `[${sourceLocation}] ${message}`
+    if (message === undefined) message = "undefined"
+    if (message instanceof Error) message = message.stack
+    if (sourceLocation) return `[${chalk.yellowBright(sourceLocation)}] ${message}`
     return message
   }
 
