@@ -265,6 +265,20 @@ export class Instance {
     return players
   }
 
+  getVariableOptions() {
+    const getters = [...Instance.VAR_BF3]
+    const setters = [...Instance.VAR_SETTER_BF3]
+    if (this.state.get("version") === InstanceContainer.Version.BF3) {
+      getters.push(...Object.keys(Instance.VAR_BF3_OPTIONAL))
+      if (this.state.get("vars").ranked) {
+        getters.push(...Object.keys(Instance.VAR_BF3_RANKED))
+      }
+    } else if (this.state.get("version") === InstanceContainer.Version.VU) {
+      setters.push(...Instance.VAR_SETTER_VU)
+    }
+    return { getters, setters }
+  }
+
   /** creates a new instance from given properties */
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
@@ -331,6 +345,10 @@ export namespace Instance {
     "TimeScale", "SquadSize"
   ]
 
+  export const VAR_VU_SETTER = [
+    "FadeOutAll", "FadeInAll"
+  ]
+
   export const VAR_BF3_OPTIONAL = {
     ranked: false,
     unlockMode: 0
@@ -340,7 +358,13 @@ export namespace Instance {
     gamePassword: false
   }
 
-  export const VAR_SETTER_BF3 = [...VAR_BF3, ...Object.keys(VAR_BF3_OPTIONAL), ...Object.keys(VAR_BF3_RANKED)]
-  export const VAR_SETTER_VU = [...VAR_VU]
+  export const VAR_SETTER_BF3 = [
+    ...VAR_BF3,
+    ...Object.keys(VAR_BF3_OPTIONAL),
+    ...Object.keys(VAR_BF3_RANKED)
+  ]
+  export const VAR_SETTER_VU = [
+    ...VAR_VU, ...VAR_VU_SETTER
+  ]
 
 }
