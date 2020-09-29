@@ -1,4 +1,4 @@
-import Koa from "koa"
+import Koa, { Context } from "koa"
 import koaSend from "koa-send"
 import Router from "koa-joi-router"
 import { createServer } from "http"
@@ -18,30 +18,20 @@ export async function initialize() {
 
   const router = Router()
 
-  if (config.development) {
-
-    app.use(async (ctx, next) => {
-      const { cors } = config.webserver
-      if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
-      try {
-        Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
-        await next()
-      } catch (error) {
-        if (error.isJoi) {
-          Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
-          ctx.status = error.status
-          ctx.body = {
-            message: error.message,
-            validationError: true,
-            details: error.details
-          }
-        } else {
-          throw error
-        }
+  app.use(async (ctx, next) => {
+    try {
+      applyCors(ctx)
+      await next()
+    } catch (error) {
+      if (error.isJoi) {
+        applyCors(ctx)
+        ctx.status = error.status
+        ctx.body = { message: error.message, validationError: true, details: error.details }
+      } else {
+        throw error
       }
-    })
-
-  }
+    }
+  })
 
   router.use("/api", (await createApiRoute()).middleware())
   await initSocket(io)
@@ -68,4 +58,18 @@ export async function initialize() {
     })
   }
 
+}
+
+export function applyCors(ctx: Context) {
+  const { development } = config
+  const { cors, remote_webinterface } = config.webserver
+  if (development) {
+    Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
+    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
+  } else if (remote_webinterface) {
+    ctx.set("Access-Control-Allow-Credentials", "true")
+    ctx.set("Access-Control-Allow-Origin", "rcon.cloud")
+    ctx.set("Access-Control-Allow-Headers", ["Authorization", "Content-Type"].join(";"))
+    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
+  }
 }
