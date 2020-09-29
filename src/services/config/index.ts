@@ -28,6 +28,7 @@ export interface Configuration {
       maxAge: number
       sendRefresh: number
     }
+    remote_webinterface: boolean
     cors: Record<string, string|string[]>
   }
   instance: {
