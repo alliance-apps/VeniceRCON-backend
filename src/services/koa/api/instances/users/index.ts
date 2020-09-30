@@ -16,9 +16,21 @@ api.get("/", async ctx => {
 
 //lists all invite tokens
 api.get("/invite", perm(InstanceUserScope.ACCESS), async ctx => {
-  ctx.body = await Invite.find({
-    instanceId: ctx.state.instance!.id
-  })
+  const invites = await Invite.createQueryBuilder("inv")
+    .where({ instanceId: ctx.state.instance!.id })
+    .select([
+      "inv.id", "inv.created", "inv.modified", "inv.token",
+      "issuer.id", "issuer.username",
+      "user.id", "user.username"
+    ])
+    .leftJoin("inv.issuer", "issuer")
+    .leftJoin("inv.user", "user")
+    .getRawMany()
+    ctx.body = invites.map(({ __issuer__, __user__, ...rest}) => ({
+      ...rest,
+      user: __user__,
+      issuer: __issuer__
+    }))
 })
 
 api.post("/invite", perm(InstanceUserScope.CREATE), async ctx => {
