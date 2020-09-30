@@ -8,3 +8,8 @@ Content-Type: application/json
 {
   "foo": "bar"
 }
+
+
+### lists all available instances
+OPTIONS {{$dotenv url}}/api/instances
+Authorization: Bearer {{$dotenv jwt}}
