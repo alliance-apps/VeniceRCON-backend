@@ -28,11 +28,11 @@ export class PermissionRepository extends Repository<Permission> {
       .where("perm.instanceId = :instanceId", { instanceId })
       .getRawMany()
       .then((res: any) => {
-        return res.map((r: any) => {
+        return res.map((r: { mask: string }) => {
           const { mask, ...rest } = r
           return {
             ...rest,
-            scopes: getScopesFromMask(mask)
+            scopes: getScopesFromMask(BigInt(mask))
           }
         })
       })
@@ -51,7 +51,7 @@ export class PermissionRepository extends Repository<Permission> {
       .getRawOne()
       .then((res: any) => {
         const { mask, ...rest } = res
-        return { ...rest, scopes: getScopesFromMask(mask) }
+        return { ...rest, scopes: getScopesFromMask(BigInt(mask)) }
       })
   }
 
