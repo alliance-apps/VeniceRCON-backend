@@ -21,6 +21,7 @@ export async function initialize() {
   app.use(async (ctx, next) => {
     try {
       applyCors(ctx)
+      if (ctx.status === 200) return
       await next()
     } catch (error) {
       if (error.isJoi) {
