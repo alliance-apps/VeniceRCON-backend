@@ -13,7 +13,6 @@ import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
-import winston from "winston"
 
 export class Instance {
 
