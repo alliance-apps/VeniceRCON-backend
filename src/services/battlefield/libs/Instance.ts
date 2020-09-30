@@ -253,7 +253,7 @@ export class Instance {
     try {
       return [key, await this.connection.battlefield[namespace].get(key)]
     } catch (e) {
-      winston.error(`Could not get variable "${namespace}.${key}": ${e.message}`)
+      this.log.error(`Could not get variable "${namespace}.${key}": ${e.message}`)
       return [key, undefined]
     }
   }
