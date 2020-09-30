@@ -8,7 +8,10 @@
     "type": "node",
     "request": "launch",
     "args": ["${workspaceRoot}/lib/index"],
-    "runtimeArgs": ["--enable-source-maps"]
+    "runtimeArgs": ["--enable-source-maps"],
+    "skipFiles": [
+      "<node_internals>/**"
+    ]
   }, {
     "name": "Debug Jest Tests",
     "type": "node",
