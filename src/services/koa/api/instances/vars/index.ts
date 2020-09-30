@@ -24,7 +24,7 @@ api.route({
         ...Instance.VAR_SETTER_BF3,
         ...Instance.VAR_SETTER_VU,
         ...Instance.VAR_SETTER_VU
-      ].map(k => [k, Joi.alternatives(Joi.string(), Joi.number(), Joi.boolean()).optional()]
+      ].map(k => [k, Joi.alternatives(Joi.string().allow(""), Joi.number(), Joi.boolean()).optional()]
       ))
     ).required()
   },
