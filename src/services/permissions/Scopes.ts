@@ -171,6 +171,7 @@ export function getScopesFromMask(mask: bigint) {
         const player = validateScope(key, PlayerScope)
         player("KILL")
         player("KICK")
+        player("MESSAGE")
         player("MOVE")
         return
       case "MAP":
