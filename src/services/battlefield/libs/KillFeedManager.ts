@@ -46,7 +46,7 @@ export class KillFeedManager {
     this.feed = await this.getFeed()
     this.battlefield.on("kill", async ev => {
       const { killer, killed } = await this.parent.getPlayerIdsByName({ killer: ev.killer, killed: ev.killed })
-      if (!killed) throw new Error(`could not find killed player with name ${ev.killed}`)
+      if (!killed) return this.parent.log.error(`could not find killed player with name ${ev.killed}`)
       this.addKill(await Kill.from({ ...ev, killed, killer, instance: this.id }))
     })
   }
