@@ -21,7 +21,7 @@ export async function initialize() {
   app.use(async (ctx, next) => {
     try {
       applyCors(ctx)
-      if (ctx.status === 200) return
+      if (ctx.status === 204) return
       await next()
     } catch (error) {
       if (error.isJoi) {
@@ -66,11 +66,12 @@ export function applyCors(ctx: Context) {
   const { cors, remote_webinterface } = config.webserver
   if (development) {
     Object.keys(cors).forEach(k => ctx.set(k, cors[k]))
-    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
+    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 204
   } else if (remote_webinterface) {
     ctx.set("Access-Control-Allow-Credentials", "true")
-    ctx.set("Access-Control-Allow-Origin", "rcon.cloud")
-    ctx.set("Access-Control-Allow-Headers", ["Authorization", "Content-Type"].join(";"))
-    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 200
+    ctx.set("Access-Control-Allow-Origin", "https://rcon.cloud")
+    ctx.set("Access-Control-Allow-Methods", ["GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE"].join(","))
+    ctx.set("Access-Control-Allow-Headers", ["Authorization", "Content-Type"].join(","))
+    if (ctx.request.method.toUpperCase() === "OPTIONS") return ctx.status = 204
   }
 }
