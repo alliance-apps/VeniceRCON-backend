@@ -34,4 +34,8 @@ instance:
   #default time in ms of how many updates get sent to the rcon client
   syncInterval: 1000
   plugins:
+    #location of the directory to read plugins from
     baseDir: "./plugins"
+    repos:
+      - name: "main"
+        repository: "https://github.com/Multivit4min/vu-plugin-repo/"

@@ -51,7 +51,9 @@ export const ReservedSlotScope = {
 
 export const PluginScope = {
   ACCESS: 0x01000000000000n,
-  MODIFY: 0x02000000000000n
+  MODIFY: 0x02000000000000n,
+  CREATE: 0x04000000000000n,
+  REMOVE: 0x08000000000000n,
 }
 
 export const VariableScope = {
@@ -189,6 +191,8 @@ export function getScopesFromMask(mask: bigint) {
         const plugin = validateScope(key, PluginScope)
         plugin("ACCESS")
         plugin("MODIFY")
+        plugin("CREATE")
+        plugin("REMOVE")
         return
       case "VARIABLE":
         const vars = validateScope(key, VariableScope)

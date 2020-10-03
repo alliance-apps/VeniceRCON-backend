@@ -9,6 +9,11 @@ api.get("/", async ctx => {
   ctx.body = ctx.state.plugin!.toJSON()
 })
 
+api.delete("/", perm(PluginScope.REMOVE), async ctx => {
+  await ctx.state.plugin!.remove()
+  ctx.status = 200
+})
+
 
 api.route({
   method: "PATCH",

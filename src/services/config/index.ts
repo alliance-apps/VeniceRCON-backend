@@ -1,38 +1,24 @@
-import yaml from "yaml"
 import { promises as fs } from "fs"
-import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions"
-import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions"
+import path from "path"
+import yaml from "yaml"
+import winston from "winston"
+import { schema, Configuration } from "./schema"
 
 export let config: Configuration
 
 export async function initialize() {
-  const basepath = `${__dirname}/../../../`
-  const file = await fs.readFile(`${basepath}/config.yaml`, "utf-8")
-  config = {
-    ...yaml.parse(file),
-    basepath
+  const basepath = path.join(__dirname, "/../../../")
+  const data = yaml.parse(await fs.readFile(`${basepath}/config.yaml`, "utf-8"))
+  let res: Configuration
+  try {
+    res = await schema.validate<Configuration>(data, { allowUnknown: true })
+  } catch (e) {
+    winston.error("could not validate configuration! please check your config.yaml against config.dist.yaml!")
+    throw e
   }
-}
 
-export interface Configuration {
-  basepath: string
-  development: boolean
-  database: {
-    use: "sqlite"|"mariadb"
-    sqlite: SqliteConnectionOptions,
-    mariadb: MysqlConnectionOptions
-  }
-  webserver: {
-    listenport: number
-    jwt: {
-      maxAge: number
-      sendRefresh: number
-    }
-    remote_webinterface: boolean
-    cors: Record<string, string|string[]>
-  }
-  instance: {
-    syncInterval: number
-    plugins: { baseDir: string }
+  config = {
+    ...res,
+    basepath
   }
 }

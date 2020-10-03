@@ -1,5 +1,5 @@
 import { Battlefield } from "vu-rcon"
-import type { Plugin as PluginType } from "../main/Plugin"
+import type { Plugin as PluginType, Plugin } from "../main/Plugin"
 import { PluginHandler } from "./PluginHandler"
 import { PluginLogger } from "./util/PluginLogger"
 import { PluginRouter } from "./util/PluginRouter"
@@ -65,7 +65,7 @@ export namespace WorkerPlugin {
   export interface Props {
     parent: PluginHandler
     path: string
-    info: PluginType.Info
+    info: Plugin.Info
   }
 
   export interface PluginProps {

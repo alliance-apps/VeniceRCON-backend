@@ -1,4 +1,4 @@
-import { Plugin } from "../Plugin"
+import { Plugin } from "./Plugin"
 
 /**
  * handles startup of multiple plugins

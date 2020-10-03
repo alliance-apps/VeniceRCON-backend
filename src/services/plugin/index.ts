@@ -1,13 +1,10 @@
-import { PluginManager } from "./main/PluginManager"
-import path from "path"
+import { PluginStore } from "./store/PluginStore"
 import { config } from "@service/config"
 
-export let pluginManager: PluginManager
+export let pluginStore: PluginStore
 
 export async function initialize() {
-  pluginManager = new PluginManager({
-    path: path.join(__dirname, "/../../../", config.instance.plugins.baseDir)
+  pluginStore = new PluginStore({
+    repos: config.instance.plugins.repos || []
   })
-
-  await pluginManager.init()
 }

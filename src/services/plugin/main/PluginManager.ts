@@ -1,80 +1,109 @@
+import { Instance } from "@service/battlefield/libs/Instance"
+import { pluginStore } from "../"
 import { promises as fs } from "fs"
-import winston from "winston"
 import path from "path"
-import { parse } from "yaml"
-import { PluginBlueprint } from "./util/PluginBlueprint"
+import yaml from "yaml"
+import { Plugin } from "./Plugin"
+import { PluginWorker } from "./PluginWorker"
 
-/** handles plugin blueprints */
 export class PluginManager {
 
+  readonly parent: Instance
   readonly baseDir: string
-  private blueprints: Record<string, PluginBlueprint> = {}
+  private plugins: Plugin[] = []
+  readonly worker: PluginWorker
 
   constructor(props: PluginManager.Props) {
-    this.baseDir = props.path
+    this.parent = props.parent
+    this.baseDir = pluginStore.getBaseDir(this.parent)
+    this.worker = new PluginWorker({
+      baseDir: this.baseDir, parent: this
+    })
+    this.reloadPlugins()
   }
 
-  /**
-   * initializes the manager
-   */
-  async init() {
+  async toJSON() {
+    return await Promise.all(this.plugins.map(plugin => plugin.toJSON()))
+  }
+
+  /** stops the worker */
+  stop() {
+    return this.worker.stop()
+  }
+
+  /** starts the worker */
+  start() {
+    return this.worker.spawn()
+  }
+
+  /** reloads all plugins for this instance from disk */
+  async reloadPlugins() {
+    //stop the worker and empty the current plugin list
+    await this.worker.stop()
+    this.plugins = []
+    //check if folder exists with a single plugin in it
     try {
-      const stat = await fs.stat(this.baseDir)
-      if (!stat.isDirectory)
-        return winston.error(`plugin folder is not a directory ${this.baseDir}`)
+      await fs.stat(this.baseDir)
     } catch (e) {
-      winston.info(`plugin folder not found ${this.baseDir}`)
+      if (e.code !== "ENOENT") throw e
       return
     }
-    await this.reloadPlugins()
+    const folders = await fs.readdir(this.baseDir)
+    await Promise.allSettled(
+      folders.map(async name => {
+        const base = path.join(this.baseDir, name)
+        try {
+          const meta = yaml.parse(await fs.readFile(path.join(base, "meta.yaml"), "utf-8"))
+          const plugin = new Plugin({ meta, parent: this, name })
+          try {
+            await plugin.validate()
+          } catch (e) {
+            this.parent.log.warn(`invalid schema provided in plugin ${name}`)
+            this.parent.log.warn(e)
+            return
+          }
+          if (!plugin.isCompatible())
+            return this.parent.log.info(`ignoring plugin ${name} because backend is incompatible`)
+          this.plugins.push(plugin)
+        } catch (e) {
+          this.parent.log.error(`could not load plugin from ${base}`)
+          this.parent.log.error(e)
+        }
+      })
+    )
+    //start the worker again
+    await this.worker.spawn()
   }
 
-  /** retrieves all available plugins for a specific backend */
-  getPlugins(backend: "BF3"|"VU"|"*" = "*") {
-    return Object.values(this.blueprints).filter(({ meta }) => {
-      switch (backend) {
-        default:
-        case "BF3": return ["BF3", "*"].includes(meta.backend)
-        case "VU": return true
-      }
-    })
+  /** retrieves a plugin by its name */
+  getPluginByName(name: string) {
+    return this.plugins.find(p => p.name === name)
   }
 
-  /**
-   * gets a specific blueprint entity by its name
-   * @param name blueprint name to find
-   * @param backend backend which gets used
-   */
-  getBlueprint(name: string, backend?: "BF3"|"VU"|"*") {
-    return this.getPlugins(backend).find(bp => bp.id === name)
-  }
-
-  /**
-   * reloads all plugins from disk
-   */
-  private async reloadPlugins() {
-    const plugins = await fs.readdir(this.baseDir)
-    for (const name of plugins) {
-      const folder = path.join(this.baseDir, name)
-      winston.verbose(`loading plugin meta.yaml from folder ${folder}`)
-      const meta = parse(await fs.readFile(path.join(folder, "meta.yaml"), "utf8"))
-      try {
-        await PluginBlueprint.validateMeta(meta)
-      } catch (e) {
-        winston.error(`invalid schema.yaml in ${path.join(folder, "meta.yaml")}, skipping...`)
-        winston.error(e)
-        continue
-      }
-      const current = this.blueprints[name]
-      if (current) await current.stop()
-      delete this.blueprints[name]
-      this.blueprints[name] = new PluginBlueprint({ id: name, basePath: folder, meta })
+  async getPluginById(id: number) {
+    let index = -1
+    while (++index < this.plugins.length) {
+      const pluginId = await this.plugins[index].fetchId()
+      if (pluginId === id) return this.plugins[index]
     }
+    throw new Error(`could not find plugin with id ${id}`)
   }
+
+  /** retrieves all plugins which should autostart */
+  async getEnabledPlugins() {
+    const plugins: Plugin[] = []
+    await Promise.all(
+      this.plugins.map(async p => {
+        if (await p.shouldAutostart()) plugins.push(p)
+      })
+    )
+    return plugins
+  }
+
 }
 
 export namespace PluginManager {
   export interface Props {
-    path: string
+    parent: Instance
   }
 }

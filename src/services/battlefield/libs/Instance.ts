@@ -5,8 +5,6 @@ import { User } from "@entity/User"
 import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../../util/PrependAction"
 import { Connection } from "./Connection"
-import { pluginManager } from "@service/plugin"
-import { InstancePlugin } from "@service/plugin/main/InstancePlugin"
 import { PluginManager } from "@service/plugin/main/PluginManager"
 import { Variable } from "vu-rcon/lib/Variable"
 import { Player } from "@entity/Player"
@@ -18,7 +16,7 @@ export class Instance {
 
   readonly connection: Connection
   readonly state: InstanceContainer
-  readonly plugin: InstancePlugin
+  readonly plugin: PluginManager
   readonly chat: ChatManager
   readonly kill: KillFeedManager
   readonly log: InstanceLogger
@@ -37,10 +35,7 @@ export class Instance {
     })
     this.chat = new ChatManager({ instance: this })
     this.kill = new KillFeedManager({ instance: this })
-    this.plugin = new InstancePlugin({
-      instance: this,
-      manager: props.pluginManager
-    })
+    this.plugin = new PluginManager({ parent: this })
     this.playerListAction = new PrependAction({
       shouldExecute: () => {
         const { slots } = this.state.get("serverinfo")
@@ -63,6 +58,10 @@ export class Instance {
   /** current instance id from the database */
   get id() {
     return this.state.id
+  }
+
+  get version() {
+    return this.state.get("version")
   }
 
   /** registers handler for events */
@@ -281,11 +280,7 @@ export class Instance {
   /** creates a new instance from given properties */
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
-    const instance = new Instance({
-      battlefield,
-      entity: props.entity,
-      pluginManager
-    })
+    const instance = new Instance({ battlefield, entity: props.entity })
     if (props.entity.autostart) {
       try {
         await instance.start()
@@ -304,7 +299,6 @@ export namespace Instance {
     battlefield: Battlefield,
     entity: InstanceEntity,
     serverinfo?: Battlefield.ServerInfo
-    pluginManager: PluginManager
   }
 
   export interface CreateProps {

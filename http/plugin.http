@@ -1,25 +1,18 @@
 @instanceId=2
-@pluginId=1
+@pluginId=2
+@pluginStore=main
+@pluginName=showcase
 
-### retrieve a list of created plugins
+### retrieve a list of useable plugins
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins
 Authorization: Bearer {{$dotenv jwt}}
 
-### retrieve a list of useable plugins
-GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/available
-Authorization: Bearer {{$dotenv jwt}}
-
-### adds a new plugin to the server
-POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins
-Authorization: Bearer {{$dotenv jwt}}
-Content-Type: application/json
-
-{
-  "identifier": "test"
-}
-
 ### retrieves a single plugin
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### deletes a plugin
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}
 Authorization: Bearer {{$dotenv jwt}}
 
 ### updates the configuration of a plugin
@@ -37,4 +30,12 @@ Authorization: Bearer {{$dotenv jwt}}
 
 ### stops a plugin
 POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins/{{pluginId}}/stop
+Authorization: Bearer {{$dotenv jwt}}
+
+### retrieves plugins in store
+GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/store
+Authorization: Bearer {{$dotenv jwt}}
+
+### downloads a plugin
+POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins/store/{{pluginStore}}/{{pluginName}}
 Authorization: Bearer {{$dotenv jwt}}

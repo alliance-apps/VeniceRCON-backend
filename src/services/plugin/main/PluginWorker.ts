@@ -1,11 +1,11 @@
 import { Worker } from "worker_threads"
-import { InstancePlugin } from "./InstancePlugin"
 import path from "path"
+import { LogMessage } from "@entity/LogMessage"
+import { PluginManager } from "./PluginManager"
 import { Plugin } from "./Plugin"
 import { Messenger } from "../shared/messenger/Messenger"
 import { State } from "../shared/state"
-import { PluginQueue } from "./util/PluginQueue"
-import { LogMessage } from "@entity/LogMessage"
+import { PluginQueue } from "./PluginQueue"
 
 /**
  * Handles communication between worker and main thread
@@ -13,14 +13,13 @@ import { LogMessage } from "@entity/LogMessage"
 export class PluginWorker {
   private worker: Worker|undefined
   private messenger: Messenger|undefined
-  private parent: InstancePlugin
+  private parent: PluginManager
   private baseDir: string
   state: State = State.UNKNOWN
 
   constructor(props: PluginWorker.Props) {
     this.parent = props.parent
     this.baseDir = props.baseDir
-    this.start()
   }
 
   /**
@@ -31,7 +30,7 @@ export class PluginWorker {
   }
 
   /** spawns the worker and loads all enabled plugins */
-  private async start() {
+  async spawn() {
     await this.createWorker()
     const queue = new PluginQueue(await this.parent.getEnabledPlugins())
     while (true) {
@@ -79,8 +78,8 @@ export class PluginWorker {
    */
   private registerEvents() {
     if (!this.messenger) throw new Error(`no messenger has been registered`)
-    this.messenger.on("GET_PLUGIN_CONFIG", ({ message }) => {
-      const plugin = this.parent.findId(message.data.id)
+    this.messenger.on("GET_PLUGIN_CONFIG", async ({ message }) => {
+      const plugin = await this.parent.getPluginById(message.data.id)
       if (!plugin) return message.except(`could not find plugin with id ${message.data.id}`)
       message.done(plugin.getConfig())
     })
@@ -142,7 +141,7 @@ export class PluginWorker {
    */
   async restart() {
     this.stop()
-    await this.start()
+    await this.spawn()
   }
 
   /**
@@ -162,7 +161,7 @@ export class PluginWorker {
   async startPlugin(plugin: Plugin) {
     this.instance.log.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`, LogMessage.Source.PLUGIN, plugin.name)
     await plugin.setAutostart(true)
-    return this.sendMessage("startPlugin", plugin.toJSON())
+    return this.sendMessage("startPlugin", await plugin.toJSON())
   }
 
   /**
@@ -182,7 +181,7 @@ export class PluginWorker {
 
 export namespace PluginWorker {
   export interface Props {
-    parent: InstancePlugin
+    parent: PluginManager
     baseDir: string
   }
 
