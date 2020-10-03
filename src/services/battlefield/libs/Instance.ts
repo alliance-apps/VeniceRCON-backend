@@ -42,8 +42,8 @@ export class Instance {
         return (slots && slots > 0) || Object.keys(this.state.get("players")).length > 0
       },
       execute: () => this.playerList(),
-      minimumInterval: this.syncInterval * 4,
-      prependTimeout: this.syncInterval * 2
+      minimumInterval: this.syncInterval * 2,
+      prependTimeout: this.syncInterval * 1
     })
     this.registerEvents()
     this.battlefield.on("close", () => this.stopUpdateInterval())
