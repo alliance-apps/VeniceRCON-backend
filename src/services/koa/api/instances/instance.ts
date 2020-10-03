@@ -50,6 +50,30 @@ api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
   }
 })
 
+
+api.route({
+  method: "POST",
+  path: "/raw",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      words: Joi.array().items(Joi.string()).required()
+    }).required()
+  },
+  pre: perm(InstanceScope.CONSOLE),
+  handler: async ctx => {
+    try {
+      const { words } = ctx.request.body
+      ctx.body = await ctx.state.instance!.connection.battlefield.createCommand(words.shift(), ...words).send()
+      ctx.status = 200
+    } catch (e) {
+      ctx.status = 400
+      ctx.body = { message: e.message }
+    }
+  }
+})
+
+
 api.route({
   method: "POST",
   path: "/message",

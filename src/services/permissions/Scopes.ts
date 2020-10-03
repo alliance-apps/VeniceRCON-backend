@@ -11,11 +11,12 @@ export type Scopes =
   typeof ModScope
 
 export const InstanceScope = {
-  ACCESS: 0x01n,
-  CREATE: 0x02n,
-  UPDATE: 0x04n,
-  DELETE: 0x08n,
-  LOGS: 0x10n
+  ACCESS:  0x01n,
+  CREATE:  0x02n,
+  UPDATE:  0x04n,
+  DELETE:  0x08n,
+  LOGS:    0x10n,
+  CONSOLE: 0x20n
 }
 
 export const InstanceUserScope = {
@@ -155,6 +156,7 @@ export function getScopesFromMask(mask: bigint) {
         instance("DELETE")
         instance("UPDATE")
         instance("LOGS")
+        instance("CONSOLE")
         return
       case "INSTANCEUSER":
         const user = validateScope(key, InstanceUserScope)

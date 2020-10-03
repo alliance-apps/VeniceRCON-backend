@@ -31,7 +31,8 @@ export namespace SocketManager {
     ADD = "INSTANCE#ADD",
     CHAT = "INSTANCE#CHAT",
     KILL = "INSTANCE#KILL",
-    LOG = "INSTANCE#LOG"
+    LOG = "INSTANCE#LOG",
+    CONSOLE = "INSTANCE#CONSOLE"
   }
 
   export enum SELF {

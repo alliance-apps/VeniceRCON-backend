@@ -49,3 +49,12 @@ Authorization: Bearer {{$dotenv jwt}}
 ### creates an invite for a new user
 POST {{$dotenv url}}/api/instances/{{id}}/users/invite
 Authorization: Bearer {{$dotenv jwt}}
+
+### sends a raw command to the server
+POST {{$dotenv url}}/api/instances/{{id}}/raw
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "words": ["mapList.list"]
+}

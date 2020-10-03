@@ -1,6 +1,10 @@
 import { Battlefield } from "vu-rcon"
 import { Instance } from "./Instance"
 import { InstanceContainer } from "@service/container/InstanceContainer"
+import { socketManager } from "@service/koa/socket"
+import { InstanceScope } from "@service/permissions/Scopes"
+import { Word } from "vu-rcon/lib/transport/protocol/Word"
+import { SocketManager } from "@service/koa/socket/SocketManager"
 
 export class Connection {
   readonly battlefield: Battlefield
@@ -16,6 +20,18 @@ export class Connection {
       await this.battlefield.reconnect()
       this.state.updateConnectionState(Instance.State.CONNECTED)
     })
+    this.battlefield.on("sendData", ({ words }) => this.publishSocketEvent("send", words))
+    this.battlefield.on("receiveData", ({ words }) => this.publishSocketEvent("receive", words))
+  }
+
+  private publishSocketEvent(type: "send"|"receive", words: Word[]) {
+    return socketManager
+      .subscribedTo(this.parent.id)
+      .hasPermission(this.parent.id, InstanceScope.CONSOLE)
+      .emit(
+        SocketManager.INSTANCE.CONSOLE,
+        { type, words: words.map(w => w.toString()) }
+      )
   }
 
   get state() {

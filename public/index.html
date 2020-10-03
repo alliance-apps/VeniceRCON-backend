@@ -51,6 +51,9 @@
         socket.on("success", () => {
           console.log("successfully connected to socket!")
         })
+        socket.on("INSTANCE#CONSOLE", words => {
+          console.log(words)
+        })
         socket.on("INSTANCE#ADD", event => {
           states[event.state.id] = event.state
           update()
