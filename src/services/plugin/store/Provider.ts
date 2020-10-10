@@ -6,10 +6,15 @@ import { Repository } from "./Repository"
 
 export class Provider {
 
+  /** name of the store provider */
   name: string
+  /** branch which gets used to fetch the repository from */
   branch: string
+  /** github repository url */
   repository: string
+  /** optional headers which should gets set in the http request */
   headers: Record<string, string>
+  /** list of plugins in this repository */
   plugins: Repository[] = []
 
   constructor(props: Provider.Props) {
@@ -20,10 +25,12 @@ export class Provider {
     this.reload()
   }
 
+  /** url to fetch the repository yaml file from */
   get url() {
     return `${this.repository}/raw/${this.branch}/repository.yaml`
   }
 
+  /** loads all plugins defined in the repository.yaml */
   async reload() {
     winston.info(`reading external plugins from store "${this.name}"...`)
     try {
@@ -36,10 +43,12 @@ export class Provider {
     }
   }
 
+  /** retrieves a specific plugin by its name from the repository */
   getPlugin(name: string) {
     return this.plugins.find(p => p.name === name)
   }
 
+  /** parses and validates a plugins repository schema */
   private parseSchema(data: string) {
     return schema.validate<PluginStoreSchema>(
       yaml.parse(data),
@@ -47,6 +56,7 @@ export class Provider {
     )
   }
 
+  /** fetches the repository.yaml via http request */
   private async fetch() {
     const response = await fetch(this.url, {
       headers: this.headers,

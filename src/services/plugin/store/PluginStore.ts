@@ -11,6 +11,10 @@ export class PluginStore {
     this.providers = props.repos.map(repo => new Provider(repo))
   }
 
+  /**
+   * retrieves the plugin installation path for the specified instance
+   * @param instance instance to retrieve the installation path from
+   */
   getBaseDir(instance: Instance) {
     return path.join(
       config.basepath,
@@ -19,16 +23,19 @@ export class PluginStore {
     )
   }
 
+  /** reloads the content of all repositories */
   reload() {
     return Promise.all(this.providers.map(p => p.reload()))
   }
 
+  /** retrieves a map of all plugins available */
   getPlugins() {
     return this.providers
       .map(({ plugins, name }) => plugins.map(p => ({ store: name, ...p.json() })))
       .flat()
   }
 
+  /** retrieves a specific store by its nmae */
   getStore(name: string) {
     return this.providers.find(p => p.name === name)
   }
