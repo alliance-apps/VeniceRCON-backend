@@ -3,12 +3,20 @@ import ioJWT from "socketio-jwt-auth"
 import { User } from "@entity/User"
 import { getSecret } from "../jwt"
 import { SocketManager } from "./SocketManager"
+import winston from "winston"
 
 export let socketManager: SocketManager
 
 export async function initialize(server: Server) {
 
   socketManager = new SocketManager()
+
+  //error handler
+  server.on("error", (err: any) => winston.warn(`received error from socket.io server ${err.message}`))
+  server.use((socket, next) => {
+    socket.on("error", err => winston.warn(`received error from socket.io client ${err.message}`))
+    next()
+  })
 
   server.use(
     ioJWT.authenticate({ secret: await getSecret() },

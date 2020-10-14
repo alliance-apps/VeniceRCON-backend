@@ -14,10 +14,16 @@ export class Connection {
   constructor(props: Connection.Props) {
     this.battlefield = props.battlefield
     this.parent = props.instance
+    this.battlefield.on("error", async error => {
+      this.parent.log.error(`received error from battlefield socket ${error.message}`)
+      this.battlefield.quit()
+    })
     this.battlefield.on("close", async () => {
       if (this.requestStop) return
+      this.parent.log.warn("battlefield server disconnected, reconnecting...")
       await this.state.updateConnectionState(Instance.State.RECONNECTING)
       await this.battlefield.reconnect()
+      this.parent.log.info("battlefield server reconnected!")
       this.state.updateConnectionState(Instance.State.CONNECTED)
     })
     this.battlefield.on("sendData", ({ words }) => this.publishSocketEvent("send", words))
@@ -25,12 +31,12 @@ export class Connection {
   }
 
   private publishSocketEvent(type: "send"|"receive", words: Word[]) {
-    return socketManager
+    socketManager
       .subscribedTo(this.parent.id)
       .hasPermission(this.parent.id, InstanceScope.CONSOLE)
       .emit(
         SocketManager.INSTANCE.CONSOLE,
-        { type, words: words.map(w => w.toString()) }
+        { id: this.parent.id, type, words: words.map(w => w.toString()) }
       )
   }
 
