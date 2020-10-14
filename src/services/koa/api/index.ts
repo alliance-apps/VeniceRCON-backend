@@ -14,6 +14,12 @@ export async function createRoute() {
     enableTypes: ["json"],
     onerror: (err, ctx) => ctx.throw("body parse error", 422)
   }))
+
+  router.get("/", ctx => {
+    ctx.body = { "name": "VeniceRCON-api" }
+    ctx.status = 200
+  })
+
   router.use(json({ pretty: config.development }))
 
   router.use(await jwtMiddleware({ passthrough: true }))
