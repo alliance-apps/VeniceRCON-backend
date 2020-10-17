@@ -48,7 +48,7 @@ winston.configure({
   ),
   transports: [
     new transports.Console({
-      level: "info",
+      level: "verbose",
       format: format.combine(
         format.timestamp({format: "DD.MM.YYYY HH:mm:ss.SSS"}),
         prettyLog(),
