@@ -49,6 +49,15 @@ export class InstanceManager {
   }
 
   /**
+   * tests the connection to a battlefield server
+   * @param props
+   */
+  async testInstance(props: Battlefield.Options) {
+    const res = await Battlefield.testConnection(props)
+    if (res instanceof Error) throw res
+  }
+
+  /**
    * removes an instance by its entity id
    * @param id entity id to remove
    */

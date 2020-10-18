@@ -13,6 +13,7 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
+      test: Joi.boolean().optional().default(false),
       host: Joi.string().required(),
       port: Joi.number().min(1024).max(65536).required(),
       password: Joi.string().required()
@@ -21,13 +22,22 @@ api.route({
   pre: perm(InstanceScope.CREATE),
   handler: async ctx => {
     try {
-      const instance = await instanceManager.createInstance({
-        host: ctx.request.body.host,
-        port: ctx.request.body.port,
-        password: ctx.request.body.password
-      })
-      ctx.status = 200
-      ctx.body = instance.state.get()
+      if (ctx.request.body.test) {
+        await instanceManager.testInstance({
+          host: ctx.request.body.host,
+          port: ctx.request.body.port,
+          password: ctx.request.body.password
+        })
+        ctx.status = 200
+      } else {
+          const instance = await instanceManager.createInstance({
+            host: ctx.request.body.host,
+            port: ctx.request.body.port,
+            password: ctx.request.body.password
+          })
+          ctx.status = 200
+          ctx.body = instance.state.get()
+      }
     } catch (e) {
       ctx.status = 500
       ctx.body = { message: e.message }
