@@ -57,7 +57,7 @@ export class Player extends AbstractEntity<Player> {
     //gets a list of players in the database
     const players = await Player.findIdsByName(filtered)
     //gets a list of all players which have not been found in the database
-    const inserts = Object.keys(filtered)
+    const inserts = filtered
       //checks if a name has not been found
       .filter(name => !players.some(p => p.name === name))
       //do not insert duplicates

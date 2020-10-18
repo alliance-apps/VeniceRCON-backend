@@ -123,7 +123,10 @@ export class Instance {
 
   /** retrieves multiple player ids by their name */
   async getPlayerIdsByName(names: Record<string, string|undefined>): Promise<Record<string, number|undefined>> {
-    return Player.getPlayerIds(names, this.getPlayerDataByName.bind(this))
+    return Player.getPlayerIds(
+      names,
+      this.getPlayerDataByName.bind(this)
+    )
   }
 
   /** checks if the specified user has the specified scope for this instance */
