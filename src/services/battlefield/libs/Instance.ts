@@ -89,6 +89,7 @@ export class Instance {
 
   /** starts the update interval */
   private async startUpdateInterval() {
+    clearInterval(this.interval)
     this.interval = setInterval(this.updateInterval.bind(this), this.syncInterval)
     this.playerListAction.unpause()
     await Promise.all([
