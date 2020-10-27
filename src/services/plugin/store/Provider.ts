@@ -35,7 +35,10 @@ export class Provider {
     winston.info(`reading external plugins from store "${this.name}"...`)
     try {
       const store = await this.parseSchema(await this.fetch())
-      this.plugins = store.plugins.map(repo => new Repository(repo))
+      this.plugins = store.plugins.map(repo => new Repository({
+        provider: this,
+        schema: repo
+      }))
       winston.info(`received ${this.plugins.length} plugins from store "${this.name}"`)
     } catch (e) {
       winston.error(`could not fetch plugins from ${this.url}`)

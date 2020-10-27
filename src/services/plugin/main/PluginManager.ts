@@ -5,6 +5,7 @@ import path from "path"
 import yaml from "yaml"
 import { Plugin } from "./Plugin"
 import { PluginWorker } from "./PluginWorker"
+import { Plugin as PluginEntity } from "@entity/Plugin"
 
 export class PluginManager {
 
@@ -50,11 +51,12 @@ export class PluginManager {
     }
     const folders = await fs.readdir(this.baseDir)
     await Promise.allSettled(
-      folders.map(async name => {
-        const base = path.join(this.baseDir, name)
+      folders.map(async uuid => {
+        const base = path.join(this.baseDir, uuid)
         try {
           const meta = yaml.parse(await fs.readFile(path.join(base, "meta.yaml"), "utf-8"))
-          const plugin = new Plugin({ meta, parent: this, name })
+          const entity = await PluginEntity.findOneOrFail({ uuid })
+          const plugin = new Plugin({ meta, parent: this, entity })
           try {
             await plugin.validate()
           } catch (e) {
@@ -81,12 +83,9 @@ export class PluginManager {
   }
 
   async getPluginById(id: number) {
-    let index = -1
-    while (++index < this.plugins.length) {
-      const pluginId = await this.plugins[index].fetchId()
-      if (pluginId === id) return this.plugins[index]
-    }
-    throw new Error(`could not find plugin with id ${id}`)
+    const plugin = this.plugins.find(plugin => plugin.id === id)
+    if (!plugin) throw new Error(`could not find plugin with id ${id}`)
+    return plugin
   }
 
   /** retrieves all plugins which should autostart */
@@ -99,7 +98,6 @@ export class PluginManager {
     )
     return plugins
   }
-
 }
 
 export namespace PluginManager {

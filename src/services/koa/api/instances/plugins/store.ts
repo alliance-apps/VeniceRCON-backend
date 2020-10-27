@@ -6,9 +6,7 @@ import { perm } from "@service/koa/permission"
 const api = Router()
 
 api.get("/", async ctx => {
-  ctx.body = pluginStore.providers
-    .map(({ plugins, name }) => plugins.map(p => ({ store: name, ...p.json() })))
-    .flat()
+  ctx.body = pluginStore.getPlugins()
 })
 
 api.post("/:store/:name", perm(PluginScope.CREATE), async ctx => {

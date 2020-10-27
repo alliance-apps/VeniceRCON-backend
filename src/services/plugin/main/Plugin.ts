@@ -5,12 +5,12 @@ import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Context } from "koa"
 import { promises as fs } from "fs"
 import path from "path"
+import { pluginStore } from ".."
 
 export class Plugin {
 
-  private id: number = 0
+  private entity: PluginEntity
   readonly manager: PluginManager
-  readonly name: string
   readonly meta: Meta
   state: Plugin.State = Plugin.State.STOPPED
   private config: Record<string, any> = {}
@@ -18,7 +18,7 @@ export class Plugin {
   constructor(props: Plugin.Props) {
     this.manager = props.parent
     this.meta = props.meta
-    this.name = props.name
+    this.entity = props.entity
   }
 
   get instance() {
@@ -29,10 +29,16 @@ export class Plugin {
     return this.manager.worker
   }
 
-  /** fetches the entity id */
-  async fetchId() {
-    if (this.id === 0) await this.getEntity()
-    return this.id
+  get id() {
+    return this.entity.id
+  }
+
+  get store() {
+    return this.entity.store
+  }
+
+  get name() {
+    return this.entity.name
   }
 
   /** checks if the plugin is valid */
@@ -55,22 +61,6 @@ export class Plugin {
       case InstanceContainer.Version.VU:
         return true
     }
-  }
-
-  private async getEntity() {
-    let entity = await PluginEntity.findOne({
-      instanceId: this.instance.id,
-      name: this.name
-    })
-    if (!entity) {
-      entity = await PluginEntity.from({
-        name: this.name,
-        version: this.meta.version,
-        instance: this.instance.id
-      })
-    }
-    this.id = entity.id
-    return entity
   }
 
   /** wether the plugin has been started or not */
@@ -96,19 +86,19 @@ export class Plugin {
       ...this.getConfig(),
       ...config
     }
-    return PluginEntity.updateConfig(await this.fetchId(), config)
+    await PluginEntity.updateConfig(await this.entity.id, config)
+    await this.entity.reload()
   }
 
   /** sets the plugin to autostart after a reboot */
-  async setAutostart(set: boolean) {
-    const entity = await this.getEntity()
-    entity.start = set
-    await entity.save()
+  async setAutostart(start: boolean) {
+    await this.entity.update({ start })
   }
 
   /** returns wether the plugin should autostart or not */
   async shouldAutostart() {
-    return (await this.getEntity()).start
+    await this.entity.reload()
+    return this.entity.start
   }
 
   /** starts the plugin if its not already running */
@@ -137,9 +127,20 @@ export class Plugin {
     await this.manager.reloadPlugins()
   }
 
-  async toJSON(): Promise<Plugin.Info> {
+  checkUpdate() {
+    const store = pluginStore.getStore(this.store)
+    if (!store) return "0.0.0"
+    const plugin = store.getPlugin(this.name)
+    if (!plugin) return "0.0.0"
+    return plugin.version
+  }
+
+  toJSON(): Plugin.Info {
     return {
-      id: await this.fetchId(),
+      id: this.id,
+      storeVersion: this.checkUpdate(),
+      uuid: this.entity.uuid,
+      store: this.store,
       name: this.name,
       state: this.state,
       meta: this.meta,
@@ -153,7 +154,7 @@ export namespace Plugin {
   export interface Props {
     parent: PluginManager
     meta: Meta
-    name: string
+    entity: PluginEntity
   }
 
   export enum State {
@@ -163,6 +164,9 @@ export namespace Plugin {
 
   export interface Info {
     id: number
+    store: string
+    storeVersion: string
+    uuid: string
     name: string
     state: number
     meta: Meta

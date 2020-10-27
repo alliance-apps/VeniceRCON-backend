@@ -31,7 +31,7 @@ export class PluginStore {
   /** retrieves a map of all plugins available */
   getPlugins() {
     return this.providers
-      .map(({ plugins, name }) => plugins.map(p => ({ store: name, ...p.json() })))
+      .map(({ plugins }) => plugins.map(p => p.json()))
       .flat()
   }
 

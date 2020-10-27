@@ -1,4 +1,5 @@
-import { Entity, Column, ManyToOne } from "typeorm"
+import { createHash } from "crypto"
+import { Entity, Column, ManyToOne, Index } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance } from "./Instance"
 
@@ -11,10 +12,14 @@ export class Plugin extends AbstractEntity<Plugin> {
   name!: string
 
   @Column()
-  version!: string
+  store!: string
 
   @ManyToOne(type => Instance, instance => instance.plugins)
   instance!: Promise<Instance>
+
+  @Column()
+  @Index()
+  uuid!: string
 
   @Column({ default: false })
   start!: boolean
@@ -34,6 +39,15 @@ export class Plugin extends AbstractEntity<Plugin> {
     return this
   }
 
+  static async getPluginWithUpsert(props: Plugin.ICreate) {
+    const entity = await Plugin.findOne({
+      store: props.store,
+      name: props.name
+    })
+    if (entity) return entity
+    return Plugin.from(props)
+  }
+
   static updateConfig(id: number, config: Record<string, any>) {
     return Plugin.createQueryBuilder()
       .update()
@@ -45,7 +59,8 @@ export class Plugin extends AbstractEntity<Plugin> {
   static async from(props: Plugin.ICreate) {
     const plugin = new Plugin()
     plugin.name = props.name
-    plugin.version = props.version
+    plugin.store = props.store
+    plugin.uuid = createHash("md5").update(`${props.store}.${props.name}`).digest("hex")
     plugin.config = props.config || "{}"
     plugin.instanceId = AbstractEntity.fetchId(props.instance)
     return plugin.save()
@@ -56,7 +71,7 @@ export class Plugin extends AbstractEntity<Plugin> {
 export namespace Plugin {
   export interface ICreate {
     name: string
-    version: string
+    store: string
     config?: string
     instance: Instance|number
   }
