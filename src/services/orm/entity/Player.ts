@@ -63,16 +63,15 @@ export class Player extends AbstractEntity<Player> {
       //do not insert duplicates
       .reduce((acc, name) => acc.includes(name) ? acc : [...acc, name], [] as string[])
     //insert all players which are not in our database
-    winston.verbose({ inserts })
     await Promise.all(inserts.map(async name => {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
-      result[name] = (await Player.from(data)).id
+      players.push(await Player.from(data))
     }))
-    players.forEach(player => {
-      Object.keys(names)
-        .filter(name => names[name] === player.name)
-        .forEach(name => result[name] = player.id)
+    Object.keys(names).forEach(id => {
+      const player = players.find(player => player.name === names[id])
+      if (!player) return
+      result[id] = player.id
     })
     return result
 
