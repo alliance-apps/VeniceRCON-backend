@@ -68,7 +68,7 @@ export class PluginWorker {
       worker.on("exit", code => {
         this.instance.log.info(`worker exited with code ${code} (instance ${this.instance.id})`)
         worker.removeAllListeners()
-        messenger.removeAllListeners()
+        if (messenger) messenger.removeAllListeners()
       })
     })
   }

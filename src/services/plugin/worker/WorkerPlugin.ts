@@ -3,11 +3,13 @@ import type { Plugin as PluginType, Plugin } from "../main/Plugin"
 import { PluginHandler } from "./PluginHandler"
 import { PluginLogger } from "./util/PluginLogger"
 import { PluginRouter } from "./util/PluginRouter"
+import { PluginStore } from "./util/PluginStore"
+import path from "path"
 
 export class WorkerPlugin {
 
   parent: PluginHandler
-  path: string
+  basePath: string
   state: WorkerPlugin.State = WorkerPlugin.State.STOPPED
   readonly info: PluginType.Info
   exported: any
@@ -15,7 +17,7 @@ export class WorkerPlugin {
 
   constructor(props: WorkerPlugin.Props) {
     this.parent = props.parent
-    this.path = props.path
+    this.basePath = props.basePath
     this.info = props.info
   }
 
@@ -23,11 +25,19 @@ export class WorkerPlugin {
     return this.info.meta
   }
 
+  get indexPath() {
+    return path.join(this.basePath, this.info.meta.entry)
+  }
+
+  get storePath() {
+    return path.join(this.basePath, ".meta", "store.json")
+  }
+
   async start() {
     if (this.state !== WorkerPlugin.State.STOPPED)
       throw new Error(`Plugin is not in state stopped! got state ${this.state}`)
     this.state = WorkerPlugin.State.STARTED
-    const callback = require(this.path)
+    const callback = require(this.indexPath)
     if (typeof callback !== "function") throw new Error(`expected a function as export in plugin "${this.info.name}" but received ${typeof callback}`)
     this.exported = await callback(await this.getPluginProps())
   }
@@ -38,6 +48,7 @@ export class WorkerPlugin {
       battlefield: this.parent.battlefield,
       dependency: this.getDependencies(),
       logger: new PluginLogger(this.parent.messenger, this.info.name),
+      store: await PluginStore.from({ file: this.storePath })
     }
     if (Array.isArray(this.meta.features)) {
       if (this.meta.features.includes("router")) props.router = this.router
@@ -64,7 +75,7 @@ export class WorkerPlugin {
 export namespace WorkerPlugin {
   export interface Props {
     parent: PluginHandler
-    path: string
+    basePath: string
     info: Plugin.Info
   }
 
@@ -74,6 +85,7 @@ export namespace WorkerPlugin {
     dependency: Record<string, any>
     logger: PluginLogger
     router?: PluginRouter
+    store: PluginStore
   }
 
   export type Create = Omit<Props, "code">

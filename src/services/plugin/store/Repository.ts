@@ -12,7 +12,7 @@ export class Repository {
 
   static internals = {
     folder: ".meta",
-    store: "store"
+    store: "store.json"
   }
 
   name: string

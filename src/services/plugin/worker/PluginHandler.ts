@@ -52,7 +52,7 @@ export class PluginHandler {
     if (this.state !== State.READY) return message.except("Worker not ready")
     const plugin = new WorkerPlugin({
       parent: this,
-      path: path.join(this.basePath, message.data.uuid, message.data.meta.entry),
+      basePath: path.join(this.basePath, message.data.uuid),
       info: message.data
     })
     this.plugins.push(plugin)
