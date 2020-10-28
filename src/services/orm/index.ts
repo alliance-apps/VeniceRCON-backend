@@ -19,6 +19,8 @@ import { Weapon } from "@entity/Weapon"
 import { LogMessage } from "@entity/LogMessage"
 import { getBitMaskWithAllPermissions } from "@service/permissions/Scopes"
 
+const DEFAULT_USERNAME = "admin"
+
 export let connection: Connection
 
 export async function connect(args: Record<string, string>) {
@@ -53,15 +55,15 @@ export async function connect(args: Record<string, string>) {
   )
 
   //create and update default "admin" user
-  let admin = await User.findOne({ username: "admin" })
+  let admin = await User.findOne({ username: DEFAULT_USERNAME })
   if (!admin) {
     const password = randomBytes(15).toString("base64")
-    admin = await User.from({ username: "admin", password })
+    admin = await User.from({ username: DEFAULT_USERNAME, password })
     await admin.save()
     setTimeout(async () => {
-      if (!admin) throw new Error("admin user not defined")
+      if (!admin) throw new Error(`${DEFAULT_USERNAME} user not defined`)
       const token = await createToken({ user: admin })
-      winston.info(`created default user "${chalk.red.bold("admin")}" with password "${chalk.red.bold(password)}"`)
+      winston.info(`created default user "${chalk.red.bold(DEFAULT_USERNAME)}" with password "${chalk.red.bold(password)}"`)
       winston.info(`jwt token: ${chalk.red.bold(token)}`)
     }, 1000)
   }
@@ -78,6 +80,6 @@ export async function connect(args: Record<string, string>) {
     if (password.length < 6) throw new Error(`override password should have a minimum length of 6 characters! (got ${password.length})`)
     await admin.updatePassword(password)
     await admin.save()
-    winston.info("admin password has been overwritten")
+    winston.info(`${DEFAULT_USERNAME} password has been overwritten`)
   }
 }

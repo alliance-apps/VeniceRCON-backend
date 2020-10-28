@@ -48,6 +48,7 @@ export class Instance {
     this.registerEvents()
     this.battlefield.on("close", () => this.stopUpdateInterval())
     this.battlefield.on("ready", () => this.startUpdateInterval())
+    if (props.entity.autostart) this.doAutostart()
   }
 
   /** battlefield rcon instance */
@@ -62,6 +63,14 @@ export class Instance {
 
   get version() {
     return this.state.get("version")
+  }
+
+  private async doAutostart() {
+    try {
+      await this.start()
+    } catch (e) {
+      this.log.warn(`could not connect to battlefield server with id ${this.id} message: ${e.message}`)
+    }
   }
 
   /** registers handler for events */
@@ -285,13 +294,6 @@ export class Instance {
   static async from(props: Instance.CreateProps) {
     const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
     const instance = new Instance({ battlefield, entity: props.entity })
-    if (props.entity.autostart) {
-      try {
-        await instance.start()
-      } catch (e) {
-        instance.log.warn(`could not connect to battlefield server with id ${instance.id} message: ${e.message}`)
-      }
-    }
     return instance
   }
 

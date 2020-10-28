@@ -5,6 +5,7 @@ import { socketManager } from "@service/koa/socket"
 import { InstanceScope } from "@service/permissions/Scopes"
 import { Word } from "vu-rcon/lib/transport/protocol/Word"
 import { SocketManager } from "@service/koa/socket/SocketManager"
+import chalk from "chalk"
 
 export class Connection {
   readonly battlefield: Battlefield
@@ -51,7 +52,10 @@ export class Connection {
     this.requestStop = false
     this.state.updateConnectionState(Instance.State.CONNECTING)
     try {
+      const { host, port } = this.battlefield.options
+      this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}... (id ${this.parent.id})`)
       await this.battlefield.connect()
+      this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}! (id ${this.parent.id})`)
       try {
         await this.checkServerVersion()
       } catch(e) {
@@ -67,12 +71,12 @@ export class Connection {
   }
 
   async stop() {
-    if (this.state.get("state") === Instance.State.DISCONNECTED) return this
-    if (this.state.get("state") !== Instance.State.CONNECTED)
-      throw new Error("instance is not in state connected")
     this.requestStop = true
     this.state.updateConnectionState(Instance.State.DISCONNECTING)
+    const { host, port } = this.battlefield.options
+    this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}... (id ${this.parent.id})`)
     await this.battlefield.quit()
+    this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}! (id ${this.parent.id})`)
     this.state.updateConnectionState(Instance.State.DISCONNECTED)
     return this
   }
