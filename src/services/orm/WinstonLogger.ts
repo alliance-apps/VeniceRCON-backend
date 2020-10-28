@@ -25,6 +25,7 @@ export class WinstonLogger implements Logger {
   }
 
   logQuerySlow(time: number, query: string, parameters: string[] = []) {
+    if (query.startsWith(`INSERT INTO "log_message"`)) return
     const messages = [chalk.yellow(time), query, ...parameters.map(p => chalk.bold(p))]
     this.format("warn", { type: "TYPEORM_QUERY_SLOW", messages })
   }
