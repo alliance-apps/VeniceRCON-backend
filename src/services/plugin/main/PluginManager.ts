@@ -64,12 +64,12 @@ export class PluginManager {
           try {
             await plugin.validate()
           } catch (e) {
-            this.parent.log.warn(`invalid schema provided in plugin ${name}`)
+            this.parent.log.warn(`invalid schema provided in plugin ${uuid}`)
             this.parent.log.warn(e)
             return
           }
           if (!plugin.isCompatible())
-            return this.parent.log.info(`ignoring plugin ${name} because backend is incompatible`)
+            return this.parent.log.info(`ignoring plugin ${uuid} because backend is incompatible`)
           this.plugins.push(plugin)
         } catch (e) {
           this.parent.log.error(`could not load plugin from ${base}`)

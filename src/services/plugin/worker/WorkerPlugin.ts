@@ -48,10 +48,8 @@ export class WorkerPlugin {
       battlefield: this.parent.battlefield,
       dependency: this.getDependencies(),
       logger: new PluginLogger(this.parent.messenger, this.info.name),
-      store: await PluginStore.from({ file: this.storePath })
-    }
-    if (Array.isArray(this.meta.features)) {
-      if (this.meta.features.includes("router")) props.router = this.router
+      store: await PluginStore.from({ file: this.storePath }),
+      router: this.router
     }
     return props
   }
