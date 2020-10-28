@@ -63,10 +63,10 @@ export class PluginWorker {
         })
         this.state = State.INIT
       })
-      worker.on("online", () => this.instance.log.info(`Plugin worker started (instance ${this.instance.id})`))
+      worker.on("online", () => this.instance.log.info(`Plugin worker started`))
       worker.on("error", err => this.instance.log.error(err))
       worker.on("exit", code => {
-        this.instance.log.info(`worker exited with code ${code} (instance ${this.instance.id})`)
+        this.instance.log.info(`worker exited with code ${code}`)
         worker.removeAllListeners()
         if (messenger) messenger.removeAllListeners()
       })
@@ -159,7 +159,7 @@ export class PluginWorker {
    * @param plugin plugin which should get started
    */
   async startPlugin(plugin: Plugin) {
-    this.instance.log.info(`Starting plugin: ${plugin.name} (instance ${this.instance.id})`, LogMessage.Source.PLUGIN, plugin.name)
+    this.instance.log.info(`Starting plugin: ${plugin.name}`, LogMessage.Source.PLUGIN, plugin.name)
     await plugin.setAutostart(true)
     return this.sendMessage("startPlugin", await plugin.toJSON())
   }

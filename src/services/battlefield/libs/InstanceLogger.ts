@@ -31,10 +31,11 @@ export class InstanceLogger {
   }
 
   private buildMessage(message: string|Error|undefined, sourceLocation?: string) {
+    const prefix = `${chalk.greenBright(this.parent.id)}`
     if (message === undefined) message = "undefined"
     if (message instanceof Error) message = message.stack
-    if (sourceLocation) return `[${chalk.yellowBright(sourceLocation)}] ${message}`
-    return message
+    if (sourceLocation) return `${prefix} [${chalk.yellowBright(sourceLocation)}] ${message}`
+    return `${prefix} ${message}`
   }
 
   private async createDBEntry(message: string, level: string, source: LogMessage.Source, sourceLocation?: string) {
