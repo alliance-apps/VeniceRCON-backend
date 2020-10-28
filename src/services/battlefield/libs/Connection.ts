@@ -53,9 +53,9 @@ export class Connection {
     this.state.updateConnectionState(Instance.State.CONNECTING)
     try {
       const { host, port } = this.battlefield.options
-      this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}... (id ${this.parent.id})`)
+      this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}...`)
       await this.battlefield.connect()
-      this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}! (id ${this.parent.id})`)
+      this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}!`)
       try {
         await this.checkServerVersion()
       } catch(e) {
@@ -74,9 +74,9 @@ export class Connection {
     this.requestStop = true
     this.state.updateConnectionState(Instance.State.DISCONNECTING)
     const { host, port } = this.battlefield.options
-    this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}... (id ${this.parent.id})`)
+    this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}...`)
     await this.battlefield.quit()
-    this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}! (id ${this.parent.id})`)
+    this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}!`)
     this.state.updateConnectionState(Instance.State.DISCONNECTED)
     return this
   }
