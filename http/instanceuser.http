@@ -1,6 +1,19 @@
 @instanceId=2
 @userId=2
 
+
+### lists all users for this instance
+GET {{$dotenv url}}/api/instances/{{instanceId}}/users
+Authorization: Bearer {{$dotenv jwt}}
+
+### reads all invite for new users
+GET {{$dotenv url}}/api/instances/{{instanceId}}/users/invite
+Authorization: Bearer {{$dotenv jwt}}
+
+### creates an invite for a new user
+POST {{$dotenv url}}/api/instances/{{instanceId}}/users/invite
+Authorization: Bearer {{$dotenv jwt}}
+
 ### retrieve a single user
 GET {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}
@@ -15,5 +28,6 @@ Content-Type: application/json
 Authorization: Bearer {{$dotenv jwt}}
 
 {
-  "scopes": ["INSTANCE#ACCESS", "INSTANCE#UPDATE"]
+  "add": ["INSTANCE#ACCESS", "INSTANCE#UPDATE"],
+  "remove": ["INSTANCE#UPDATE"]
 }

@@ -3,7 +3,7 @@ import { perm } from "@service/koa/permission"
 import { getCustomRepository } from "typeorm"
 import { PermissionRepository } from "@repository/PermissionRepository"
 import { permissionManager } from "@service/permissions"
-import { InstanceUserScope, getScopeNames, getBitMaskFromScopes } from "@service/permissions/Scopes"
+import { InstanceUserScope, getScopeNames, getBitMaskFromScopes, getScopesFromMask } from "@service/permissions/Scopes"
 
 const { Joi } = Router
 const api = Router()
@@ -25,23 +25,29 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      scopes: Joi.array().allow(...getScopeNames()).required()
+      add: Joi.array().allow(...getScopeNames()).optional().default([]),
+      remove: Joi.array().allow(...getScopeNames()).optional().default([])
     }).required()
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
-    const mask = getBitMaskFromScopes(ctx.request.body.scopes)
+    const { add, remove } = ctx.request.body
+    const mask = getBitMaskFromScopes([...add, ...remove])
     const ok = await permissionManager.hasPermissions({
       user: ctx.state.token!.id,
       instance: ctx.state.instance!.id,
       scope: mask
     })
     if (!ok) {
-      ctx.body = { message: "you tried to set a permission which you do not have access to"}
+      ctx.body = { message: "you tried to update a permission which you do not have access to"}
       return ctx.status = 403
     }
-    ctx.state.permission!.mask = mask
-    await ctx.state.permission!.save()
+    ctx.state.permission!.mask |= getBitMaskFromScopes(add)
+    ctx.state.permission!.mask &= ~getBitMaskFromScopes(remove)
+    //await ctx.state.permission!.save()
+    ctx.body = {
+      scopes: getScopesFromMask(ctx.state.permission!.mask)
+    }
     ctx.status = 200
   }
 })
