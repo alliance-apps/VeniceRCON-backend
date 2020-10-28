@@ -11,6 +11,7 @@ export class PluginManager {
 
   readonly parent: Instance
   readonly baseDir: string
+  private shouldRun: boolean = false
   private plugins: Plugin[] = []
   readonly worker: PluginWorker
 
@@ -29,12 +30,15 @@ export class PluginManager {
 
   /** stops the worker */
   stop() {
+    this.shouldRun = false
     return this.worker.stop()
   }
 
   /** starts the worker */
-  start() {
-    return this.worker.spawn()
+  async start() {
+    this.shouldRun = true
+    if (this.plugins.length === 0) return
+    await this.worker.spawn()
   }
 
   /** reloads all plugins for this instance from disk */
@@ -74,7 +78,7 @@ export class PluginManager {
       })
     )
     //start the worker again
-    await this.worker.spawn()
+    if (this.shouldRun) await this.worker.spawn()
   }
 
   /** retrieves a plugin by its name */

@@ -69,7 +69,7 @@ export class Instance {
     try {
       await this.start()
     } catch (e) {
-      this.log.warn(`could not connect to battlefield server with id ${this.id} message: ${e.message}`)
+      this.log.warn(`could not connect to battlefield server: ${e.message}`)
     }
   }
 
@@ -161,7 +161,8 @@ export class Instance {
 
   /** starts the connection to the battlefield server */
   async start() {
-    return this.connection.start()
+    await this.connection.start()
+    await this.plugin.start()
   }
 
   /** disconnects to the battlefield instance */
