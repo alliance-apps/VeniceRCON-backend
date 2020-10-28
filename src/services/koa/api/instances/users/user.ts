@@ -44,10 +44,8 @@ api.route({
     }
     ctx.state.permission!.mask |= getBitMaskFromScopes(add)
     ctx.state.permission!.mask &= ~getBitMaskFromScopes(remove)
-    //await ctx.state.permission!.save()
-    ctx.body = {
-      scopes: getScopesFromMask(ctx.state.permission!.mask)
-    }
+    await ctx.state.permission!.save()
+    ctx.body = { scopes: getScopesFromMask(ctx.state.permission!.mask) }
     ctx.status = 200
   }
 })
