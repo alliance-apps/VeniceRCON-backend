@@ -92,6 +92,7 @@ describe("MetaSchema", () => {
           name: "foo",
           description: "description of foo",
           type: "array",
+          default: [],
           vars: [{
             name: "foo",
             description: "description of foo",
