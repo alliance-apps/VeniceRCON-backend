@@ -7,10 +7,12 @@
     "url": "https://github.com/alliance-apps/VeniceRCON-backend"
   },
   "scripts": {
+    "tslint": "tslint --project ./tsconfig.json",
     "test": "jest --runInBand",
-    "start-tsnode": "ts-node -r tsconfig-paths/register src/index.ts",
-    "start": "tsc && node --enable-source-maps lib/index.js",
-    "tslint": "tslint --project ./tsconfig.json"
+    "build": "tsc",
+    "prestart-dev": "npm run build",
+    "start-dev": "npm run start",
+    "start": "node --enable-source-maps lib/index.js"
   },
   "author": "",
   "license": "ISC",
