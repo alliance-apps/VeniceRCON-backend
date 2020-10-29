@@ -3,6 +3,7 @@ import { AbstractEntity } from "./Abstract"
 import { hash, compare } from "bcrypt"
 import { Permission } from "./Permission"
 import { Invite } from "./Invite"
+import { Player } from "./Player"
 
 @Entity()
 export class User extends AbstractEntity<User> {
@@ -17,6 +18,9 @@ export class User extends AbstractEntity<User> {
 
   @OneToMany(type => Permission, perm => perm.user)
   permissions!: Promise<Permission[]>
+
+  @OneToMany(type => Player, player => player.user)
+  players!: Promise<Player[]>
 
   @OneToMany(type => Invite, invite => invite.user)
   invites!: Promise<Invite[]>
