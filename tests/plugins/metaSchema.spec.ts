@@ -54,13 +54,14 @@ describe("MetaSchema", () => {
       name: "foo",
       description: "description of foo",
       type,
+      conditions: [],
       ...data
     }] as [PluginVariable])
 
     it("should validate a string schema", async () => {
       expect.assertions(1)
       expect(await varSchema.validate(vars("string")))
-        .toEqual(vars("string", { default: "" }))
+        .toEqual(vars("string", { default: "", multiline: false }))
     })
 
     it("should validate a number schema", async () => {
@@ -99,11 +100,14 @@ describe("MetaSchema", () => {
           description: "description of foo",
           type: "array",
           default: [],
+          conditions: [],
           vars: [{
             name: "foo",
             description: "description of foo",
             type: "string",
-            default: ""
+            multiline: false,
+            default: "",
+            conditions: []
           }]
         }])
     })
@@ -114,6 +118,7 @@ describe("MetaSchema", () => {
       name: "fooString",
       description: "",
       type: "string",
+      multiline: false,
       default: "default"
     }, {
       name: "fooNumber",
@@ -178,12 +183,10 @@ describe("MetaSchema", () => {
         name: "fooArray",
         description: "descriptor",
         type: "array",
-        default: [],
         vars: [{
           name: "bar",
           description: "descriptor",
-          type: "string",
-          default: ""
+          type: "string"
         }]
       }], result)).toEqual(result)
     })
