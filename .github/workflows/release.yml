@@ -5,25 +5,40 @@ on:
       version:
         description: 'Release Version'
         required: true
-      changelog:
-        description: 'changes'
-        required: false
+      headline:
+        description: 'Headline'
+        required: true
 
 jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Use NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: install dependencies
+        run: npm ci
+      - name: build release
+        run: npm run build
+      - name: cleanup node_modules
+        run: rm -R node_modules
+      - name: install production dependencies
+        run: npm install --only=prod
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.event.inputs.version }}
           release_name: Release ${{ github.event.inputs.version }}
-          body: ${{ github.event.inputs.changelog }}
+          body: ${{ github.event.inputs.headline }}
           draft: true
           prerelease: false
