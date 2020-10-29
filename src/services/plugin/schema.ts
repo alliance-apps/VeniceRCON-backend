@@ -2,13 +2,17 @@ import { Joi } from "koa-joi-router"
 
 const baseVarSchema = Joi.object({
   name: Joi.string().required(),
-  description: Joi.string().required()
+  description: Joi.string().required(),
+  conditions: Joi.array().items(
+    Joi.object().pattern(/.*/, [Joi.string().allow(""), Joi.number(), Joi.boolean()])
+  ).default([]).optional()
 })
 
 /** allows simple strings */
 export const stringSchema = baseVarSchema.keys({
   type: Joi.string().valid("string").required(),
-  default: Joi.string().default("").optional()
+  default: Joi.string().default("").optional(),
+  multiline: Joi.boolean().default(false).optional()
 })
 
 /** allows integers and floats */
@@ -99,6 +103,11 @@ export interface Meta {
   vars: PluginVariable[]
 }
 
+export interface Condition {
+  key: string
+  match: string|number|boolean
+}
+
 export type PluginVariable =
   PluginStringVariable |
   PluginNumberVariable |
@@ -110,36 +119,40 @@ export type PluginVariable =
 export interface PluginBaseVariable {
   name: string
   description: string
+  conditions?: {
+    [key: string]: string|number|boolean
+  }[]
 }
 
 export interface PluginStringVariable extends PluginBaseVariable {
   type: "string"
-  default: string
+  default?: string
+  multiline?: boolean
 }
 
 export interface PluginNumberVariable extends PluginBaseVariable {
   type: "number"
-  default: number
+  default?: number
 }
 
 export interface PluginBooleanVariable extends PluginBaseVariable {
   type: "boolean"
-  default: boolean
+  default?: boolean
 }
 
 export interface PluginStringsVariable extends PluginBaseVariable {
   type: "strings"
-  default: string[]
+  default?: string[]
 }
 
 export interface PluginSelectVariable extends PluginBaseVariable {
   type: "select"
   options: Record<string, string>
-  default: string
+  default?: string
 }
 
 export interface PluginArrayVariable extends PluginBaseVariable {
   type: "array"
   vars: PluginVariable[]
-  default: []
+  default?: []
 }
