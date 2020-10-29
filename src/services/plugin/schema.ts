@@ -32,7 +32,7 @@ export const stringsSchema = baseVarSchema.keys({
 /** allows multiple options */
 export const selectSchema = baseVarSchema.keys({
   type: Joi.string().valid("select").required(),
-  options: Joi.array().items(Joi.string()).required(),
+  options: Joi.object().pattern(/.*/, Joi.string()).required(),
   default: Joi.array().items(Joi.string()).default("").optional()
 })
 
@@ -73,19 +73,19 @@ export function checkVariableSchema(vars: PluginVariable[], data: Record<string,
 }
 
 function buildVariableSchema(vars: PluginVariable[]) {
-  return Joi.object(Object.fromEntries(vars.map(v => {
-    return [v.name, getVariableType(v.type)]
+  return Joi.object(Object.fromEntries(vars.map(meta => {
+    return [meta.name, getVariableType(meta)]
   })))
 }
 
-function getVariableType(type: "string"|"number"|"boolean"|"strings"|"array"|"select") {
-  switch(type) {
-    case "string": return Joi.string().optional()
+function getVariableType(meta: PluginVariable) {
+  switch(meta.type) {
+    case "string": return Joi.string().allow("").optional()
     case "number": return Joi.number().optional()
     case "boolean": return Joi.boolean().optional()
     case "strings": return Joi.array().items(Joi.string()).optional()
     case "array": return Joi.array().optional()
-    case "select": return Joi.string().optional()
+    case "select": return Joi.string().only(Object.keys(meta.options)).optional()
   }
 }
 
@@ -134,7 +134,7 @@ export interface PluginStringsVariable extends PluginBaseVariable {
 
 export interface PluginSelectVariable extends PluginBaseVariable {
   type: "select"
-  options: string[]
+  options: Record<string, string>
   default: string
 }
 

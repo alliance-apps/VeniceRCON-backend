@@ -1,4 +1,10 @@
-import { Meta, metaSchema, PluginVariable, varSchema } from "../../src/services/plugin/schema"
+import {
+  Meta,
+  metaSchema,
+  PluginVariable,
+  varSchema,
+  checkVariableSchema
+} from "../../src/services/plugin/schema"
 
 const schema = (meta: Partial<Meta> = {}): Meta => ({
   name: "example",
@@ -77,9 +83,9 @@ describe("MetaSchema", () => {
 
     it("should validate a select schema", async () => {
       expect.assertions(1)
-      const schema = vars("select", { options: ["foo", "bar"] })
+      const schema = vars("select", { options: { foo: "fooKey", bar: "barKey" } })
       expect(await varSchema.validate(schema))
-        .toEqual(vars("select", { default: "", options: ["foo", "bar"] }))
+        .toEqual(vars("select", { default: "", options: { foo: "fooKey", bar: "barKey" } }))
     })
 
     it("should validate a nested array schema", async () => {
@@ -101,5 +107,70 @@ describe("MetaSchema", () => {
           }]
         }])
     })
+  })
+
+  describe("validate variables from http request", () => {
+    const varSchema = (): PluginVariable[] => ([{
+      name: "fooString",
+      description: "",
+      type: "string",
+      default: "default"
+    }, {
+      name: "fooNumber",
+      description: "",
+      type: "number",
+      default: 123
+    }, {
+      name: "fooBoolean",
+      description: "",
+      type: "boolean",
+      default: true
+    }, {
+      name: "fooStrings",
+      description: "",
+      type: "strings",
+      default: ["foo", "bar"]
+    }, {
+      name: "fooSelect",
+      description: "",
+      type: "select",
+      options: {
+        "fooKey": "some fooKey descriptor",
+        "barKey": "some barKey descriptor",
+        "bazKey": "some bazKey descriptor"
+      },
+      default: "baz"
+    }])
+
+    const variables = () => ({
+      fooString: "bar",
+      fooNumber: 123,
+      fooBoolean: true,
+      fooStrings: ["some", "strings"],
+      fooSelect: "barKey"
+    })
+
+    it("should successfully validate various types of variables", async () => {
+      expect.assertions(1)
+      expect(await checkVariableSchema(varSchema(), variables()))
+        .toEqual(variables())
+    })
+
+    it("should validate empty strings", async () => {
+      expect.assertions(1)
+      expect(await checkVariableSchema(varSchema(), { fooString: "" }))
+        .toEqual({ fooString: "" })
+    })
+
+    it("should disallow wrong select option", async () => {
+      expect.assertions(1)
+      try {
+        await checkVariableSchema(varSchema(), { fooSelect: "invalid" })
+      } catch (e) {
+        expect(e).toBeInstanceOf(Error)
+      }
+    })
+
+
   })
 })
