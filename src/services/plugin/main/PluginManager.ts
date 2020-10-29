@@ -58,16 +58,17 @@ export class PluginManager {
       folders.map(async uuid => {
         const base = path.join(this.baseDir, uuid)
         try {
-          const meta = yaml.parse(await fs.readFile(path.join(base, "meta.yaml"), "utf-8"))
-          const entity = await PluginEntity.findOneOrFail({ uuid })
-          const plugin = new Plugin({ meta, parent: this, entity })
+          const schema = yaml.parse(await fs.readFile(path.join(base, "meta.yaml"), "utf-8"))
+          let meta: any
           try {
-            await plugin.validate()
+            meta = await Plugin.validateSchema(schema)
           } catch (e) {
             this.parent.log.warn(`invalid schema provided in plugin ${uuid}`)
             this.parent.log.warn(e)
             return
           }
+          const entity = await PluginEntity.findOneOrFail({ uuid })
+          const plugin = new Plugin({ meta, parent: this, entity })
           if (!plugin.isCompatible())
             return this.parent.log.info(`ignoring plugin ${uuid} because backend is incompatible`)
           this.plugins.push(plugin)

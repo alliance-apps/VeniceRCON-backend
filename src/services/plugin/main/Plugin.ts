@@ -41,9 +41,9 @@ export class Plugin {
     return this.entity.name
   }
 
-  /** checks if the plugin is valid */
-  async validate() {
-    await metaSchema.validate(this.meta)
+  /** checks if the plugins meta schema is valid */
+  static validateSchema(meta: Meta) {
+    return metaSchema.validate(meta)
   }
 
   executeRoute(method: string, path: string, ctx: Context) {
