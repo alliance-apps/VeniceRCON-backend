@@ -109,7 +109,7 @@ describe("MetaSchema", () => {
     })
   })
 
-  describe("validate variables from http request", () => {
+  describe("validate variables updates", () => {
     const varSchema = (): PluginVariable[] => ([{
       name: "fooString",
       description: "",
@@ -169,6 +169,23 @@ describe("MetaSchema", () => {
       } catch (e) {
         expect(e).toBeInstanceOf(Error)
       }
+    })
+
+    it("should validate a nested array", async () => {
+      expect.assertions(1)
+      const result = { fooArray: [{ bar: "baz" }, { bar: "foo" }] }
+      expect(await checkVariableSchema([{
+        name: "fooArray",
+        description: "descriptor",
+        type: "array",
+        default: [],
+        vars: [{
+          name: "bar",
+          description: "descriptor",
+          type: "string",
+          default: ""
+        }]
+      }], result)).toEqual(result)
     })
 
 

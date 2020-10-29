@@ -78,13 +78,13 @@ function buildVariableSchema(vars: PluginVariable[]) {
   })))
 }
 
-function getVariableType(meta: PluginVariable) {
+function getVariableType(meta: PluginVariable): any {
   switch(meta.type) {
     case "string": return Joi.string().allow("").optional()
     case "number": return Joi.number().optional()
     case "boolean": return Joi.boolean().optional()
     case "strings": return Joi.array().items(Joi.string()).optional()
-    case "array": return Joi.array().optional()
+    case "array": return Joi.array().items(buildVariableSchema(meta.vars)).optional()
     case "select": return Joi.string().only(Object.keys(meta.options)).optional()
   }
 }
