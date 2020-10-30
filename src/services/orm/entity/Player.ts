@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, In, ManyToOne } from "typeorm"
+import { Entity, Column, OneToMany, In, ManyToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { ChatMessage } from "./ChatMessage"
 import { Kill } from "./Kill"
@@ -26,11 +26,8 @@ export class Player extends AbstractEntity<Player> {
   @OneToMany(type => Kill, kill => kill.killed)
   killed!: Promise<Kill[]>
 
-  @ManyToOne(type => User, user => user.players)
-  user!: Promise<User>
-
-  @Column()
-  userId!: number
+  @ManyToMany(() => User, user => user.players)
+  users!: Promise<User[]>
 
   /** creates a new instance */
   static async from(props: Player.ICreate) {

@@ -41,8 +41,7 @@ export class PermissionCache {
    * @param userId cache item to retrieve
    */
   getCache(user: User|number) {
-    const userId = this.getUserId(user)
-    const item = this.cache[userId]
+    const item = this.cache[this.getUserId(user)]
     if (!item) throw new Error("item not found in cache")
     return item
   }
@@ -88,13 +87,16 @@ export class CacheItem {
    * @param scope scope to check
    */
   async hasPermissions(instance: number|true, scope: bigint) {
+    return (await this.getInstancePermission(instance)) & scope
+  }
+
+  /**
+   * retrieves a list of permissions a user has for this instance
+   * @param instance instance to check, set to true to search only for root perms
+   */
+  async getInstancePermission(instance: number|true) {
     return (await this.permissions)
       .filter(p => p.root || p.instanceId === instance)
-      .some(p => p.hasPermissions(scope))
+      .reduce((scope, p) => scope|p.mask, 0n)
   }
-}
-
-
-export namespace PermissionCache {
-
 }

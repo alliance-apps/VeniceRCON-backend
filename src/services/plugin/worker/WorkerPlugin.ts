@@ -5,6 +5,7 @@ import { PluginLogger } from "./util/PluginLogger"
 import { PluginRouter } from "./util/PluginRouter"
 import { PluginStore } from "./util/PluginStore"
 import path from "path"
+import { PluginEngine } from "./util/PluginEngine"
 
 export class WorkerPlugin {
 
@@ -14,11 +15,13 @@ export class WorkerPlugin {
   readonly info: PluginType.Info
   exported: any
   router: PluginRouter = new PluginRouter()
+  engine: PluginEngine
 
   constructor(props: WorkerPlugin.Props) {
     this.parent = props.parent
     this.basePath = props.basePath
     this.info = props.info
+    this.engine = new PluginEngine({ messenger: this.parent.messenger })
   }
 
   get meta() {
@@ -49,7 +52,8 @@ export class WorkerPlugin {
       dependency: this.getDependencies(),
       logger: new PluginLogger(this.parent.messenger, this.info.name),
       store: await PluginStore.from({ file: this.storePath }),
-      router: this.router
+      router: this.router,
+      engine: await this.engine
     }
     return props
   }
@@ -84,6 +88,7 @@ export namespace WorkerPlugin {
     logger: PluginLogger
     router?: PluginRouter
     store: PluginStore
+    engine: PluginEngine
   }
 
   export type Create = Omit<Props, "code">

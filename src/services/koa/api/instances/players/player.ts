@@ -25,9 +25,8 @@ api.route({
     const { name } = ctx.state.player!
     try {
       await battlefield.playerKill(name)
-      if (ctx.request.body.reason) {
-        await battlefield.say(ctx.request.body.reason, ["player", name])
-      }
+      const { body } = ctx.request
+      if (body && body.reason) await battlefield.say(body.reason, ["player", name])
       ctx.status = 200
     } catch (e) {
       ctx.status = 500

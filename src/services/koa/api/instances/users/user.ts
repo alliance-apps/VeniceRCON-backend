@@ -4,9 +4,11 @@ import { getCustomRepository } from "typeorm"
 import { PermissionRepository } from "@repository/PermissionRepository"
 import { permissionManager } from "@service/permissions"
 import { InstanceUserScope, getScopeNames, getBitMaskFromScopes, getScopesFromMask } from "@service/permissions/Scopes"
+import { Player } from "@entity/Player"
+import { User } from "@entity/User"
 
-const { Joi } = Router
 const api = Router()
+const { Joi } = Router
 
 api.get("/", perm(InstanceUserScope.ACCESS), async ctx => {
   const { userId, instanceId } = ctx.state.permission!
@@ -17,6 +19,40 @@ api.delete("/", perm(InstanceUserScope.REMOVE), async ctx => {
   const { userId, instanceId } = ctx.state.permission!
   await permissionManager.removeInstanceAccess(userId, instanceId)
   ctx.status = 200
+})
+
+api.route({
+  method: "PATCH",
+  path: "/bind",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      playerId: Joi.number().positive().required(),
+      userId: Joi.number().positive().required()
+    }).required()
+  },
+  pre: perm(InstanceUserScope.UPDATE),
+  handler: async ctx => {
+    const { playerId, userId } = ctx.request.body
+    const [player, user] = await Promise.all([
+      Player.findOne({ id: playerId }),
+      User.findOne({ id: userId })
+    ])
+    if (!player || !user) {
+      if (!player) ctx.body = { message: `no player with id "${playerId}" found!` }
+      if (!user) ctx.body = { message: `no user with id "${userId}" found!` }
+      return ctx.status = 404
+    }
+    //if selected user has no access to this instance then return as if player has not been found
+    if (!await permissionManager.hasInstanceAccess(user, ctx.state.instance!.id)) {
+      ctx.body = { message: `no user with id "${userId}" found!` }
+      return ctx.status = 404
+    }
+    const players = await user.players
+    if (players.some(p => p.id === playerId)) return ctx.status = 200
+    await user.addPlayer(player)
+    return ctx.status = 200
+  }
 })
 
 api.route({

@@ -11,6 +11,7 @@ import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
+import { getScopesFromMask } from "@service/permissions/Scopes"
 
 export class Instance {
 
@@ -113,6 +114,19 @@ export class Instance {
     this.playerListAction.pause()
     clearInterval(this.interval)
   }
+
+  /** gets permission scopes for a specific guid in this instance */
+  async requestPermissionForGuid(guid: string): Promise<string[]> {
+    const player = await Player.findOne({ guid })
+    if (!player) return []
+    const users = await player.users
+    if (users.length === 0) return []
+    const mask = (await Promise.all(
+      users.map(user => permissionManager.getPermissionsForInstance(user, this.id))
+    )).reduce((scopes, scope) => scopes|scope, 0n)
+    return getScopesFromMask(mask)
+  }
+
 
   /** retrieves a single player entity by its name */
   async getPlayerByName(name: string) {

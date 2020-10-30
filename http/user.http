@@ -22,6 +22,16 @@ Authorization: Bearer {{$dotenv jwt}}
 DELETE {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}
 
+### assigns a player to this user
+PATCH {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/bind
+Content-Type: application/json
+Authorization: Bearer {{$dotenv jwt}}
+
+{
+  "playerId": 1,
+  "userId": 1
+}
+
 ### updates permissions of a user
 PATCH {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/permissions
 Content-Type: application/json

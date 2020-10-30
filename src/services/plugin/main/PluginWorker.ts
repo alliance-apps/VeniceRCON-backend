@@ -83,6 +83,11 @@ export class PluginWorker {
       if (!plugin) return message.except(`could not find plugin with id ${message.data.id}`)
       message.done(plugin.getConfig())
     })
+    this.messenger.on("REQUEST_PERMISSIONS", async ({ message }) => {
+      const { guid } = message.data
+      if (!guid) return message.except("no guid given")
+      message.done(await this.instance.requestPermissionForGuid(guid))
+    })
     this.messenger.on("LOG_MESSAGE", async ({ message }) => {
       try {
         switch (message.data.level) {
@@ -120,7 +125,7 @@ export class PluginWorker {
    * basic workerdata
    */
   private async getWorkerData() {
-    const { host, port, password } = this.parent.parent.battlefield.options
+    const { host, port, password } = this.instance.battlefield.options
     return {
       baseDir: this.baseDir,
       instanceId: this.instance.id,

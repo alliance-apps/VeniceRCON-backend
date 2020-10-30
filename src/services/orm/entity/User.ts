@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from "typeorm"
+import { Entity, Column, OneToMany, ManyToMany, JoinTable } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { hash, compare } from "bcrypt"
 import { Permission } from "./Permission"
@@ -19,7 +19,8 @@ export class User extends AbstractEntity<User> {
   @OneToMany(type => Permission, perm => perm.user)
   permissions!: Promise<Permission[]>
 
-  @OneToMany(type => Player, player => player.user)
+  @ManyToMany(type => Player, player => player.users)
+  @JoinTable()
   players!: Promise<Player[]>
 
   @OneToMany(type => Invite, invite => invite.user)
@@ -28,6 +29,22 @@ export class User extends AbstractEntity<User> {
   /** checks if the password match */
   validatePassword(password: string) {
     return compare(password, this.password)
+  }
+
+  /** adds a player to this user */
+  addPlayer(player: Player|number) {
+    return User.createQueryBuilder()
+      .relation(User, "players")
+      .of(this)
+      .add(player)
+  }
+
+  /** removes a player from this user */
+  delPlayer(player: Player|number) {
+    return User.createQueryBuilder()
+      .relation(User, "players")
+      .of(this)
+      .remove(player)
   }
 
   /**

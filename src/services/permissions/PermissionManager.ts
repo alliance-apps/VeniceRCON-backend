@@ -27,6 +27,15 @@ export class PermissionManager {
   }
 
   /**
+   * retrieves permissions for a user for a specific instance
+   * @param user user to get permissions for
+   * @param instance instance to get permissions from
+   */
+  getPermissionsForInstance(user: UserEntity|number, instance: number|true) {
+    return this.cache.getUser(user).getInstancePermission(instance)
+  }
+
+  /**
    * deletes a user from the cache
    * @param user user to remove
    */
@@ -67,7 +76,7 @@ export class PermissionManager {
   async hasInstanceAccess(user: UserEntity|number, instance: InstanceEntity|number) {
     const instanceId = typeof instance === "number" ? instance : instance.id
     const perms = await this.getPermissions(user)
-    return perms.some(p => p.instanceId === instanceId)
+    return perms.some(p => p.instanceId === instanceId || p.root)
   }
 
   /**
