@@ -12,7 +12,8 @@ const { Joi } = Router
 
 api.get("/", perm(InstanceUserScope.ACCESS), async ctx => {
   const { userId, instanceId } = ctx.state.permission!
-  ctx.body = await getCustomRepository(PermissionRepository).getInstanceUser(instanceId, userId)
+  ctx.body = await getCustomRepository(PermissionRepository)
+    .getInstanceUser(instanceId, userId)
 })
 
 api.delete("/", perm(InstanceUserScope.REMOVE), async ctx => {
@@ -21,19 +22,28 @@ api.delete("/", perm(InstanceUserScope.REMOVE), async ctx => {
   ctx.status = 200
 })
 
+api.get("/bind", async ctx => {
+  const { userId } = await ctx.state.permission!
+  const user = await User.findOne({ id: userId })
+  if (!user) return ctx.status = 404
+  ctx.body = (await user.players).map(p => ({
+    id: p.id, name: p.name, guid: p.guid
+  }))
+})
+
 api.route({
-  method: "PATCH",
+  method: "POST",
   path: "/bind",
   validate: {
     type: "json",
     body: Joi.object({
-      playerId: Joi.number().positive().required(),
-      userId: Joi.number().positive().required()
+      playerId: Joi.number().positive().required()
     }).required()
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
-    const { playerId, userId } = ctx.request.body
+    const { playerId } = ctx.request.body
+    const userId = ctx.state.permission!.userId
     const [player, user] = await Promise.all([
       Player.findOne({ id: playerId }),
       User.findOne({ id: userId })
@@ -43,14 +53,38 @@ api.route({
       if (!user) ctx.body = { message: `no user with id "${userId}" found!` }
       return ctx.status = 404
     }
-    //if selected user has no access to this instance then return as if player has not been found
-    if (!await permissionManager.hasInstanceAccess(user, ctx.state.instance!.id)) {
-      ctx.body = { message: `no user with id "${userId}" found!` }
-      return ctx.status = 404
-    }
     const players = await user.players
     if (players.some(p => p.id === playerId)) return ctx.status = 200
     await user.addPlayer(player)
+    return ctx.status = 200
+  }
+})
+
+api.route({
+  method: "DELETE",
+  path: "/bind",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      playerId: Joi.number().positive().required()
+    }).required()
+  },
+  pre: perm(InstanceUserScope.UPDATE),
+  handler: async ctx => {
+    const { playerId } = ctx.request.body
+    const userId = ctx.state.permission!.userId
+    const [player, user] = await Promise.all([
+      Player.findOne({ id: playerId }),
+      User.findOne({ id: userId })
+    ])
+    if (!player || !user) {
+      if (!player) ctx.body = { message: `no player with id "${playerId}" found!` }
+      if (!user) ctx.body = { message: `no user with id "${userId}" found!` }
+      return ctx.status = 404
+    }
+    const players = await user.players
+    if (!players.some(p => p.id === playerId)) return ctx.status = 200
+    await user.delPlayer(player)
     return ctx.status = 200
   }
 })

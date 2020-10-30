@@ -22,14 +22,26 @@ Authorization: Bearer {{$dotenv jwt}}
 DELETE {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}
 
-### assigns a player to this user
-PATCH {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/bind
-Content-Type: application/json
+### retrieves all bindings from the specific user
+GET {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/bind
 Authorization: Bearer {{$dotenv jwt}}
 
+### assigns a player to this user
+POST {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/bind
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
 {
-  "playerId": 1,
-  "userId": 1
+  "playerId": 1
+}
+
+### removes a binding from a user
+DELETE {{$dotenv url}}/api/instances/{{instanceId}}/users/{{userId}}/bind
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "playerId": 1
 }
 
 ### updates permissions of a user
