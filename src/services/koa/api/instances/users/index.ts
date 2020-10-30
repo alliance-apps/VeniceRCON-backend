@@ -26,11 +26,11 @@ api.get("/invite", perm(InstanceUserScope.ACCESS), async ctx => {
     .leftJoin("inv.issuer", "issuer")
     .leftJoin("inv.user", "user")
     .getRawMany()
-    ctx.body = invites.map(({ __issuer__, __user__, ...rest}) => ({
-      ...rest,
-      user: __user__,
-      issuer: __issuer__
-    }))
+  ctx.body = invites.map(({ __issuer__, __user__, ...rest}) => ({
+    ...rest,
+    user: __user__,
+    issuer: __issuer__
+  }))
 })
 
 api.post("/invite", perm(InstanceUserScope.CREATE), async ctx => {

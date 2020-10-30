@@ -1,4 +1,3 @@
-import { createHash } from "crypto"
 import { Entity, Column, ManyToOne, Index } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance } from "./Instance"
@@ -60,7 +59,7 @@ export class Plugin extends AbstractEntity<Plugin> {
     const plugin = new Plugin()
     plugin.name = props.name
     plugin.store = props.store
-    plugin.uuid = createHash("md5").update(`${props.store}.${props.name}`).digest("hex")
+    plugin.uuid = props.uuid
     plugin.config = props.config || "{}"
     plugin.instanceId = AbstractEntity.fetchId(props.instance)
     return plugin.save()
@@ -72,6 +71,7 @@ export namespace Plugin {
   export interface ICreate {
     name: string
     store: string
+    uuid: string
     config?: string
     instance: Instance|number
   }

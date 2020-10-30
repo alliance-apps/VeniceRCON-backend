@@ -7,6 +7,7 @@ import { pluginStore } from "../"
 import { promises as fs } from "fs"
 import { Provider } from "./Provider"
 import { Plugin as PluginEntity } from "@entity/Plugin"
+import { createHash } from "crypto"
 
 export class Repository {
 
@@ -21,6 +22,7 @@ export class Repository {
   repository: string
   commit: string
   provider: Provider
+  uuid: string
 
   constructor(props: Repository.Props) {
     this.provider = props.provider
@@ -29,6 +31,7 @@ export class Repository {
     this.version = props.schema.version
     this.repository = props.schema.repository
     this.commit = props.schema.commit
+    this.uuid = createHash("md5").update(`${this.provider.name}.${this.name}`).digest("hex")
   }
 
   /** url to the repository archive file */
@@ -42,8 +45,8 @@ export class Repository {
   }
 
   /** retrieves folder path for this plugin for the specified instance */
-  private getDownloadPath(instance: Instance, uuid: string) {
-    return path.join(pluginStore.getBaseDir(instance), uuid)
+  private getDownloadPath(instance: Instance) {
+    return path.join(pluginStore.getBaseDir(instance), this.uuid)
   }
 
   /**
@@ -51,12 +54,13 @@ export class Repository {
    * @param instance instance to install the plugin to
    */
   async downloadTo(instance: Instance) {
-    const entity = await PluginEntity.getPluginWithUpsert({
+    await PluginEntity.getPluginWithUpsert({
       instance: instance.id,
       name: this.name,
-      store: this.provider.name
+      store: this.provider.name,
+      uuid: this.uuid
     })
-    const location = this.getDownloadPath(instance, entity.uuid)
+    const location = this.getDownloadPath(instance)
     const res = await this.fetchArchive()
     const data = await unzipper.Open.buffer(await res.buffer())
     //manipulate directory path
@@ -85,7 +89,8 @@ export class Repository {
       name: this.name,
       store: this.provider.name,
       description: this.description,
-      version: this.version
+      version: this.version,
+      uuid: this.uuid
     }
   }
 
