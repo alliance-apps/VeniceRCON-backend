@@ -9,16 +9,14 @@ export let config: Configuration
 export async function initialize() {
   const basepath = path.join(__dirname, "/../../../")
   const data = yaml.parse(await fs.readFile(`${basepath}/config.yaml`, "utf-8"))
-  let res: Configuration
   try {
-    res = await schema.validate<Configuration>(data, { allowUnknown: true })
+    config = {
+      ...await schema.validate<Configuration>(data, { allowUnknown: true }),
+      basepath
+    }
   } catch (e) {
     winston.error("could not validate configuration! please check your config.yaml against config.dist.yaml!")
     throw e
   }
 
-  config = {
-    ...res,
-    basepath
-  }
 }

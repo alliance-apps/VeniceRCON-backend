@@ -1,7 +1,7 @@
 import { Messenger } from "../shared/messenger/Messenger"
 import path from "path"
 import { WorkerPlugin } from "./WorkerPlugin"
-import { State } from "../shared/state"
+import { PluginState, WorkerState } from "../shared/state"
 import { Battlefield } from "vu-rcon"
 import type { PluginWorker } from "../main/PluginWorker"
 
@@ -12,7 +12,7 @@ export class PluginHandler {
   private plugins: WorkerPlugin[] = []
   //private instanceId: number
   battlefield!: Battlefield
-  private state: State = State.UNKNOWN
+  private state: WorkerState = WorkerState.UNKNOWN
 
   constructor(props: PluginHandler.Props) {
     this.messenger = props.messenger
@@ -20,14 +20,15 @@ export class PluginHandler {
     //this.instanceId = props.instanceId
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
     this.messenger.on("executeRoute", this.executeRoute.bind(this))
-    this.state = State.INIT
+    this.messenger.on("pluginState", this.onPluginState.bind(this))
+    this.state = WorkerState.INIT
     this.init(props.rcon)
   }
 
   private async init(options: PluginHandler.BattlefieldOpts) {
     this.battlefield = await Battlefield.connect(options)
-    this.state = State.READY
-    await this.messenger.send("STATE", State.READY)
+    this.state = WorkerState.READY
+    await this.messenger.send("STATE", WorkerState.READY)
   }
 
   /**
@@ -48,8 +49,14 @@ export class PluginHandler {
     }
   }
 
+  private onPluginState({ message }: Messenger.Event<{ id: number }>) {
+    const plugin = this.plugins.find(plugin => plugin.info.id === message.data.id)
+    if (!plugin) return message.done({ state: PluginState.NOT_RUNNING })
+    return message.done({ state: PluginState.RUNNING })
+  }
+
   private async onStartPlugin({ message }: Messenger.Event) {
-    if (this.state !== State.READY) return message.except("Worker not ready")
+    if (this.state !== WorkerState.READY) return message.except("Worker not ready")
     const plugin = new WorkerPlugin({
       parent: this,
       basePath: path.join(this.basePath, message.data.uuid),

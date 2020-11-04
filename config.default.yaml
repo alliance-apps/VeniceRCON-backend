@@ -19,23 +19,18 @@ webserver:
     maxAge: 7
     #time in days after a new token gets issued
     sendRefresh: 5
-  #enable webinterface access from rcon.cloud?
-  remote_webinterface: true
-  #cors are only being set when development has been set to true
+  #set cors when requests comes from one of those domains
   cors:
-    Access-Control-Allow-Credentials: "true"
-    Access-Control-Allow-Origin: "*"
-    Access-Control-Allow-Methods: "*"
-    Access-Control-Max-Age: 7200
-    Access-Control-Allow-Headers: 
-      - Authorization
-      - Content-Type
+    - "https://alliance-apps.github.io"
 instance:
   #default time in ms of how many updates get sent to the rcon server
   syncInterval: 5000
   plugins:
     #location of the directory to read plugins from
     baseDir: "./plugins"
+    #time in minutes until the remote repo store gets reloaded
+    #from the external url
+    reloadInterval: 60
     repos:
       - name: "main"
         repository: "https://github.com/Multivit4min/vu-plugin-repo/"

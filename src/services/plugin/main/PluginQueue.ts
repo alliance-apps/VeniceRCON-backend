@@ -24,6 +24,22 @@ export class PluginQueue {
     return plugin
   }
 
+  /** gets the amount of pending plugins */
+  get count() {
+    return this.plugins.length
+  }
+
+  /** checks if there are plugins in this queue */
+  get hasPlugins() {
+    return this.plugins.length > 0
+  }
+
+  /** adds another plugin to the queue */
+  addPlugin(plugin: Plugin) {
+    this.plugins.push(plugin)
+    return this
+  }
+
   /**
    * gets the next plugin which should get started
    */

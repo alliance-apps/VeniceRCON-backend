@@ -3,6 +3,7 @@ import yaml from "yaml"
 import winston from "winston"
 import { schema, PluginStoreSchema } from "./schema"
 import { Repository } from "./Repository"
+import { config } from "@service/config"
 
 export class Provider {
 
@@ -23,6 +24,7 @@ export class Provider {
     this.repository = props.repository
     this.headers = props.headers || {}
     this.reload()
+    setInterval(() => this.reload(), config.instance.plugins.reloadInterval * 60 * 1000)
   }
 
   /** url to fetch the repository yaml file from */
@@ -39,7 +41,8 @@ export class Provider {
         provider: this,
         schema: repo
       }))
-      winston.info(`received ${this.plugins.length} plugins from store "${this.name}"`)
+      const count = this.plugins.length
+      winston.info(`received ${count} plugin${count === 1 ? "" : "s"} from store "${this.name}"`)
     } catch (e) {
       winston.error(`could not fetch plugins from ${this.url}`)
       winston.error(e)

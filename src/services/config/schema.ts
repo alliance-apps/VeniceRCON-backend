@@ -15,19 +15,19 @@ export const schema = Joi.object({
       maxAge: Joi.number().positive().integer().required(),
       sendRefresh: Joi.number().positive().integer().required()
     }).required(),
-    remote_webinterface: Joi.boolean().required(),
-    cors: Joi.any()
+    cors: Joi.array().items(Joi.string()).optional().default([])
   }),
   instance: Joi.object({
-    syncInterval: Joi.number().integer().positive().min(100).required(),
+    syncInterval: Joi.number().integer().positive().min(100).optional().default(5000),
     plugins: Joi.object({
       baseDir: Joi.string().required(),
+      reloadInterval: Joi.number().integer().positive().optional().default(60),
       repos: Joi.array().items(Joi.object({
         name: Joi.string().regex(/^[\w\d]+$/).required(),
         repository: Joi.string().required(),
         branch: Joi.string().optional().default("master"),
         headers: Joi.any()
-      })).optional()
+      })).optional().default([])
     })
   })
 })
@@ -46,14 +46,14 @@ export interface Configuration {
       maxAge: number
       sendRefresh: number
     }
-    remote_webinterface: boolean
-    cors: Record<string, string|string[]>
+    cors: string[]
   }
   instance: {
     syncInterval: number
     plugins: {
       baseDir: string
-      repos?: {
+      reloadInterval: number
+      repos: {
         name: string
         repository: string
         branch: string

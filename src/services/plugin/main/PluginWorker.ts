@@ -4,7 +4,7 @@ import { LogMessage } from "@entity/LogMessage"
 import { PluginManager } from "./PluginManager"
 import { Plugin } from "./Plugin"
 import { Messenger } from "../shared/messenger/Messenger"
-import { State } from "../shared/state"
+import { PluginState, WorkerState } from "../shared/state"
 import { PluginQueue } from "./PluginQueue"
 
 /**
@@ -15,7 +15,8 @@ export class PluginWorker {
   private messenger: Messenger|undefined
   private parent: PluginManager
   private baseDir: string
-  state: State = State.UNKNOWN
+  private queue: PluginQueue = new PluginQueue([])
+  state: WorkerState = WorkerState.STOP
 
   constructor(props: PluginWorker.Props) {
     this.parent = props.parent
@@ -29,16 +30,28 @@ export class PluginWorker {
     return this.parent.parent
   }
 
+  private async initializeQueue() {
+    this.queue = new PluginQueue(await this.parent.getEnabledPlugins())
+  }
+
   /** spawns the worker and loads all enabled plugins */
   async spawn() {
+    await this.initializeQueue()
+    if (!this.queue.hasPlugins) return
     await this.createWorker()
-    const queue = new PluginQueue(await this.parent.getEnabledPlugins())
+    await this.startQueuedPlugins()
+  }
+
+  /** starts all currently queued plugins */
+  private async startQueuedPlugins() {
     while (true) {
-      const plugin = queue.next()
+      const plugin = this.queue.next()
       if (!plugin) break
-      await plugin.start()
+      const state = await this.getPluginState(plugin)
+      if (state === PluginState.RUNNING) continue
+      await this.sendStartPlugin(plugin)
     }
-    queue.missingDependencies().forEach(({ plugin, missing }) => {
+    this.queue.missingDependencies().forEach(({ plugin, missing }) => {
       this.instance.log.warn(`refusing to load plugin ${plugin.name} because of missing dependencies: ${missing.join(", ")}`, LogMessage.Source.PLUGIN, plugin.name)
     })
   }
@@ -52,21 +65,22 @@ export class PluginWorker {
       this.worker = worker
       let messenger: Messenger
       worker.once("message", async msg => {
-        if (msg !== State.INIT) throw new Error(`expected message to be "ready" received ${msg}`)
+        if (msg !== WorkerState.INIT) throw new Error(`expected message to be "ready" received ${msg}`)
         messenger = await Messenger.create(p => worker.postMessage(p, [p]))
         this.messenger = messenger
         this.messenger.once("STATE", ({ message }) => {
-          this.state = State.READY
+          this.state = WorkerState.READY
           this.registerEvents()
           message.done()
           fulfill()
         })
-        this.state = State.INIT
+        this.state = WorkerState.INIT
       })
       worker.on("online", () => this.instance.log.info(`Plugin worker started`))
       worker.on("error", err => this.instance.log.error(err))
       worker.on("exit", code => {
-        this.instance.log.info(`worker exited with code ${code}`)
+        this.state = WorkerState.STOP
+        this.instance.log.info(`plugin worker exited with code ${code}`)
         worker.removeAllListeners()
         if (messenger) messenger.removeAllListeners()
       })
@@ -134,6 +148,29 @@ export class PluginWorker {
   }
 
   /**
+   * sends a message to the worker
+   * @param action action name to identify the intention
+   * @param data data to send to the worker
+   */
+  private sendMessage(action: string, data: any) {
+    if (!this.messenger) throw new Error("messenger not ready!")
+    return this.messenger.send(action, data)
+  }
+
+  /** dispatches the plugin to the worker thread */
+  private async sendStartPlugin(plugin: Plugin) {
+    this.instance.log.info(`starting plugin...`, LogMessage.Source.PLUGIN, plugin.name)
+    return this.sendMessage("startPlugin", await plugin.toJSON())
+  }
+
+  /** checks the queue and starts / stops the worker if needed */
+  private async checkQueue() {
+    if (!this.queue.hasPlugins) return
+    if (this.state === WorkerState.STOP) return this.spawn()
+    if (this.state === WorkerState.READY) return this.startQueuedPlugins()
+  }
+
+  /**
    * terminates the worker
    */
   stop() {
@@ -150,23 +187,13 @@ export class PluginWorker {
   }
 
   /**
-   * sends a message to the worker
-   * @param action action name to identify the intention
-   * @param data data to send to the worker
-   */
-  private sendMessage(action: string, data: any) {
-    if (!this.messenger) throw new Error("messenger not ready!")
-    return this.messenger.send(action, data)
-  }
-
-  /**
    * sends a specific plugin which should be started to the worker
    * @param plugin plugin which should get started
    */
   async startPlugin(plugin: Plugin) {
-    this.instance.log.info(`Starting plugin: ${plugin.name}`, LogMessage.Source.PLUGIN, plugin.name)
     await plugin.setAutostart(true)
-    return this.sendMessage("startPlugin", await plugin.toJSON())
+    this.queue.addPlugin(plugin)
+    this.checkQueue()
   }
 
   /**
@@ -181,6 +208,16 @@ export class PluginWorker {
 
   async executeRoute(props: PluginWorker.ExecuteRouteProps) {
     return this.sendMessage("executeRoute", props)
+  }
+
+  /** retrieves the current plugin state */
+  async getPluginState(plugin: Plugin) {
+    if (this.state === WorkerState.STOP) return PluginState.NOT_RUNNING
+    if (!this.messenger) throw new Error("messenger not ready")
+    return (
+      (await this.messenger.send("pluginState", { id: plugin.id }))
+        .state as PluginState
+    )
   }
 }
 

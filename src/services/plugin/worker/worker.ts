@@ -3,7 +3,7 @@ import { Messenger } from "../shared/messenger/Messenger"
 import "../../../util/winston"
 import winston from "winston"
 import { PluginHandler } from "./PluginHandler"
-import { State } from "../shared/state"
+import { WorkerState } from "../shared/state"
 //import "./console"
 
 if (isMainThread) throw new Error("worker can not be main thread")
@@ -29,4 +29,4 @@ parentPort.once("message", async port => {
     rcon: workerData.rcon
   })
 })
-parentPort.postMessage(State.INIT)
+parentPort.postMessage(WorkerState.INIT)
