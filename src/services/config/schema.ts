@@ -11,6 +11,7 @@ export const schema = Joi.object({
   }).required(),
   webserver: Joi.object({
     listenport: Joi.number().port().required(),
+    proxy: Joi.boolean().optional().default(false),
     jwt: Joi.object({
       maxAge: Joi.number().positive().integer().required(),
       sendRefresh: Joi.number().positive().integer().required()
@@ -42,6 +43,7 @@ export interface Configuration {
   }
   webserver: {
     listenport: number
+    proxy: boolean
     jwt: {
       maxAge: number
       sendRefresh: number

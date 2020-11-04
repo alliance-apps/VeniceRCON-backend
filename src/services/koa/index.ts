@@ -18,6 +18,8 @@ export async function initialize() {
 
   const router = Router()
 
+  app.proxy = config.webserver.proxy
+
   app.use(async (ctx, next) => {
     try {
       applyCors(ctx)

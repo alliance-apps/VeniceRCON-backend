@@ -14,6 +14,8 @@ database:
 webserver:
   #port which the webserver listens to
   listenport: 8000
+  #set this to true when application runs behind a proxy
+  proxy: false
   jwt:
     #maxmimum token age in days
     maxAge: 7
