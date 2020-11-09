@@ -79,6 +79,13 @@ export class InstanceManager {
     return instance
   }
 
+  /** reloads all plugins */
+  reloadPlugins() {
+    return Promise.all(
+      this.instances.map(instance => instance.plugin.reloadPlugins())
+    )
+  }
+
   /**
    * gets all instances with a user has permission with a specific scope to
    * @param user user to check permissions for

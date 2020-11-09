@@ -3,46 +3,42 @@ import yaml from "yaml"
 import winston from "winston"
 import { schema, PluginStoreSchema } from "./schema"
 import { Repository } from "./Repository"
-import { config } from "@service/config"
+import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
 
 export class Provider {
 
-  /** name of the store provider */
-  name: string
-  /** branch which gets used to fetch the repository from */
-  branch: string
-  /** github repository url */
-  repository: string
-  /** optional headers which should gets set in the http request */
-  headers: Record<string, string>
+  entity: PluginStoreEntity
+  private interval: any
   /** list of plugins in this repository */
   plugins: Repository[] = []
 
   constructor(props: Provider.Props) {
-    this.name = props.name
-    this.branch = props.branch
-    this.repository = props.repository
-    this.headers = props.headers || {}
-    this.reload()
-    setInterval(() => this.reload(), config.instance.plugins.reloadInterval * 60 * 1000)
+    this.entity = props.entity
+  }
+
+  destroy() {
+    clearInterval(this.interval)
+  }
+
+  get id() {
+    return this.entity.id
   }
 
   /** url to fetch the repository yaml file from */
   get url() {
-    return `${this.repository}/raw/${this.branch}/repository.yaml`
+    return `${this.entity.url}/raw/${this.entity.branch}/repository.yaml`
   }
 
   /** loads all plugins defined in the repository.yaml */
   async reload() {
-    winston.info(`reading external plugins from store "${this.name}"...`)
+    clearInterval(this.interval)
+    winston.info(`reading external plugins from store ${this.id}...`)
     try {
       const store = await this.parseSchema(await this.fetch())
-      this.plugins = store.plugins.map(repo => new Repository({
-        provider: this,
-        schema: repo
-      }))
-      const count = this.plugins.length
-      winston.info(`received ${count} plugin${count === 1 ? "" : "s"} from store "${this.name}"`)
+      this.plugins = store.plugins.map(schema => new Repository({ provider: this, schema }))
+      const i = this.plugins.length
+      this.interval = setInterval(() => this.reload(), this.entity.reloadTime)
+      winston.info(`received ${i} plugin${i === 1 ? "" : "s"} from store ${this.id}`)
     } catch (e) {
       winston.error(`could not fetch plugins from ${this.url}`)
       winston.error(e)
@@ -55,8 +51,8 @@ export class Provider {
   }
 
   /** parses and validates a plugins repository schema */
-  private parseSchema(data: string) {
-    return schema.validate<PluginStoreSchema>(
+  private parseSchema(data: string): Promise<PluginStoreSchema> {
+    return schema.validateAsync(
       yaml.parse(data),
       { allowUnknown: true }
     )
@@ -65,19 +61,24 @@ export class Provider {
   /** fetches the repository.yaml via http request */
   private async fetch() {
     const response = await fetch(this.url, {
-      headers: this.headers,
+      headers: JSON.parse(this.entity.headers),
       redirect: "follow"
     })
     return response.text()
+  }
+
+  toJSON() {
+    return {
+      ...this.entity,
+      repositoryUrl: this.url,
+      plugins: this.plugins.map(p => p.toJSON())
+    }
   }
 
 }
 
 export namespace Provider {
   export interface Props {
-    name: string
-    repository: string
-    branch: string
-    headers?: Record<string, string>
+    entity: PluginStoreEntity
   }
 }

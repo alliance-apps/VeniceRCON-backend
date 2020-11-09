@@ -1,5 +1,3 @@
-# enables some development features
-development: true
 database:
   #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
   use: "sqlite"
@@ -11,11 +9,18 @@ database:
     username: ""
     password: ""
     database: "battlefield"
+logging:
+  #enable logging of query messages
+  orm: false
+  #loglevel to use available options are "verbose"|"info"|"warn"|"error"
+  level: info
 webserver:
   #port which the webserver listens to
   listenport: 8000
   #set this to true when application runs behind a proxy
   proxy: false
+  #enable pretty json output for development purposes
+  prettyJson: false
   jwt:
     #maxmimum token age in days
     maxAge: 7
@@ -30,9 +35,3 @@ instance:
   plugins:
     #location of the directory to read plugins from
     baseDir: "./plugins"
-    #time in minutes until the remote repo store gets reloaded
-    #from the external url
-    reloadInterval: 60
-    repos:
-      - name: "main"
-        repository: "https://github.com/Multivit4min/vu-plugin-repo/"

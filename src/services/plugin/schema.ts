@@ -73,7 +73,7 @@ export const metaSchema = Joi.object({
 })
 
 export function checkVariableSchema(vars: PluginVariable[], data: Record<string, any>) {
-  return Joi.validate(data, buildVariableSchema(vars))
+  return buildVariableSchema(vars).validateAsync(data)
 }
 
 function buildVariableSchema(vars: PluginVariable[]) {
@@ -89,7 +89,7 @@ function getVariableType(meta: PluginVariable): any {
     case "boolean": return Joi.boolean().optional()
     case "strings": return Joi.array().items(Joi.string()).optional()
     case "array": return Joi.array().items(buildVariableSchema(meta.vars)).optional()
-    case "select": return Joi.string().only(Object.keys(meta.options)).optional()
+    case "select": return Joi.string().allow(Object.keys(meta.options)).only().optional()
   }
 }
 

@@ -1,6 +1,6 @@
 import { Joi } from "koa-joi-router"
 
-export const schema = Joi.object({
+export const schema = Joi.object<PluginStoreSchema>({
   plugins: Joi.array().items(Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),

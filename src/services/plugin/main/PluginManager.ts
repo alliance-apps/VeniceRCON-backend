@@ -2,10 +2,10 @@ import { Instance } from "@service/battlefield/libs/Instance"
 import { pluginStore } from "../"
 import { promises as fs } from "fs"
 import path from "path"
-import yaml from "yaml"
 import { Plugin } from "./Plugin"
 import { PluginWorker } from "./PluginWorker"
 import { Plugin as PluginEntity } from "@entity/Plugin"
+import { loadPluginMeta } from "./PluginUtil"
 
 export class PluginManager {
 
@@ -22,6 +22,10 @@ export class PluginManager {
       baseDir: this.baseDir, parent: this
     })
     this.reloadPlugins()
+  }
+
+  get hasActivePlugin() {
+    return this.plugins.some(plugin => plugin.entity.start)
   }
 
   async toJSON() {
@@ -41,34 +45,68 @@ export class PluginManager {
     await this.worker.spawn()
   }
 
-  /** reloads all plugins for this instance from disk */
+  /** reloads all available plugins for this manager */
   async reloadPlugins() {
-    //stop the worker and empty the current plugin list
-    await this.worker.stop()
-    this.plugins = []
-    //check if folder exists with a single plugin in it
+    if (!await this.checkPrecondition()) return
+    const entities = await pluginStore.getPluginsByInstance(this.parent)
+    const ids = entities.map(plugin => plugin.id)
+    const preAdd = this.plugins.length
+    await Promise.all(entities.map(entity => this.reloadPlugin(entity)))
+    const preRemove = this.plugins.length
+    this.plugins = this.plugins.filter(plugin => ids.includes(plugin.id))
+    if (
+      (this.plugins.length !== preRemove || preRemove !== preAdd) &&
+      !this.worker.isStopped
+    ) {
+      await this.worker.restart()
+    } else if (this.hasActivePlugin && this.worker.isStopped) {
+      await this.worker.spawn()
+    }
+  }
+
+  /** reloads the single plugin */
+  private async reloadPlugin(entity: PluginEntity) {
+    let plugin = this.plugins.find(plugin => plugin.id === entity.id)
+    if (!plugin) {
+      const meta = await this.getMeta(entity)
+      plugin = new Plugin({ meta, entity, parent: this })
+      this.plugins.push(plugin)
+    } else {
+      plugin.entity = entity
+    }
+  }
+
+  /** check preconditions if folder exists */
+  private async checkPrecondition() {
     try {
       await fs.stat(this.baseDir)
+      return true
     } catch (e) {
       if (e.code !== "ENOENT") throw e
-      return
+      return false
     }
-    const folders = await fs.readdir(this.baseDir)
+  }
+
+  private getMeta(entity: PluginEntity) {
+    return loadPluginMeta(path.join(this.baseDir, entity.uuid, "meta.yaml"))
+  }
+
+  /** reloads all plugins for this instance from disk */
+  async reloadPluginsOld() {
+    const entities = await pluginStore.getPluginsByInstance(this.parent)
+    const enabledUids = entities.map(e => e.uuid)
+    const folders = (await fs.readdir(this.baseDir))
+      .filter(folder => enabledUids.includes(folder))
     await Promise.allSettled(
       folders.map(async uuid => {
         const base = path.join(this.baseDir, uuid)
         try {
-          const schema = yaml.parse(await fs.readFile(path.join(base, "meta.yaml"), "utf-8"))
-          let meta: any
-          try {
-            meta = await Plugin.validateSchema(schema)
-          } catch (e) {
-            this.parent.log.warn(`invalid schema provided in plugin ${uuid}`)
-            this.parent.log.warn(e)
-            return
-          }
           const entity = await PluginEntity.findOneOrFail({ uuid })
-          const plugin = new Plugin({ meta, parent: this, entity })
+          const plugin = new Plugin({
+            meta: await loadPluginMeta(path.join(base, "meta.yaml")),
+            parent: this,
+            entity
+          })
           if (!plugin.isCompatible())
             return this.parent.log.info(`ignoring plugin ${uuid} because backend is incompatible`)
           this.plugins.push(plugin)
@@ -85,6 +123,11 @@ export class PluginManager {
   /** retrieves a plugin by its name */
   getPluginByName(name: string) {
     return this.plugins.find(p => p.name === name)
+  }
+
+  /** checks if a specific uuid exists in this plugin manager */
+  hasPlugin(...uuid: string[]) {
+    return this.plugins.some(plugin => uuid.includes(plugin.uuid))
   }
 
   async getPluginById(id: number) {

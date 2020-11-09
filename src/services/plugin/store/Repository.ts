@@ -31,7 +31,7 @@ export class Repository {
     this.version = props.schema.version
     this.repository = props.schema.repository
     this.commit = props.schema.commit
-    this.uuid = createHash("md5").update(`${this.provider.name}.${this.name}`).digest("hex")
+    this.uuid = createHash("md5").update(`${this.provider.id.toString()}.${this.name}`).digest("hex")
   }
 
   /** url to the repository archive file */
@@ -57,7 +57,7 @@ export class Repository {
     await PluginEntity.getPluginWithUpsert({
       instance: instance.id,
       name: this.name,
-      store: this.provider.name,
+      store: this.provider.entity,
       uuid: this.uuid
     })
     const location = this.getDownloadPath(instance)
@@ -84,10 +84,9 @@ export class Repository {
   /**
    * json schema for the api
    */
-  json() {
+  toJSON() {
     return {
       name: this.name,
-      store: this.provider.name,
       description: this.description,
       version: this.version,
       uuid: this.uuid

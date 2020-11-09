@@ -1,5 +1,5 @@
 import { PluginManager } from "./PluginManager"
-import { Meta, metaSchema } from "../schema"
+import { Meta } from "../schema"
 import { InstanceContainer } from "@service/container/InstanceContainer"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { Context } from "koa"
@@ -9,7 +9,7 @@ import { pluginStore } from ".."
 
 export class Plugin {
 
-  private entity: PluginEntity
+  entity: PluginEntity
   readonly manager: PluginManager
   readonly meta: Meta
   state: Plugin.State = Plugin.State.STOPPED
@@ -33,17 +33,12 @@ export class Plugin {
     return this.entity.id
   }
 
-  get store() {
-    return this.entity.store
-  }
-
   get name() {
     return this.entity.name
   }
 
-  /** checks if the plugins meta schema is valid */
-  static validateSchema(meta: Meta) {
-    return metaSchema.validate(meta)
+  get uuid() {
+    return this.entity.uuid
   }
 
   executeRoute(method: string, path: string, ctx: Context) {
@@ -128,7 +123,7 @@ export class Plugin {
   }
 
   checkUpdate() {
-    const store = pluginStore.getStore(this.store)
+    const store = pluginStore.getProvider(this.entity.storeId)
     if (!store) return "0.0.0"
     const plugin = store.getPlugin(this.name)
     if (!plugin) return "0.0.0"
@@ -140,7 +135,7 @@ export class Plugin {
       id: this.id,
       storeVersion: this.checkUpdate(),
       uuid: this.entity.uuid,
-      store: this.store,
+      store: this.entity.storeId,
       name: this.name,
       state: this.state,
       meta: this.meta,
@@ -164,7 +159,7 @@ export namespace Plugin {
 
   export interface Info {
     id: number
-    store: string
+    store: number
     storeVersion: string
     uuid: string
     name: string

@@ -3,21 +3,25 @@ import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOpti
 import { Joi } from "koa-joi-router"
 
 export const schema = Joi.object({
-  development: Joi.boolean().optional().default(false),
   database: Joi.object({
     use: Joi.string().allow("sqlite", "mariadb").required(),
     sqlite: Joi.any(),
     mariadb: Joi.any()
   }).required(),
+  logging: Joi.object({
+    orm: Joi.boolean().optional().default(false),
+    level: Joi.string().allow("verbose", "info", "warn", "error").only().optional().default("info")
+  }).required(),
   webserver: Joi.object({
     listenport: Joi.number().port().required(),
     proxy: Joi.boolean().optional().default(false),
+    prettyJson: Joi.boolean().optional().default(false),
     jwt: Joi.object({
       maxAge: Joi.number().positive().integer().required(),
       sendRefresh: Joi.number().positive().integer().required()
     }).required(),
     cors: Joi.array().items(Joi.string()).optional().default([])
-  }),
+  }).required(),
   instance: Joi.object({
     syncInterval: Joi.number().integer().positive().min(100).optional().default(5000),
     plugins: Joi.object({
@@ -35,14 +39,18 @@ export const schema = Joi.object({
 
 export interface Configuration {
   basepath: string
-  development: boolean
   database: {
     use: "sqlite"|"mariadb"
     sqlite: SqliteConnectionOptions,
     mariadb: MysqlConnectionOptions
   }
+  logging: {
+    orm: boolean
+    level: "verbose"|"info"|"warn"|"error"
+  }
   webserver: {
     listenport: number
+    prettyJson: boolean
     proxy: boolean
     jwt: {
       maxAge: number

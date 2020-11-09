@@ -42,18 +42,22 @@ export const prettyLog = format(info => {
   return info
 })
 
+const consoleTransport = new transports.Console({
+  level: "info",
+  format: format.combine(
+    format.timestamp({format: "DD.MM.YYYY HH:mm:ss.SSS"}),
+    prettyLog(),
+    format.printf(opts => opts.message)
+  )
+})
+
+export function updateLogLevel(level: "verbose"|"info"|"warn"|"error") {
+  consoleTransport.level = level
+}
+
 winston.configure({
   format: format.combine(
     errorLog()
   ),
-  transports: [
-    new transports.Console({
-      level: "info",
-      format: format.combine(
-        format.timestamp({format: "DD.MM.YYYY HH:mm:ss.SSS"}),
-        prettyLog(),
-        format.printf(opts => opts.message)
-      )
-    })
-  ]
+  transports: [consoleTransport]
 })

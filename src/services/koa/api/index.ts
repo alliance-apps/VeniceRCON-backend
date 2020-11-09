@@ -4,8 +4,11 @@ import bodyParser from "koa-bodyparser"
 import authRouter from "./auth"
 import instanceRouter from "./instances"
 import pluginRouter from "./plugins"
+import repositoryRouter from "./repository"
 import { config } from "@service/config"
 import { jwtMiddleware } from "../jwt"
+import { PluginRepositoryScope } from "@service/permissions/Scopes"
+import { perm } from "../permission"
 
 export async function createRoute() {
   const router = Router()
@@ -20,13 +23,19 @@ export async function createRoute() {
     ctx.status = 200
   })
 
-  router.use(json({ pretty: config.development }))
+  router.use(json({ pretty: config.webserver.prettyJson }))
 
   router.use(await jwtMiddleware({ passthrough: true }))
 
   router.use("/auth", authRouter.middleware())
   router.use("/plugins", pluginRouter.middleware())
-  router.use("/instances", await jwtMiddleware(), instanceRouter.middleware())
+  router.use(await jwtMiddleware())
+  router.use("/instances", instanceRouter.middleware())
+  router.use(
+    "/repository",
+    perm(PluginRepositoryScope.ACCESS),
+    repositoryRouter.middleware()
+  )
 
   return router
 }

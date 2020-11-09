@@ -30,14 +30,24 @@ export class PluginWorker {
     return this.parent.parent
   }
 
+  get isRunning() {
+    return this.state === WorkerState.READY
+  }
+
+  get isStopped() {
+    return this.state === WorkerState.STOP
+  }
+
   private async initializeQueue() {
     this.queue = new PluginQueue(await this.parent.getEnabledPlugins())
   }
 
   /** spawns the worker and loads all enabled plugins */
   async spawn() {
+    if (this.state !== WorkerState.STOP) return
+    this.state = WorkerState.INIT
     await this.initializeQueue()
-    if (!this.queue.hasPlugins) return
+    if (!this.queue.hasPlugins) return this.state = WorkerState.STOP
     await this.createWorker()
     await this.startQueuedPlugins()
   }

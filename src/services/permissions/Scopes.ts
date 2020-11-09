@@ -8,7 +8,8 @@ export type Scopes =
   typeof PluginScope |
   typeof VariableScope |
   typeof EventScope |
-  typeof ModScope
+  typeof ModScope |
+  typeof PluginRepositoryScope
 
 export const InstanceScope = {
   ACCESS:  0x01n,
@@ -73,6 +74,13 @@ export const ModScope = {
   DELETE: 0x0800000000000000000n
 }
 
+export const PluginRepositoryScope = {
+  ACCESS: 0x010000000000000000000n,
+  MODIFY: 0x020000000000000000000n,
+  CREATE: 0x040000000000000000000n,
+  REMOVE: 0x080000000000000000000n
+}
+
 const translation: Record<string, Scopes> = {
   INSTANCE: InstanceScope,
   INSTANCEUSER: InstanceUserScope,
@@ -83,7 +91,8 @@ const translation: Record<string, Scopes> = {
   RESERVEDSLOT: ReservedSlotScope,
   VARIABLE: VariableScope,
   EVENT: EventScope,
-  MOD: ModScope
+  MOD: ModScope,
+  PLUGINREPOSITORY: PluginRepositoryScope
 }
 
 export function getBitMaskWithAllPermissions() {
@@ -211,6 +220,13 @@ export function getScopesFromMask(mask: bigint) {
         mods("CREATE")
         mods("DELETE")
         mods("UPDATE")
+        return
+      case "PLUGINREPOSITORY":
+        const repo = validateScope(key, PluginRepositoryScope)
+        repo("ACCESS")
+        repo("CREATE")
+        repo("REMOVE")
+        repo("MODIFY")
         return
     }
   })

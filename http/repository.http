@@ -1,0 +1,37 @@
+@repositoryId=1
+
+### gets currently created repositories
+GET {{$dotenv url}}/api/repository
+Authorization: Bearer {{$dotenv jwt}}
+
+### reloads all repositories
+POST {{$dotenv url}}/api/repository/reload
+Authorization: Bearer {{$dotenv jwt}}
+
+### creates a new plugin repository
+POST {{$dotenv url}}/api/repository
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "branch": "master",
+  "url": "https://github.com/Multivit4min/vu-plugin-repo"
+}
+
+### gets a single repository
+GET {{$dotenv url}}/api/repository/{{repositoryId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+### deletes a repository
+POST {{$dotenv url}}/api/repository/{{repositoryId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+
+### updates a single repository
+PATCH {{$dotenv url}}/api/repository/{{repositoryId}}
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "enabled": true
+}

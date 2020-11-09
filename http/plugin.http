@@ -1,6 +1,6 @@
 @instanceId=2
 @pluginId=1
-@pluginStore=main
+@pluginStore=1
 @pluginName=showcase
 
 ### retrieve a list of useable plugins

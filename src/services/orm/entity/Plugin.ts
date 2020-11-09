@@ -1,3 +1,4 @@
+import { PluginStore } from "./PluginStore"
 import { Entity, Column, ManyToOne, Index } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Instance } from "./Instance"
@@ -8,10 +9,14 @@ export class Plugin extends AbstractEntity<Plugin> {
   protected entityClass = Plugin
 
   @Column()
+  @Index()
   name!: string
 
-  @Column()
-  store!: string
+  @ManyToOne(type => PluginStore, store => store.plugins)
+  store!: Promise<PluginStore>
+
+  @Column({ nullable: true })
+  storeId!: number
 
   @ManyToOne(type => Instance, instance => instance.plugins)
   instance!: Promise<Instance>
@@ -40,7 +45,7 @@ export class Plugin extends AbstractEntity<Plugin> {
 
   static async getPluginWithUpsert(props: Plugin.ICreate) {
     const entity = await Plugin.findOne({
-      store: props.store,
+      storeId: props.store.id,
       name: props.name
     })
     if (entity) return entity
@@ -58,7 +63,7 @@ export class Plugin extends AbstractEntity<Plugin> {
   static async from(props: Plugin.ICreate) {
     const plugin = new Plugin()
     plugin.name = props.name
-    plugin.store = props.store
+    plugin.storeId = props.store.id
     plugin.uuid = props.uuid
     plugin.config = props.config || "{}"
     plugin.instanceId = AbstractEntity.fetchId(props.instance)
@@ -70,7 +75,7 @@ export class Plugin extends AbstractEntity<Plugin> {
 export namespace Plugin {
   export interface ICreate {
     name: string
-    store: string
+    store: PluginStore
     uuid: string
     config?: string
     instance: Instance|number

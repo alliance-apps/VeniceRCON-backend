@@ -17,6 +17,7 @@ import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
 import { Weapon } from "@entity/Weapon"
 import { LogMessage } from "@entity/LogMessage"
+import { PluginStore } from "@entity/PluginStore"
 import { getBitMaskWithAllPermissions } from "@service/permissions/Scopes"
 
 const DEFAULT_USERNAME = "admin"
@@ -26,13 +27,13 @@ export let connection: Connection
 export async function connect(args: Record<string, string>) {
   connection = await createConnection({
     type: config.database.use,
-    synchronize: config.development,
-    logging: config.development,
+    logging: config.logging.orm,
     maxQueryExecutionTime: 200,
     ...config.database[config.database.use] as any,
     logger: new WinstonLogger(),
     entities: [
       Instance,
+      PluginStore,
       User,
       Config,
       Permission,
@@ -45,6 +46,10 @@ export async function connect(args: Record<string, string>) {
       LogMessage
     ]
   })
+
+  await connection.query("PRAGMA foreign_keys=OFF")
+  await connection.synchronize()
+  await connection.query("PRAGMA foreign_keys=ON")
 
   //create default configuration
   const configs = await Config.find()
