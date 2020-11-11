@@ -23,7 +23,7 @@ GET {{$dotenv url}}/api/repository/{{repositoryId}}
 Authorization: Bearer {{$dotenv jwt}}
 
 ### deletes a repository
-POST {{$dotenv url}}/api/repository/{{repositoryId}}
+DELETE {{$dotenv url}}/api/repository/{{repositoryId}}
 Authorization: Bearer {{$dotenv jwt}}
 
 

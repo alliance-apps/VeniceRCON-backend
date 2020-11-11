@@ -40,11 +40,12 @@ export class PluginStore {
     let provider = this.providers.find(provider => provider.id === entity.id)
     if (provider) {
       provider.entity = entity
+      await provider.reload()
     } else {
       provider = new Provider({ entity })
+      await provider.reload()
+      this.providers.push(provider)
     }
-    await provider.reload()
-    this.providers.push(provider)
   }
 
   /** reloads the content of all repositories */

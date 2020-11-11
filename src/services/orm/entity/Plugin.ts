@@ -45,6 +45,7 @@ export class Plugin extends AbstractEntity<Plugin> {
 
   static async getPluginWithUpsert(props: Plugin.ICreate) {
     const entity = await Plugin.findOne({
+      instanceId: AbstractEntity.fetchId(props.instance),
       storeId: props.store.id,
       name: props.name
     })

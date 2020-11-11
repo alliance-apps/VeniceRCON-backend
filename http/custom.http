@@ -1,13 +1,8 @@
-@pluginName=test
+@pluginName=showcase
 @instanceId=2
 
 ### gets a specific route from a plugin
-GET {{$dotenv url}}/api/plugins/{{instanceId}}/{{pluginName}}/echo
-Content-Type: application/json
-
-{
-  "foo": "bar"
-}
+GET {{$dotenv url}}/api/plugins/{{instanceId}}/{{pluginName}}/metrics
 
 
 ### lists all available instances

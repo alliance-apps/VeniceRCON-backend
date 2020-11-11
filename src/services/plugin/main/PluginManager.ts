@@ -47,7 +47,9 @@ export class PluginManager {
 
   /** reloads all available plugins for this manager */
   async reloadPlugins() {
-    if (!await this.checkPrecondition()) return
+    const condition = await this.checkPrecondition()
+    if (condition === PluginManager.PreCondition.PLUGIN_FOLDER_NOT_FOUND)
+      return this.parent.log.info("skipping reload (plugin folder does not exist)")
     const entities = await pluginStore.getPluginsByInstance(this.parent)
     const ids = entities.map(plugin => plugin.id)
     const preAdd = this.plugins.length
@@ -80,10 +82,10 @@ export class PluginManager {
   private async checkPrecondition() {
     try {
       await fs.stat(this.baseDir)
-      return true
+      return PluginManager.PreCondition.OKAY
     } catch (e) {
       if (e.code !== "ENOENT") throw e
-      return false
+      return PluginManager.PreCondition.PLUGIN_FOLDER_NOT_FOUND
     }
   }
 
@@ -130,10 +132,8 @@ export class PluginManager {
     return this.plugins.some(plugin => uuid.includes(plugin.uuid))
   }
 
-  async getPluginById(id: number) {
-    const plugin = this.plugins.find(plugin => plugin.id === id)
-    if (!plugin) throw new Error(`could not find plugin with id ${id}`)
-    return plugin
+  getPluginById(id: number) {
+    return this.plugins.find(plugin => plugin.id === id)
   }
 
   /** retrieves all plugins which should autostart */
@@ -151,5 +151,10 @@ export class PluginManager {
 export namespace PluginManager {
   export interface Props {
     parent: Instance
+  }
+
+  export enum PreCondition {
+    OKAY,
+    PLUGIN_FOLDER_NOT_FOUND
   }
 }

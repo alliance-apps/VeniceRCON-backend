@@ -1,7 +1,7 @@
 @instanceId=2
 @pluginId=1
 @pluginStore=1
-@pluginName=showcase
+@pluginName=metrics
 
 ### retrieve a list of useable plugins
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins

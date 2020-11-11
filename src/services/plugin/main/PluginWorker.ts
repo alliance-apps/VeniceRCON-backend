@@ -169,8 +169,10 @@ export class PluginWorker {
 
   /** dispatches the plugin to the worker thread */
   private async sendStartPlugin(plugin: Plugin) {
-    this.instance.log.info(`starting plugin...`, LogMessage.Source.PLUGIN, plugin.name)
-    return this.sendMessage("startPlugin", await plugin.toJSON())
+    this.instance.log.info(`starting plugin`, LogMessage.Source.PLUGIN, plugin.name)
+    plugin.state = Plugin.State.STARTED
+    await this.sendMessage("startPlugin", await plugin.toJSON())
+    this.instance.log.info(`plugin started`, LogMessage.Source.PLUGIN, plugin.name)
   }
 
   /** checks the queue and starts / stops the worker if needed */
@@ -185,14 +187,14 @@ export class PluginWorker {
    */
   stop() {
     if (!this.worker) return
-    this.worker.terminate()
+    return this.worker.terminate()
   }
 
   /**
    * restarts the worker
    */
   async restart() {
-    this.stop()
+    await this.stop()
     await this.spawn()
   }
 

@@ -98,8 +98,8 @@ export class Plugin {
 
   /** starts the plugin if its not already running */
   async start() {
-    if (this.state === Plugin.State.STARTED) return null
-    this.state = Plugin.State.STARTED
+    if (this.state === Plugin.State.STARTED)
+      return this.instance.log.info(`plugin ${this.name} already started`)
     try {
       await this.worker.startPlugin(this)
     } catch (e) {
@@ -110,7 +110,8 @@ export class Plugin {
 
   /** stops the plugin if its currently running */
   stop() {
-    if (this.state === Plugin.State.STOPPED) return null
+    if (this.state === Plugin.State.STOPPED)
+    return this.instance.log.info(`plugin ${this.name} already stopped`)
     this.state = Plugin.State.STOPPED
     return this.worker.stopPlugin(this)
   }

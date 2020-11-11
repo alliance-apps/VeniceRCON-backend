@@ -12,7 +12,7 @@ api.get("/", async ctx => {
 
 api.param("pluginId", async (pluginId, ctx, next) => {
   const instance: Instance = ctx.state.instance!
-  const plugin = await instance.plugin.getPluginById(parseInt(pluginId, 10))
+  const plugin = instance.plugin.getPluginById(parseInt(pluginId, 10))
   if (!plugin) return ctx.status = 404
   ctx.state.plugin = plugin
   await next()
