@@ -66,7 +66,7 @@ export async function initialize() {
 //add cors headers if set in config
 export function applyCors(ctx: Context) {
   const { cors } = config.webserver
-  const { origin } = ctx.request
+  const { origin } = ctx.headers
   if (!cors.includes(origin)) return
   ctx.set("Access-Control-Allow-Credentials", "true")
   ctx.set("Access-Control-Allow-Origin", origin)
