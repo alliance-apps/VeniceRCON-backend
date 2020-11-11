@@ -17,7 +17,7 @@ export class LogMessage extends AbstractEntity<LogMessage> {
   @Column()
   instanceId!: number
 
-  @Column()
+  @Column("text")
   message!: string
 
   @Column()
