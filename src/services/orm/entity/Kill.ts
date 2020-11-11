@@ -22,9 +22,9 @@ export class Kill extends AbstractEntity<Kill> {
   @ManyToOne(
     type => Player,
     player => player.killed,
-    { eager: true, cascade: true, onDelete: "CASCADE" }
+    { cascade: true, onDelete: "CASCADE" }
   )
-  killed!: Player
+  killed!: Promise<Player>
 
   @Column()
   killedId!: number
@@ -52,11 +52,11 @@ export class Kill extends AbstractEntity<Kill> {
   weaponId!: number
 
   async toJSON() {
-    const weapon = await this.weapon
+    const killed = await this.killed
     return {
       id: this.id,
       instance: this.instanceId,
-      weapon: weapon ? weapon.name : null,
+      weapon: (await this.weapon).name,
       headshot: this.headshot,
       created: this.created,
       killer: this.killer ? {
@@ -64,8 +64,8 @@ export class Kill extends AbstractEntity<Kill> {
         guid: this.killer.guid
       } : undefined,
       killed: {
-        name: this.killed!.name,
-        guid: this.killed!.guid
+        name: killed.name,
+        guid: killed.guid
       }
     }
   }
