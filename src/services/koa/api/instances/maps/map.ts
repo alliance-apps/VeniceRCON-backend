@@ -32,7 +32,10 @@ api.patch("/position/:toIndex", perm(MapScope.MANAGE), async ctx => {
       await battlefield.addMap(map, mode, rounds)
       throw e
     }
-    await ctx.state.instance!.mapList()
+    await Promise.all([
+      ctx.state.instance!.mapList(),
+      ctx.state.instance!.currentMapIndices()
+    ])
     ctx.status = 200
   } catch (e) {
     ctx.status = 500
@@ -43,8 +46,7 @@ api.patch("/position/:toIndex", perm(MapScope.MANAGE), async ctx => {
 api.post("/next", perm(MapScope.SWITCH), async ctx => {
   try {
     const { instance } = ctx.state
-    await instance!.battlefield
-      .setNextMapIndex(ctx.state.map!.index)
+    await instance!.battlefield.setNextMapIndex(ctx.state.map!.index)
     instance!.currentMapIndices()
     ctx.status = 200
   } catch (e) {

@@ -73,6 +73,7 @@ api.route({
     try {
       await battlefield.addMap(map, mode, rounds, index)
       ctx.state.instance!.mapList()
+      ctx.state.instance!.currentMapIndices()
       ctx.status = 200
     } catch (e) {
       ctx.status = 500
