@@ -4,5 +4,4 @@ config.yaml
 *.database
 .env
 /plugins
-ecosystem.config.js
 /lib

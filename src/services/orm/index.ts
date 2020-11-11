@@ -47,9 +47,17 @@ export async function connect(args: Record<string, string>) {
     ]
   })
 
-  await connection.query("PRAGMA foreign_keys=OFF")
-  await connection.synchronize()
-  await connection.query("PRAGMA foreign_keys=ON")
+  if (config.database.use.toLowerCase() === "sqlite") {
+    await connection.query("PRAGMA foreign_keys=OFF")
+    await connection.synchronize()
+    await connection.query("PRAGMA foreign_keys=ON")
+  } else if (config.database.use.toLowerCase() === "mariadb") {
+    await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+    await connection.synchronize()
+    await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+  } else {
+    winston.warn(`UNSUPPORTED DATBASE USED: "${config.database.use.toLowerCase()}"`)
+  }
 
   //create default configuration
   const configs = await Config.find()
