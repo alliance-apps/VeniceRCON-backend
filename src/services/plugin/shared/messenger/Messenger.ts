@@ -38,7 +38,7 @@ export class Messenger extends EventEmitter {
 
   /** send data */
   send<T = any>(action: string, data?: T, timeout: number = 2000) {
-    const ack = this.createAcknowledgeItem(timeout)
+    const ack = this.createAcknowledgeItem(timeout, JSON.stringify({ action, data }))
     this.post(<Messenger.DataMessage>{
       type: Messenger.MessageType.DATA,
       id: ack.id,
@@ -117,13 +117,15 @@ export class Messenger extends EventEmitter {
   }
 
   /** creates an acknowledgeable item */
-  private createAcknowledgeItem(timeout: number): Messenger.AcknowledgeItem {
+  private createAcknowledgeItem(timeout: number, meta: string): Messenger.AcknowledgeItem {
     const id = this.id++
     const item: Partial<Messenger.AcknowledgeItem> = { id }
     item.promise = new Promise((fulfill, reject) => {
       item.fulfill = fulfill
       item.reject = reject
-      item.timeout = setTimeout(() => reject(new Error(`message timeout for id ${id}`)), timeout)
+      item.timeout = setTimeout(() => {
+        reject(new Error(`message timeout: id=${id} meta=${meta}`))
+      }, timeout)
     })
     this.acks[id] = item as Messenger.AcknowledgeItem
     return item as Messenger.AcknowledgeItem
