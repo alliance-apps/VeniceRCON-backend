@@ -89,7 +89,7 @@ function getVariableType(meta: PluginVariable): any {
     case "boolean": return Joi.boolean().optional()
     case "strings": return Joi.array().items(Joi.string()).optional()
     case "array": return Joi.array().items(buildVariableSchema(meta.vars)).optional()
-    case "select": return Joi.string().allow(Object.keys(meta.options)).only().optional()
+    case "select": return Joi.string().allow(...Object.keys(meta.options)).only().optional()
   }
 }
 
