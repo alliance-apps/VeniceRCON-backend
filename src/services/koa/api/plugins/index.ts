@@ -8,6 +8,7 @@ api.param("instanceId", async (id, ctx, next) => {
   if (isNaN(parseInt(id, 10))) return ctx.status = 400
   const instance = instanceManager.getInstanceById(parseInt(id, 10))
   if (!instance) return ctx.status = 404
+  if (!instance.plugin.isRunning) return ctx.status = 503
   ctx.state.instance = instance
   await next()
 })

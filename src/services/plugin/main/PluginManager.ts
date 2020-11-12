@@ -28,6 +28,14 @@ export class PluginManager {
     return this.plugins.some(plugin => plugin.entity.start)
   }
 
+  get isRunning() {
+    return this.worker.isRunning
+  }
+
+  get isStopped() {
+    return this.worker.isStopped
+  }
+
   async toJSON() {
     return await Promise.all(this.plugins.map(plugin => plugin.toJSON()))
   }

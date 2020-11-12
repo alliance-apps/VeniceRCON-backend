@@ -47,8 +47,14 @@ export class Instance {
       prependTimeout: this.syncInterval * 1
     })
     this.registerEvents()
-    this.battlefield.on("close", () => this.stopUpdateInterval())
-    this.battlefield.on("ready", () => this.startUpdateInterval())
+    this.battlefield.on("close", async () => {
+      this.stopUpdateInterval()
+      await this.plugin.stop()
+    })
+    this.battlefield.on("ready", async () => {
+      this.startUpdateInterval()
+      await this.plugin.start()
+    })
     if (props.entity.autostart) this.doAutostart()
   }
 
@@ -176,12 +182,10 @@ export class Instance {
   /** starts the connection to the battlefield server */
   async start() {
     await this.connection.start()
-    await this.plugin.start()
   }
 
   /** disconnects to the battlefield instance */
   async stop() {
-    await this.plugin.stop()
     return this.connection.stop()
   }
 
