@@ -55,6 +55,8 @@ export async function connect(args: Record<string, string>) {
     await connection.query("SET FOREIGN_KEY_CHECKS = 0")
     await connection.synchronize()
     await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+  } else if (config.database.use.toLowerCase() === "postgres"){
+    await connection.synchronize()
   } else {
     winston.warn(`UNSUPPORTED DATBASE USED: "${config.database.use.toLowerCase()}"`)
   }

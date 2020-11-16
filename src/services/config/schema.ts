@@ -1,12 +1,14 @@
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions"
 import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions"
 import { Joi } from "koa-joi-router"
+import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
 
 export const schema = Joi.object({
   database: Joi.object({
-    use: Joi.string().allow("sqlite", "mariadb").required(),
+    use: Joi.string().allow("sqlite", "mariadb", "postgres").required(),
     sqlite: Joi.any(),
-    mariadb: Joi.any()
+    mariadb: Joi.any(),
+    postgres: Joi.any()
   }).required(),
   logging: Joi.object({
     orm: Joi.boolean().optional().default(false),
@@ -40,9 +42,10 @@ export const schema = Joi.object({
 export interface Configuration {
   basepath: string
   database: {
-    use: "sqlite"|"mariadb"
+    use: "sqlite"|"mariadb"|"postgres"
     sqlite: SqliteConnectionOptions,
-    mariadb: MysqlConnectionOptions
+    mariadb: MysqlConnectionOptions,
+    postgres: PostgresConnectionOptions
   }
   logging: {
     orm: boolean

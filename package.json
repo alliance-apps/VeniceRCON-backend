@@ -50,6 +50,7 @@
     "lodash": "^4.17.20",
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.1",
+    "pg": "^8.5.1",
     "socket.io": "^2.3.0",
     "socketio-jwt-auth": "^0.1.0",
     "sqlite3": "^5.0.0",

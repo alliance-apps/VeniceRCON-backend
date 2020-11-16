@@ -9,6 +9,12 @@ database:
     username: ""
     password: ""
     database: "battlefield"
+  postgres:
+    host: "127.0.0.1"
+    port: 5432
+    username: ""
+    password: ""
+    database: ""
 logging:
   #enable logging of query messages
   orm: false
