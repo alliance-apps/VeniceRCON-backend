@@ -6,13 +6,14 @@ import { createRoute as createApiRoute } from "./api"
 import { initialize as initSocket } from "../koa/socket"
 import { config } from "@service/config"
 import path from "path"
-import socketIO from "socket.io"
+import { Server } from "socket.io"
 import winston from "winston"
 import chalk from "chalk"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
-export const io = socketIO(server)
+// tslint:disable-next-line: no-var-requires
+export const io: Server = require("socket.io")(server)
 
 export async function initialize() {
 

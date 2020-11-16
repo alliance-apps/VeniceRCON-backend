@@ -51,17 +51,13 @@ export class Socket {
    * subscribes the socket to an instance and sends the initial state
    * @param state initial state to send
    */
-  addInstance(instance: Instance|number) {
-    const id = typeof instance === "number" ? instance : instance.id
-    if (this.instances.includes(id)) return
-    this.instances.push(id)
-    this.socket.join(SocketManager.getInstanceRoomName(id), async () => {
-      const instance = instanceManager.getInstanceById(id)
-      this.socket.emit(SocketManager.INSTANCE.ADD, {
-        state: instance.state.get()
-      })
-      this.emitChatMessages(await instance.chat.getMessages())
-    })
+  async addInstance(instance: Instance|number) {
+    instance = typeof instance === "number" ? instanceManager.getInstanceById(instance) : instance
+    if (this.instances.includes(instance.id)) return
+    this.instances.push(instance.id)
+    await this.socket.join(SocketManager.getInstanceRoomName(instance.id))
+    this.socket.emit(SocketManager.INSTANCE.ADD, { state: instance.state.get() })
+    this.emitChatMessages(await instance.chat.getMessages())
   }
 
   /**

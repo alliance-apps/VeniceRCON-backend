@@ -11,6 +11,7 @@ export class SocketManager extends SocketPool {
   connect(socket: io.Socket) {
     this.add(new Socket({
       socket,
+      //@ts-ignore - find a way to add user to http.IncomingMessage
       userId: socket.request.user.user.id,
       handleClose: socket => this.remove(socket)
     }))

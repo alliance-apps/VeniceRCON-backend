@@ -1,12 +1,9 @@
 import { User } from "@entity/User"
 
-interface Request {
-  user: User
-}
+declare namespace http {
 
-declare namespace SocketIO {
-
-  interface Socket {
-    request: Request
+  interface IncomingMessage {
+    user: User
   }
+
 }
