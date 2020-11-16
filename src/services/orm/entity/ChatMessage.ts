@@ -72,7 +72,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
     const date = from instanceof Date ? from : new Date(from)
     return this.createQueryBuilder()
       .select()
-      .where({ created: MoreThan(date.getTime()), instanceId })
+      .where({ created: MoreThan(date.toISOString()), instanceId })
       .orderBy({ created: "DESC" })
       .limit(count)
       .getMany()

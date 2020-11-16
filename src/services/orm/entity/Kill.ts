@@ -90,7 +90,7 @@ export class Kill extends AbstractEntity<Kill> {
     const date = from instanceof Date ? from : new Date(from)
     return this.createQueryBuilder()
       .select()
-      .where({ created: MoreThan(date.getTime()), instanceId })
+      .where({ created: MoreThan(date.toISOString()), instanceId })
       .orderBy({ created: "DESC" })
       .limit(count)
       .getMany()
