@@ -1,5 +1,4 @@
 import { deepStrictEqual } from "assert"
-import _ from "lodash"
 
 export class State<T extends State.Type> {
 
@@ -41,7 +40,7 @@ export class State<T extends State.Type> {
 
   /** copies an object in depth */
   static deepCopy<T>(obj: T): T {
-    return _.cloneDeep(obj)
+    return JSON.parse(JSON.stringify(obj))
   }
 
   static updateDeep<
