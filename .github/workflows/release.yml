@@ -5,24 +5,14 @@ on:
       version:
         description: 'Release Version'
         required: true
-      headline:
-        description: 'Headline'
-        required: true
 
 jobs:
   build:
-    name: Create Release
+    name: Upload Release Asset
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Use NodeJS ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
       - name: install dependencies
         run: npm ci
       - name: build release
@@ -31,6 +21,17 @@ jobs:
         run: rm -R node_modules
       - name: install production dependencies
         run: npm install --only=prod
+      - name: pack project
+        run: |
+          tar -czvf release-${{ github.event.inputs.version }}.tar.gz \
+            public \
+            node_modules \
+            lib \
+            package.json \
+            package-lock.json \
+            README.md \
+            config.default.yaml \
+            ecosystem.config.js
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -39,6 +40,15 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.version }}
           release_name: Release ${{ github.event.inputs.version }}
-          body: ${{ github.event.inputs.headline }}
           draft: true
           prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release-${{ github.event.inputs.version }}.tar.gz
+          asset_name: release-${{ github.event.inputs.version }}.tar.gz
+          asset_content_type: application/tar+gzip
