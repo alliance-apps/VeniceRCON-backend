@@ -23,15 +23,10 @@ jobs:
         run: npm install --only=prod
       - name: pack project
         run: |
-          tar -czvf release-${{ github.event.inputs.version }}.tar.gz \
-            public \
-            node_modules \
-            lib \
-            package.json \
-            package-lock.json \
-            README.md \
-            config.default.yaml \
-            ecosystem.config.js
+          mkdir release-${{ github.event.inputs.version }}
+          cp -r -t release-${{ github.event.inputs.version }} public node_modules lib package*.json README.md config.default.yaml ecosystem.config.js
+          find ./release-${{ github.event.inputs.version }} -name "*.js.map" -type f -delete
+          tar -czvf release-${{ github.event.inputs.version }}.tar.gz release-${{ github.event.inputs.version }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
