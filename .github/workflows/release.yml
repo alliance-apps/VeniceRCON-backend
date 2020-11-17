@@ -53,7 +53,7 @@ jobs:
         id: release
         run: |
           RELEASE_URL=`cat release-info/url.txt`
-          echo ""::set-output name=release_url::$RELEASE_URL"
+          echo "::set-output name=release_url::$RELEASE_URL"
       - name: install dependencies
         run: npm ci
       - name: build release
