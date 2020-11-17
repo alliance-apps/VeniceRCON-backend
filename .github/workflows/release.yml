@@ -66,10 +66,10 @@ jobs:
         run: npm install --only=prod
       - name: pack project
         run: |
-          mkdir release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }}
-          cp -r -t release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }} public node_modules lib package*.json README.md config.default.yaml ecosystem.config.js
-          find ./release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }} -name "*.js.map" -type f -delete
-          tar -czvf release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }}.tar.gz release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }}
+          mkdir release-${{ github.event.inputs.version }}
+          cp -r -t release-${{ github.event.inputs.version }} public node_modules lib package*.json README.md config.default.yaml ecosystem.config.js
+          find ./release-${{ github.event.inputs.version }} -name "*.js.map" -type f -delete
+          tar -czvf release-node-${{ matrix.node-version }}-${{ github.event.inputs.version }}.tar.gz release-${{ github.event.inputs.version }}
       - name: upload release asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
