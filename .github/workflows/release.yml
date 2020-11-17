@@ -26,6 +26,7 @@ jobs:
       - shell: bash
         run: |
           echo ${{ steps.create_release.outputs.upload_url }} > url.txt
+          echo "saved url: ${{ steps.create_release.outputs.upload_url }}"
       - name: upload release url
         uses: actions/upload-artifact@v1
         with:
@@ -53,7 +54,9 @@ jobs:
         id: release
         run: |
           RELEASE_URL=`cat release-info/url.txt`
+          echo "Got URL $RELEASE_URL"
           echo "::set-output name=release_url::$RELEASE_URL"
+          echo "saved output: ${{ steps.release.outputs.release_url }}"
       - name: install dependencies
         run: npm ci
       - name: build release
