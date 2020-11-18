@@ -8,6 +8,9 @@ import { SocketManager } from "@service/koa/socket/SocketManager"
 import chalk from "chalk"
 
 export class Connection {
+
+  static RECONNECT_ATTEMPTS = 100
+  static RECONNECT_TIMEOUT = 10 * 1000
   readonly battlefield: Battlefield
   private readonly parent: Instance
   private requestStop: boolean = false
@@ -19,11 +22,21 @@ export class Connection {
       this.parent.log.error(`received error from battlefield socket ${error.message}`)
       this.battlefield.quit()
     })
+    this.battlefield.on("reconnect", ({ success, attempt }) => {
+      if (!success) return
+      this.parent.log.warn(`reconnect attempt ${attempt}/${Connection.RECONNECT_ATTEMPTS} failed`)
+    })
     this.battlefield.on("close", async () => {
       if (this.requestStop) return
       this.parent.log.warn("battlefield server disconnected, reconnecting...")
       await this.state.updateConnectionState(Instance.State.RECONNECTING)
-      await this.battlefield.reconnect()
+      try {
+        await this.battlefield.reconnect(Connection.RECONNECT_ATTEMPTS, Connection.RECONNECT_TIMEOUT)
+      } catch (e) {
+        this.parent.log.error(`was not able to reconnect to the battlefield server after ${Connection.RECONNECT_ATTEMPTS} attempts!`)
+        this.state.updateConnectionState(Instance.State.DISCONNECTED)
+        return
+      }
       this.parent.log.info("battlefield server reconnected!")
       this.state.updateConnectionState(Instance.State.CONNECTED)
     })
