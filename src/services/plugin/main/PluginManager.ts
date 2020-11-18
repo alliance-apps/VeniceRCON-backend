@@ -64,12 +64,18 @@ export class PluginManager {
     await Promise.all(entities.map(entity => this.reloadPlugin(entity)))
     const preRemove = this.plugins.length
     this.plugins = this.plugins.filter(plugin => ids.includes(plugin.id))
+    //check if worker needs to be restarted
     if (
       (this.plugins.length !== preRemove || preRemove !== preAdd) &&
       !this.worker.isStopped
     ) {
       await this.worker.restart()
-    } else if (this.hasActivePlugin && this.worker.isStopped) {
+    //check if worker start conditions are okay
+    } else if (
+      this.hasActivePlugin &&
+      this.worker.isStopped &&
+      this.parent.state.get("state") === Instance.State.CONNECTED
+    ) {
       await this.worker.spawn()
     }
   }
