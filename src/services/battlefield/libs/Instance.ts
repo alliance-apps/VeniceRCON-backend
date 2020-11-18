@@ -47,18 +47,18 @@ export class Instance {
       prependTimeout: this.syncInterval * 1
     })
     this.registerEvents()
-    this.battlefield.on("close", async () => {
+    this.connection.on("disconnected", async () => {
       this.stopUpdateInterval()
       await this.plugin.stop()
     })
-    this.battlefield.on("ready", async () => {
+    this.connection.on("connected", async () => {
       this.startUpdateInterval()
       await this.plugin.start()
     })
     if (props.entity.autostart) this.doAutostart()
   }
 
-  /** battlefield rcon instance */
+  /** retrieves the current battlefield connection */
   get battlefield() {
     return this.connection.battlefield
   }
@@ -336,7 +336,8 @@ export namespace Instance {
     CONNECTED = 2,
     DISCONNECTING = 3,
     DISCONNECTED = 4,
-    RECONNECTING = 5
+    RECONNECTING = 5,
+    RECONNECTING_FAILED = 6
   }
 
   export const VAR_BF3 = [

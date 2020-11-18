@@ -6,8 +6,14 @@ import { InstanceScope } from "@service/permissions/Scopes"
 import { Word } from "vu-rcon/lib/transport/protocol/Word"
 import { SocketManager } from "@service/koa/socket/SocketManager"
 import chalk from "chalk"
+import { EventEmitter } from "typeorm/platform/PlatformTools"
+import { ReconnectEvent } from "vu-rcon/lib/types/Event"
 
-export class Connection {
+export interface Connection {
+  on(event: "connected"|"disconnected", handler: () => void): this
+}
+
+export class Connection extends EventEmitter {
 
   static RECONNECT_ATTEMPTS = 100
   static RECONNECT_TIMEOUT = 10 * 1000
@@ -16,32 +22,66 @@ export class Connection {
   private requestStop: boolean = false
 
   constructor(props: Connection.Props) {
+    super()
     this.battlefield = props.battlefield
     this.parent = props.instance
-    this.battlefield.on("error", async error => {
-      this.parent.log.error(`received error from battlefield socket ${error.message}`)
-      this.battlefield.quit()
-    })
-    this.battlefield.on("reconnect", ({ success, attempt }) => {
-      if (!success) return
-      this.parent.log.warn(`reconnect attempt ${attempt}/${Connection.RECONNECT_ATTEMPTS} failed`)
-    })
-    this.battlefield.on("close", async () => {
-      if (this.requestStop) return
-      this.parent.log.warn("battlefield server disconnected, reconnecting...")
-      await this.state.updateConnectionState(Instance.State.RECONNECTING)
-      try {
-        await this.battlefield.reconnect(Connection.RECONNECT_ATTEMPTS, Connection.RECONNECT_TIMEOUT)
-      } catch (e) {
-        this.parent.log.error(`was not able to reconnect to the battlefield server after ${Connection.RECONNECT_ATTEMPTS} attempts!`)
-        this.state.updateConnectionState(Instance.State.DISCONNECTED)
-        return
-      }
-      this.parent.log.info("battlefield server reconnected!")
-      this.state.updateConnectionState(Instance.State.CONNECTED)
-    })
+    this.battlefield.on("error", this.onError.bind(this))
+    this.battlefield.on("reconnect", this.onReconnect.bind(this))
+    this.battlefield.on("close", this.onClose.bind(this))
     this.battlefield.on("sendData", ({ words }) => this.publishSocketEvent("send", words))
     this.battlefield.on("receiveData", ({ words }) => this.publishSocketEvent("receive", words))
+  }
+
+  /** handles a reconnect event from the server */
+  private async onReconnect({ success, attempt }: ReconnectEvent) {
+    if (!success) return
+    this.parent.log.warn(`reconnect attempt ${attempt}/${Connection.RECONNECT_ATTEMPTS} failed`)
+  }
+
+  /** handles error events from the socket */
+  private async onError(error: Error) {
+    this.parent.log.error(`received error from battlefield socket ${error.message}`)
+    this.battlefield.quit()
+  }
+
+  /** handles connections closed to the battlefield server */
+  private async onClose() {
+    //checks if closing of connection has been requested
+    if (this.requestStop) {
+      const { host, port } = this.battlefield.options
+      this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}!`)
+      this.updateConnectionState(Instance.State.DISCONNECTED)
+      return
+    }
+    //handle reconnect since connection close has not been requested
+    this.parent.log.warn("battlefield server disconnected, reconnecting...")
+    await this.updateConnectionState(Instance.State.RECONNECTING)
+    try {
+      await this.battlefield.reconnect(Connection.RECONNECT_ATTEMPTS, Connection.RECONNECT_TIMEOUT)
+    } catch (e) {
+      this.parent.log.error(`was not able to reconnect to the battlefield server after ${Connection.RECONNECT_ATTEMPTS} attempts!`)
+      this.updateConnectionState(Instance.State.RECONNECTING_FAILED)
+      return
+    }
+    this.parent.log.info("battlefield server reconnected!")
+    this.updateConnectionState(Instance.State.CONNECTED)
+  }
+
+  /**
+   * updates the connection state of the instance and emits events
+   * @param state the current connection state
+   */
+  private updateConnectionState(state: Instance.State) {
+    switch (state) {
+      case Instance.State.CONNECTED:
+        this.emit("connected")
+        break
+      case Instance.State.RECONNECTING:
+      case Instance.State.DISCONNECTED:
+        this.emit("disconnected")
+        break
+    }
+    this.state.updateConnectionState(state)
   }
 
   private publishSocketEvent(type: "send"|"receive", words: Word[]) {
@@ -63,7 +103,7 @@ export class Connection {
     if (this.state.get("state") !== Instance.State.DISCONNECTED)
       throw new Error("instance is not in state disconnected")
     this.requestStop = false
-    this.state.updateConnectionState(Instance.State.CONNECTING)
+    this.updateConnectionState(Instance.State.CONNECTING)
     try {
       const { host, port } = this.battlefield.options
       this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}...`)
@@ -76,21 +116,19 @@ export class Connection {
         throw e
       }
     } catch (e) {
-      this.state.updateConnectionState(Instance.State.DISCONNECTED)
+      this.updateConnectionState(Instance.State.DISCONNECTED)
       throw e
     }
-    this.state.updateConnectionState(Instance.State.CONNECTED)
+    this.updateConnectionState(Instance.State.CONNECTED)
     return this
   }
 
   async stop() {
     this.requestStop = true
-    this.state.updateConnectionState(Instance.State.DISCONNECTING)
+    this.updateConnectionState(Instance.State.DISCONNECTING)
     const { host, port } = this.battlefield.options
     this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}...`)
     await this.battlefield.quit()
-    this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}!`)
-    this.state.updateConnectionState(Instance.State.DISCONNECTED)
     return this
   }
 
