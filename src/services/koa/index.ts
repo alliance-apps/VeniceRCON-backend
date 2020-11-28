@@ -12,8 +12,7 @@ import chalk from "chalk"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
-// tslint:disable-next-line: no-var-requires
-export const io: Server = require("socket.io")(server)
+export let io: Server
 
 export async function initialize() {
 
@@ -37,6 +36,14 @@ export async function initialize() {
     }
   })
 
+  io = new Server(server, {
+    cors: {
+      origin: config.webserver.cors,
+      methods: ["GET", "POST"],
+      credentials: true
+    }
+  })
+
   router.use("/api", (await createApiRoute()).middleware())
   await initSocket(io)
 
@@ -54,7 +61,7 @@ export async function initialize() {
 
   //post init
   return () => {
-    return new Promise(fulfill => {
+    return new Promise<void>(fulfill => {
       server.listen(config.webserver.listenport, () => {
         winston.info(`webserver listening on ${chalk.bold(config.webserver.listenport)}`)
         fulfill()
