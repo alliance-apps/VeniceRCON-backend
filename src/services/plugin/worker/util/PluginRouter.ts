@@ -8,7 +8,7 @@ export class PluginRouter {
   }
 
   _executeRoute(props: PluginWorker.ExecuteRouteProps) {
-    return new Promise(async (fulfill, reject) => {
+    return new Promise<PluginRouterResponse.ReplyData>(async (fulfill, reject) => {
       const response = new PluginRouterResponse(fulfill)
       const method = props.method.toLowerCase()
       if (!(method in this.methods)) return response.send(404)

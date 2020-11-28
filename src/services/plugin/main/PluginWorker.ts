@@ -70,7 +70,7 @@ export class PluginWorker {
    * creates the worker and initiates the messenger
    */
   private createWorker() {
-    return new Promise(async fulfill => {
+    return new Promise<void>(async fulfill => {
       const worker = new Worker(path.join(__dirname, "../worker/worker.js"), { workerData: await this.getWorkerData() })
       this.worker = worker
       let messenger: Messenger

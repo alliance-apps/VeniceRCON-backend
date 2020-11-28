@@ -9,7 +9,7 @@ export class PluginEngine {
   }
 
   requestPlayerPermissions(guid: string) {
-    return new Promise(async fulfill => {
+    return new Promise<any>(async fulfill => {
       try {
         const perms = await this.messenger.send("REQUEST_PERMISSIONS", { guid })
         fulfill(perms)

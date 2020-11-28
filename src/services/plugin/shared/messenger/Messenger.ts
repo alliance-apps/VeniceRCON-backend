@@ -19,7 +19,7 @@ export class Messenger extends EventEmitter {
     const { ready } = props
     if (ready) {
       const resolver: Partial<Messenger.Ready> = {}
-      resolver.ready = new Promise((fulfill, reject) => {
+      resolver.ready = new Promise<any>((fulfill, reject) => {
         resolver.fulfill = fulfill
         resolver.reject = reject
       })
@@ -120,7 +120,7 @@ export class Messenger extends EventEmitter {
   private createAcknowledgeItem(timeout: number, meta: string): Messenger.AcknowledgeItem {
     const id = this.id++
     const item: Partial<Messenger.AcknowledgeItem> = { id }
-    item.promise = new Promise((fulfill, reject) => {
+    item.promise = new Promise<any>((fulfill, reject) => {
       item.fulfill = fulfill
       item.reject = reject
       item.timeout = setTimeout(() => {
@@ -160,7 +160,7 @@ export namespace Messenger {
   export interface Ready {
     resolved: boolean
     ready: Promise<void>
-    fulfill?: () => void
+    fulfill?: (data: void) => void
     reject?: (err: Error) => void
   }
 
