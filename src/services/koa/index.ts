@@ -12,7 +12,13 @@ import chalk from "chalk"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
-export let io: Server
+export let io: Server = new Server(server, {
+  cors: {
+    origin: config.webserver.cors,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+})
 
 export async function initialize() {
 
@@ -33,14 +39,6 @@ export async function initialize() {
       } else {
         throw error
       }
-    }
-  })
-
-  io = new Server(server, {
-    cors: {
-      origin: config.webserver.cors,
-      methods: ["GET", "POST"],
-      credentials: true
     }
   })
 

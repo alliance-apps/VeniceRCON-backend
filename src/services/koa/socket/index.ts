@@ -24,7 +24,7 @@ export async function initialize(server: Server) {
       if (!payload || !payload.id) return done(null, false, "user does not exist")
       const user = await User.findOne({ id: payload.id })
       if (!user) return done(null, false, "user does not exist")
-      return done(null, { user })
+      return done(null, user)
     }
   ))
 
