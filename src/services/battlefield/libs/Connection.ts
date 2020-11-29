@@ -100,8 +100,12 @@ export class Connection extends EventEmitter {
 
   /** connects to the battlefield instance */
   async start() {
-    if (this.state.get("state") !== Instance.State.DISCONNECTED)
-      throw new Error("instance is not in state disconnected")
+    const startStates = [
+      Instance.State.DISCONNECTED,
+      Instance.State.RECONNECTING_FAILED
+    ]
+    if (!startStates.includes(this.state.get("state")))
+      throw new Error(`instance is not in correct state! (state: ${this.state.get("state")})`)
     this.requestStop = false
     this.updateConnectionState(Instance.State.CONNECTING)
     try {
