@@ -68,10 +68,12 @@ export class Instance {
     return this.state.id
   }
 
+  /** instance type */
   get version() {
     return this.state.get("version")
   }
 
+  /** handles autostart after instance has been created */
   private async doAutostart() {
     try {
       await this.start()
@@ -196,6 +198,7 @@ export class Instance {
     this.state.remove()
   }
 
+  /** updates a single variable on the server */
   async updateVariable(key: string, value: any) {
     let val: any
     let varStore: Variable<any>

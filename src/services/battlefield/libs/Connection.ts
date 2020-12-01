@@ -127,6 +127,7 @@ export class Connection extends EventEmitter {
     return this
   }
 
+  /** stops and disconnects the instance */
   async stop() {
     this.requestStop = true
     this.updateConnectionState(Instance.State.DISCONNECTING)
@@ -136,6 +137,7 @@ export class Connection extends EventEmitter {
     return this
   }
 
+  /** tries to detect the server type the instance is running on */
   private async checkServerVersion() {
     try {
       await this.battlefield.getMods()
