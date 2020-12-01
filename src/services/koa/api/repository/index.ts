@@ -2,6 +2,7 @@ import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
 import { perm } from "@service/koa/permission"
 import { PluginRepositoryScope } from "@service/permissions/Scopes"
 import { pluginStore } from "@service/plugin"
+import { PluginStore } from "@service/plugin/store/PluginStore"
 import Router from "koa-joi-router"
 import repositoryRouter from "./repository"
 
@@ -31,6 +32,12 @@ api.route({
   pre: perm(PluginRepositoryScope.CREATE),
   handler: async ctx => {
     const { url, branch, headers } = ctx.request.body
+    try {
+      await PluginStore.verifyProvider({ url, branch, headers })
+    } catch (e) {
+      ctx.body = { message: e.message }
+      return ctx.status = 400
+    }
     const repo = await PluginStoreEntity.from({ url, branch, headers, enabled: false })
     await pluginStore.reload()
     ctx.body = repo

@@ -5,6 +5,7 @@ import { Instance } from "@service/battlefield/libs/Instance"
 import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { instanceManager } from "@service/battlefield"
+import fetch from "node-fetch"
 
 export class PluginStore {
 
@@ -34,7 +35,6 @@ export class PluginStore {
     })
     if (instanceManager) await instanceManager.reloadPlugins()
   }
-
   /** adds or updates a provider with the given entity */
   async updateProvider(entity: PluginStoreEntity) {
     let provider = this.providers.find(provider => provider.id === entity.id)
@@ -73,12 +73,27 @@ export class PluginStore {
       .andWhere("store.enabled = true")
       .getMany()
   }
+
+  /** checks a repository for validity */
+  static async verifyProvider(props: PluginStore.TestProps) {
+    if (!(/^https:\/\/github.com/i).test(props.url))
+      throw new Error("only github as url supported!")
+    const url = Provider.url(props.url, props.branch || "main")
+    const res = await fetch(url, {
+      headers: JSON.parse(props.headers || "{}"),
+      redirect: "follow"
+    })
+    if (res.status < 200 || res.status > 299)
+      throw new Error(`invalid status code from ${url} (code: ${res.status})`)
+    return res.json()
+  }
+
 }
 
 export namespace PluginStore {
   export interface TestProps {
     url: string
     branch?: string
-    header?: string
+    headers?: string
   }
 }

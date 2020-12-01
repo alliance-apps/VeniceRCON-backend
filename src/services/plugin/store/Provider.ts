@@ -26,7 +26,7 @@ export class Provider {
 
   /** url to fetch the repository yaml file from */
   get url() {
-    return `${this.entity.url}/raw/${this.entity.branch}/repository.yaml`
+    return Provider.url(this.entity.url, this.entity.branch)
   }
 
   /** loads all plugins defined in the repository.yaml */
@@ -65,6 +65,10 @@ export class Provider {
       redirect: "follow"
     })
     return response.text()
+  }
+
+  static url(baseUrl: string, branch: string) {
+    return `${baseUrl}/raw/${branch}/repository.yaml`
   }
 
   toJSON() {
