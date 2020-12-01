@@ -3,6 +3,7 @@ import { Config } from "@entity/Config"
 import koaJwt from "koa-jwt"
 import { config } from "@service/config"
 
+const refreshCache: Record<number, string> = {}
 
 /**
  * creates a new token from given properties
@@ -39,9 +40,16 @@ export async function jwtMiddleware(opts: Partial<koaJwt.Options> = {}) {
       const now = Math.floor(Date.now() / 1000)
       if (token.iat < now - maxAge * 24 * 60 * 60) return true
       if (token.iat < now - sendRefresh * 24 * 60 * 60) {
-        ctx.set("Authorization", `Bearer ${await createToken({
-          user: { id: token.id, username: token.username }
-        })}`)
+        //set the refresh token in ram cache in order to not need to recalculate token
+        const { id } = token
+        if (!refreshCache[id]) {
+          refreshCache[id] = await createToken({
+            user: { id, username: token.username }
+          })
+          //delete the token after an hour from the refreshcache
+          setTimeout(() => delete refreshCache[id], 60 * 60 * 1000)
+        }
+        ctx.set("Authorization", `Bearer ${refreshCache[id]}`)
       }
       return false
     }

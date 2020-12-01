@@ -34,6 +34,16 @@ Authorization: Bearer {{$dotenv jwt2}}
   "token": "367e20ae5b0de8b0ac440bc0dfc0d46a"
 }
 
+### changes the password for the current login token
+POST {{$dotenv url}}/api/auth/update-password
+Content-Type: application/json
+Authorization: Bearer {{$dotenv jwt2}}
+
+{
+  "oldPassword": "",
+  "newPassword": ""
+}
+
 ### performs a search for a player, retrieves id, name, guid
 POST {{$dotenv url}}/api/auth/search-player
 Authorization: Bearer {{$dotenv jwt}}
