@@ -33,3 +33,35 @@ Authorization: Bearer {{$dotenv jwt2}}
 {
   "token": "367e20ae5b0de8b0ac440bc0dfc0d46a"
 }
+
+### performs a search for a player, retrieves id, name, guid
+POST {{$dotenv url}}/api/auth/search-player
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "name": "Mu"
+}
+
+
+### retrieves all bindings from the current user
+GET {{$dotenv url}}/api/auth/binding
+Authorization: Bearer {{$dotenv jwt}}
+
+### assigns a player to this user
+POST {{$dotenv url}}/api/auth/binding
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "playerId": 1
+}
+
+### removes a player binding from the current user
+DELETE {{$dotenv url}}/api/auth/binding
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "playerId": 1
+}
