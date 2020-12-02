@@ -68,10 +68,5 @@ Content-Type: application/json
 }
 
 ### removes a player binding from the current user
-DELETE {{$dotenv url}}/api/auth/binding
+DELETE {{$dotenv url}}/api/auth/binding/1
 Authorization: Bearer {{$dotenv jwt}}
-Content-Type: application/json
-
-{
-  "playerId": 1
-}

@@ -120,6 +120,7 @@ router.route({
       return ctx.status = 403
     }
     await user.updatePassword(ctx.request.body.newPassword)
+    await user.save()
     ctx.status = 200
   }
 })
@@ -199,34 +200,24 @@ router.route({
   }
 })
 
-router.route({
-  method: "DELETE",
-  path: "/binding",
-  validate: {
-    type: "json",
-    body: Joi.object({
-      playerId: Joi.number().positive().required()
-    }).required()
-  },
-  handler: async ctx => {
-    if (!ctx.state.token) return ctx.status = 401
-    const { playerId } = ctx.request.body
-    const { id } = ctx.state.token
-    const [player, user] = await Promise.all([
-      Player.findOne({ id: playerId }),
-      User.findOne({ id })
-    ])
-    if (!player || !user) {
-      if (!player) ctx.body = { message: `no player with id "${playerId}" found!` }
-      if (!user) ctx.body = { message: `no user with id "${id}" found!` }
-      return ctx.status = 404
-    }
-    const players = await user.players
-    if (!players.some(p => p.id === playerId)) return ctx.status = 200
-    await user.delPlayer(player)
-    return ctx.status = 200
+router.delete("/binding/:playerId", async ctx => {
+  if (!ctx.state.token) return ctx.status = 401
+  const playerId = parseInt(ctx.param.playerId, 10)
+  if (playerId <= 0 || isNaN(playerId)) return ctx.status = 400
+  const { id } = ctx.state.token!
+  const [player, user] = await Promise.all([
+    Player.findOne({ id: playerId }),
+    User.findOne({ id })
+  ])
+  if (!player || !user) {
+    if (!player) ctx.body = { message: `no player with id "${playerId}" found!` }
+    if (!user) ctx.body = { message: `no user with id "${id}" found!` }
+    return ctx.status = 404
   }
+  const players = await user.players
+  if (!players.some(p => p.id === playerId)) return ctx.status = 200
+  await user.delPlayer(player)
+  return ctx.status = 200
 })
-
 
 export default router
