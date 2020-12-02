@@ -1,5 +1,6 @@
 import { Permission } from "@entity/Permission"
 import { User } from "@entity/User"
+import winston from "winston"
 
 export class PermissionCache {
 
@@ -22,18 +23,21 @@ export class PermissionCache {
    * @param id
    */
   delUser(user: User|number) {
-    delete this.cache[this.getUserId(user)]
+    const id = this.getUserId(user)
+    winston.verbose(`removing user with id ${id} from permission cache`)
+    delete this.cache[id]
   }
 
   /**
    * adds a new user to the cache with set permisions
-   * @param userId userid to cache
+   * @param user userid to cache
    * @param permissions permissions the user has
    */
   addCache(user: User|number, permissions: Promise<Permission[]>) {
-    const userId = this.getUserId(user)
-    this.cache[userId] = new CacheItem(userId, permissions)
-    return this.cache[userId]
+    const id = this.getUserId(user)
+    winston.verbose(`adding user with id ${id} to permission cache`)
+    this.cache[id] = new CacheItem(id, permissions)
+    return this.cache[id]
   }
 
   /**
@@ -52,6 +56,7 @@ export class PermissionCache {
    */
   getUser(user: User|number) {
     if (this.hasCachedUser(user)) {
+      winston.verbose(`load cached permission for user ${this.getUserId(user)}`)
       return this.getCache(user)
     } else {
       return this.addCache(user, this.getUserPermissions(user))

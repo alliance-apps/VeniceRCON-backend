@@ -16,8 +16,10 @@ api.get("/", perm(InstanceUserScope.ACCESS), async ctx => {
 
 api.delete("/", perm(InstanceUserScope.REMOVE), async ctx => {
   const { userId, instanceId } = ctx.state.permission!
-  await permissionManager.removeInstanceAccess(userId, instanceId)
-  ctx.status = 200
+  const ok = await permissionManager.removeInstanceAccess(userId, instanceId)
+  if (ok) return ctx.status = 200
+  ctx.status = 400
+  ctx.body = { message: "no user has been found with access to this instance" }
 })
 
 api.route({
