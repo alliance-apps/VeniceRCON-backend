@@ -2,6 +2,7 @@ import { Instance } from "./Instance"
 import { socketManager } from "@service/koa/socket"
 import { EventScope } from "@service/permissions/Scopes"
 import { Kill } from "@entity/Kill"
+import { PlayerOnKill } from "vu-rcon/lib/types/Event"
 
 export class KillFeedManager {
 
@@ -44,11 +45,13 @@ export class KillFeedManager {
 
   private async initialize() {
     this.feed = await this.getFeed()
-    this.battlefield.on("kill", async ev => {
-      const { killer, killed } = await this.parent.getPlayerIdsByName({ killer: ev.killer, killed: ev.killed })
-      if (!killed) return this.parent.log.error(`could not find killed player with name ${ev.killed}`)
-      this.addKill(await Kill.from({ ...ev, killed, killer, instance: this.id }))
-    })
+    this.battlefield.on("kill", this.onKill.bind(this))
+  }
+
+  private async onKill(ev: PlayerOnKill) {
+    const { killer, killed } = await this.parent.getPlayerIdsByName({ killer: ev.killer, killed: ev.killed })
+    if (!killed) return this.parent.log.error(`could not find killed player with name ${ev.killed}`)
+    this.addKill(await Kill.from({ ...ev, killed, killer, instance: this.id }))
   }
 }
 

@@ -13,6 +13,9 @@ export class User extends AbstractEntity<User> {
   @Column({ unique: true })
   username!: string
 
+  @Column({ nullable: true })
+  email!: string|null
+
   @Column()
   password!: string
 
@@ -60,6 +63,7 @@ export class User extends AbstractEntity<User> {
   static async from(props: User.ICreate) {
     const user = new User()
     user.username = props.username
+    if (props.email) user.email = props.email
     await user.updatePassword(props.password)
     return user.save()
   }
@@ -71,5 +75,6 @@ export namespace User {
   export interface ICreate {
     username: string
     password: string
+    email?: string
   }
 }

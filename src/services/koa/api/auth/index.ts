@@ -45,6 +45,7 @@ router.route({
     body: Joi.object({
       username: Joi.string().min(3).max(64).required(),
       password: Joi.string().min(6).max(64).required(),
+      email: Joi.string().email().optional(),
       token: Joi.string().hex().required()
     }).required()
   },
@@ -62,7 +63,8 @@ router.route({
     }
     const user = await User.from({
       username: ctx.request.body.username,
-      password: ctx.request.body.password
+      password: ctx.request.body.password,
+      email: ctx.request.body.email
     })
     await invite.consume(user)
     ctx.body = { token: await createToken({ user }) }
@@ -98,28 +100,34 @@ router.route({
 
 /**
  * update current password
+ * allows newPassword to be undefined to not modify it
+ * allows newEmail to be undefined to not modify it or null to delete it
  */
 router.route({
   method: "POST",
-  path: "/update-password",
+  path: "/update-self",
   validate: {
     type: "json",
     body: Joi.object({
-      oldPassword: Joi.string().min(6).max(64).required(),
-      newPassword: Joi.string().min(6).max(64).required()
+      currentPassword: Joi.string().min(1).max(256).required(),
+      newPassword: Joi.string().min(6).max(64).optional(),
+      newEmail: Joi.string().email().optional().allow(null)
     }).required()
   },
   handler: async ctx => {
     if (!ctx.state.token) return ctx.status = 401
     const user = await User.findOne({ id: ctx.state.token.id })
     if (!user) return ctx.status = 401
+    const { currentPassword, newPassword, newEmail } = ctx.request.body
     try {
-      await user.validatePassword(ctx.request.body.oldPassword)
+      await user.validatePassword(currentPassword)
     } catch (e) {
       ctx.body = { message: "current password invalid"}
       return ctx.status = 403
     }
-    await user.updatePassword(ctx.request.body.newPassword)
+    if (!newPassword || newEmail === undefined) return ctx.status = 200
+    if (newPassword) await user.updatePassword(newPassword)
+    if (newEmail !== undefined) user.email = newEmail
     await user.save()
     ctx.status = 200
   }

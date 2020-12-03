@@ -3,6 +3,7 @@ import { ChatMessage } from "@entity/ChatMessage"
 import { Player } from "@entity/Player"
 import { socketManager } from "@service/koa/socket"
 import { EventScope } from "@service/permissions/Scopes"
+import { PlayerOnChat } from "vu-rcon/lib/types/Event"
 
 export class ChatManager {
 
@@ -45,19 +46,21 @@ export class ChatManager {
 
   private async initialize() {
     this.messages = await this.getMessages()
-    this.battlefield.on("chat", async ev => {
-      let player: Player|undefined
-      if (ev.player !== "server") {
-        player = await this.parent.getPlayerByName(ev.player)
-      }
-      this.addMessage(await ChatMessage.from({
-        instance: this.id,
-        player,
-        displayName: ev.player,
-        message: ev.msg,
-        subset: ev.subset
-      }))
-    })
+    this.battlefield.on("chat", this.onMessage.bind(this))
+  }
+
+  private async onMessage(ev: PlayerOnChat) {
+    let player: Player|undefined
+    if (ev.player !== "server") {
+      player = await this.parent.getPlayerByName(ev.player)
+    }
+    this.addMessage(await ChatMessage.from({
+      instance: this.id,
+      player,
+      displayName: ev.player,
+      message: ev.msg,
+      subset: ev.subset
+    }))
   }
 }
 
