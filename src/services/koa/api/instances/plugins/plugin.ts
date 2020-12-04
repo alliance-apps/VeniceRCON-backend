@@ -21,14 +21,17 @@ api.route({
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {
     const plugin = await ctx.state.plugin!
-    if (!plugin.meta.vars) return ctx.status = 400
+    if (!plugin.meta.vars)  {
+      ctx.body = { message: "script has no configuration" }
+      return ctx.status = 400
+    }
     try {
       const validated = await checkVariableSchema(plugin.meta.vars, ctx.request.body)
       await plugin.updateConfig(validated)
       ctx.status = 200
     } catch (e) {
       ctx.status = 400
-      ctx.body = e.message
+      ctx.body = { message: e.message }
     }
   }
 })

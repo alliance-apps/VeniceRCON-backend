@@ -105,14 +105,12 @@ router.route({
   handler: async ctx => {
     const invite = await Invite.findOne({ token: ctx.request.body.token, userId: IsNull() })
     if (!invite) {
-      ctx.status = 400
       ctx.body = { message: "invalid token or token has already been used"}
-      return
+      return ctx.status = 400
     }
     if (await User.findOne({ username: ctx.request.body.username })) {
-      ctx.status = 400
       ctx.bdoy = { message: "username already taken" }
-      return
+      return ctx.status = 400
     }
     const user = await User.from({
       username: ctx.request.body.username,
@@ -142,9 +140,8 @@ router.route({
     if (!user) return ctx.status = 401
     const invite = await Invite.findOne({ token: ctx.request.body.token, userId: IsNull() })
     if (!invite || await permissionManager.hasInstanceAccess(user.id, invite.instanceId)) {
-      ctx.status = 400
       ctx.body = { message: "invalid token, token has already been used or you already have access to this instance"}
-      return
+      return ctx.status = 400
     }
     await invite.consume(user)
     ctx.status = 200
@@ -269,7 +266,10 @@ router.route({
 router.delete("/binding/:playerId", async ctx => {
   if (!ctx.state.token) return ctx.status = 401
   const playerId = parseInt(ctx.param.playerId, 10)
-  if (playerId <= 0 || isNaN(playerId)) return ctx.status = 400
+  if (playerId <= 0 || isNaN(playerId)) {
+    ctx.body = { message: "Invalid PlayerId provided! expected positive number!" }
+    return ctx.status = 400
+  }
   const { id } = ctx.state.token!
   const [player, user] = await Promise.all([
     Player.findOne({ id: playerId }),

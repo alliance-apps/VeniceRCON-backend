@@ -46,8 +46,12 @@ api.route({
 
 
 api.param("repositoryId", async (id, ctx, next) => {
-  if (isNaN(parseInt(id, 10))) return ctx.status = 400
-  const repository = pluginStore.getProvider(parseInt(id, 10))
+  const repositoryId = parseInt(id, 10)
+  if (isNaN(repositoryId) || repositoryId <= 0) {
+    ctx.body = { message: "invalid repositoryId provided, expected positive number" }
+    return ctx.status = 400
+  }
+  const repository = pluginStore.getProvider(repositoryId)
   if (!repository) return ctx.status = 404
   ctx.state.repository = repository
   await next()

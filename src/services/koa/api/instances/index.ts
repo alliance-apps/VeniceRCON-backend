@@ -54,7 +54,11 @@ api.get("/", async ctx => {
 })
 
 api.param("instanceId", async (id, ctx, next) => {
-  if (isNaN(parseInt(id, 10))) return ctx.status = 400
+  const instanceId = parseInt(id, 10)
+  if (isNaN(instanceId) || instanceId <= 0) {
+    ctx.body = { message: "Invalid instanceId provided! expected positive number!" }
+    return ctx.status = 400
+  }
   try {
     const instance = instanceManager.getInstanceById(parseInt(id, 10))
     ctx.state.instance = instance
