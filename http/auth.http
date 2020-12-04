@@ -7,6 +7,24 @@ Content-Type: application/json
   "password": "{{$dotenv password}}"
 }
 
+### forgot password route
+POST {{$dotenv url}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv email}}"
+}
+
+### updates the own user
+POST {{$dotenv url}}/api/auth/update-self
+Authorization: Bearer {{$dotenv jwt2}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{$dotenv password}}",
+  "email": "{{$dotenv email}}"
+}
+
 ### gets information about the token
 GET {{$dotenv url}}/api/auth/whoami
 Authorization: Bearer {{$dotenv jwt}}
@@ -21,8 +39,8 @@ Content-Type: application/json
 
 {
   "username": "{{$dotenv username}}",
-  "password": "{{$dotenv username}}",
-  "token": "373d562730c79bdb6bf39c63d56f2c49"
+  "password": "{{$dotenv password}}",
+  "token": "{{$dotenv invite_token}}"
 }
 
 ### invites an existing user via invite token

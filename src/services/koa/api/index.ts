@@ -9,6 +9,7 @@ import { config } from "@service/config"
 import { jwtMiddleware } from "../jwt"
 import { PluginRepositoryScope } from "@service/permissions/Scopes"
 import { perm } from "../permission"
+import { isEnabled } from "@service/mail"
 
 export async function createRoute() {
   const router = Router()
@@ -19,7 +20,9 @@ export async function createRoute() {
   }))
 
   router.get("/", ctx => {
-    ctx.body = { "name": "VeniceRCON-api" }
+    const features = []
+    if (isEnabled()) features.push("forgot-password")
+    ctx.body = { name: "VeniceRCON-api", features }
     ctx.status = 200
   })
 

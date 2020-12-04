@@ -41,3 +41,20 @@ instance:
   plugins:
     #location of the directory to read plugins from
     baseDir: "./plugins"
+#smtp settings in order to send forgot-password requests
+smtp:
+  #enable this feature?
+  enable: false
+  #email address to send mails from
+  senderAddress: "foo@example.com"
+  #connection options, for more informations see https://nodemailer.com/smtp/
+  options:
+    host: "smpt.example.com"
+    port: 587
+    auth:
+      user: ""
+      pass: ""
+  content:
+    #you can use wildcards  %username% and %password% for subject and text
+    subject: "Forgot Password request"
+    text: "Hello %username%, your new password is %password%"

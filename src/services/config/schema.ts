@@ -2,6 +2,7 @@ import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionO
 import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions"
 import { Joi } from "koa-joi-router"
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import SMTPTransport from "nodemailer/lib/smtp-transport"
 
 export const schema = Joi.object({
   database: Joi.object({
@@ -35,6 +36,15 @@ export const schema = Joi.object({
         branch: Joi.string().optional().default("master"),
         headers: Joi.any()
       })).optional().default([])
+    })
+  }),
+  smtp: Joi.object({
+    enable: Joi.boolean().optional().default(false),
+    senderAddress: Joi.string().optional().default("foo@example.com"),
+    options: Joi.any(),
+    content: Joi.object({
+      subject: Joi.string().optional().default("Forgot Password request"),
+      text: Joi.string().optional().default("Hello %username%,\na password reset has been requested for your account!\nYour new password is:\n\n%password%")
     })
   })
 })
@@ -72,6 +82,15 @@ export interface Configuration {
         branch: string
         headers?: Record<string, string>
       }[]
+    }
+  },
+  smtp: {
+    enable: boolean,
+    senderAddress: string
+    options: SMTPTransport
+    content: {
+      subject: string
+      text: string
     }
   }
 }

@@ -5,10 +5,63 @@ import { createToken } from "@service/koa/jwt"
 import { permissionManager } from "@service/permissions"
 import { Invite } from "@entity/Invite"
 import { FindOperator, IsNull, Like } from "typeorm"
+import ratelimit from "koa-ratelimit"
+import { isEnabled, sendMail } from "@service/mail"
+import { config } from "@service/config"
+import winston from "winston"
+import { randomBytes } from "crypto"
 
 
 const { Joi } = Router
 const router = Router()
+
+router.route({
+  method: "POST",
+  path: "/forgot-password",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      email: Joi.string().required(),
+    })
+  },
+  pre: ratelimit({
+    driver: "memory",
+    db: new Map(),
+    //3 requests per 15 minutes
+    duration: 15 * 60 * 1000,
+    max: 3,
+    errorMessage: "Sometimes You Just Have to Slow Down.",
+    id: ctx => ctx.ip,
+    disableHeader: true
+  }),
+  handler: async ctx => {
+    if (!isEnabled()) return ctx.status = 503
+    const { email } = ctx.request.body
+    winston.info(`${ctx.ip} requested forgot-password for email ${email}`)
+    const user = await User.findOne({ email })
+    //dont expose informations that the user has not been found or no email address is available
+    if (!user) {
+      winston.info(`email "${email}" not found which has been requested by ${ctx.ip}`)
+      return ctx.status = 200
+    }
+    const password = randomBytes(6).toString("base64")
+    try {
+      const replace = (text: string) => text.replace(/%username%/g, user.username).replace(/%password%/g, password)
+      await user.updatePassword(password)
+      await sendMail(
+        email,
+        replace(config.smtp.content.subject),
+        replace(config.smtp.content.text)
+      )
+      await user.save()
+      winston.info(`sent new password for ${user.username} to ${email} from requester ${ctx.ip}`)
+      ctx.status = 200
+    } catch (e) {
+      winston.error(e)
+      ctx.status = 500
+    }
+  }
+})
 
 /**
  * login to a specific user account
@@ -100,8 +153,8 @@ router.route({
 
 /**
  * update current password
- * allows newPassword to be undefined to not modify it
- * allows newEmail to be undefined to not modify it or null to delete it
+ * allows password to be undefined to not modify it
+ * allows email to be undefined to not modify it or null to delete it
  */
 router.route({
   method: "POST",
@@ -110,24 +163,24 @@ router.route({
     type: "json",
     body: Joi.object({
       currentPassword: Joi.string().min(1).max(256).required(),
-      newPassword: Joi.string().min(6).max(64).optional(),
-      newEmail: Joi.string().email().optional().allow(null)
+      password: Joi.string().min(6).max(64).optional(),
+      email: Joi.string().email().optional().allow(null)
     }).required()
   },
   handler: async ctx => {
     if (!ctx.state.token) return ctx.status = 401
     const user = await User.findOne({ id: ctx.state.token.id })
     if (!user) return ctx.status = 401
-    const { currentPassword, newPassword, newEmail } = ctx.request.body
+    const { currentPassword, password, email } = ctx.request.body
     try {
       await user.validatePassword(currentPassword)
     } catch (e) {
       ctx.body = { message: "current password invalid"}
       return ctx.status = 403
     }
-    if (!newPassword || newEmail === undefined) return ctx.status = 200
-    if (newPassword) await user.updatePassword(newPassword)
-    if (newEmail !== undefined) user.email = newEmail
+    if (!password && email === undefined) return ctx.status = 200
+    if (password) await user.updatePassword(password)
+    if (email !== undefined) user.email = email
     await user.save()
     ctx.status = 200
   }
@@ -138,8 +191,13 @@ router.route({
  */
 router.get("/whoami", async ctx => {
   if (!ctx.state.token) return ctx.status = 401
-  const permissions = await permissionManager.getPermissions(ctx.state.token.id)
+  const [permissions, user] = await Promise.all([
+    permissionManager.getPermissions(ctx.state.token.id),
+    User.findOne({ id: ctx.state.token.id })
+  ])
+  if (!user) return ctx.status = 401
   ctx.body = {
+    email: user.email,
     permissions: permissions.map(p => ({ instance: p.instanceId, root: p.root, scopes: p.getScopes() })),
     token: ctx.state.token
   }

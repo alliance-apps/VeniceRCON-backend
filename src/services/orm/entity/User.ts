@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToMany, JoinTable } from "typeorm"
+import { Entity, Column, OneToMany, ManyToMany, JoinTable, Index } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { hash, compare } from "bcrypt"
 import { Permission } from "./Permission"
@@ -13,7 +13,8 @@ export class User extends AbstractEntity<User> {
   @Column({ unique: true })
   username!: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "varchar", length: 255 })
+  @Index({ unique: true, where: "email IS NOT NULL" })
   email!: string|null
 
   @Column()
