@@ -85,7 +85,7 @@ export class PluginStore {
     })
     if (res.status < 200 || res.status > 299)
       throw new Error(`invalid status code from ${url} (code: ${res.status})`)
-    return res.json()
+    return res.text()
   }
 
 }
