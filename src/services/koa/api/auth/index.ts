@@ -169,9 +169,7 @@ router.route({
     const user = await User.findOne({ id: ctx.state.token.id })
     if (!user) return ctx.status = 401
     const { currentPassword, password, email } = ctx.request.body
-    try {
-      await user.validatePassword(currentPassword)
-    } catch (e) {
+    if (!await user.validatePassword(currentPassword)) {
       ctx.body = { message: "current password invalid"}
       return ctx.status = 403
     }
