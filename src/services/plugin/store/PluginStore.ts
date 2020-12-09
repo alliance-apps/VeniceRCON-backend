@@ -6,6 +6,7 @@ import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { instanceManager } from "@service/battlefield"
 import fetch from "node-fetch"
+import { Repository } from "./Repository"
 
 export class PluginStore {
 
@@ -63,6 +64,20 @@ export class PluginStore {
   /** retrieves a specific store by its nmae */
   getProvider(id: number) {
     return this.providers.find(p => p.id === id)
+  }
+
+  /** retrieves a plugin instance by its uuid */
+  getPluginByUUID(uuid: string) {
+    let plugin: Repository|undefined
+    this.providers.some(provider => {
+      const repo = provider.plugins.find(plugin => plugin.uuid === uuid)
+      if (repo) {
+        plugin = repo
+        return true
+      }
+      return false
+    })
+    return plugin
   }
 
   /** retrieves all plugins from a specific instance */

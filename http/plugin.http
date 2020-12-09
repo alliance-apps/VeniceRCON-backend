@@ -1,7 +1,6 @@
 @instanceId=2
 @pluginId=1
-@pluginStore=1
-@pluginName=metrics
+@uuid=cab73fa57e643c795c0789f0acac5496
 
 ### retrieve a list of useable plugins
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins
@@ -37,5 +36,5 @@ GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins/store
 Authorization: Bearer {{$dotenv jwt}}
 
 ### downloads a plugin
-POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins/store/{{pluginStore}}/{{pluginName}}
+POST {{$dotenv url}}/api/instances/{{instanceId}}/plugins/store/{{uuid}}
 Authorization: Bearer {{$dotenv jwt}}
