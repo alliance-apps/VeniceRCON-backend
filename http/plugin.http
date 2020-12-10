@@ -1,6 +1,6 @@
 @instanceId=2
 @pluginId=1
-@uuid=cab73fa57e643c795c0789f0acac5496
+@uuid=2978958113a65be4f18e7f48e566db43
 
 ### retrieve a list of useable plugins
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins

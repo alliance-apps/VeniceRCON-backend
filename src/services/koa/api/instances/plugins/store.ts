@@ -18,6 +18,7 @@ api.post("/:uuid", perm(PluginScope.CREATE), async ctx => {
     await plugin.downloadTo(instance)
     ctx.status = 200
   } catch (e) {
+    ctx.status = 500
     instance.log.error(`could not download plugin with uuid ${uuid}`)
     instance.log.error(e)
   }

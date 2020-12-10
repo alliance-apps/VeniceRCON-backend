@@ -124,7 +124,7 @@ export class Plugin {
   }
 
   checkUpdate() {
-    const store = pluginStore.getProvider(this.entity.storeId)
+    const store = pluginStore.getProvider(this.entity.storeId || 0)
     if (!store) return "0.0.0"
     const plugin = store.getPlugin(this.name)
     if (!plugin) return "0.0.0"
@@ -160,7 +160,7 @@ export namespace Plugin {
 
   export interface Info {
     id: number
-    store: number
+    store: number|null
     storeVersion: string
     uuid: string
     name: string

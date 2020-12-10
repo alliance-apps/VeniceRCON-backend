@@ -1,13 +1,11 @@
 import { PluginSchema } from "./schema"
-import fetch from "node-fetch"
-import unzipper from "unzipper"
 import path from "path"
 import { Instance } from "@service/battlefield/libs/Instance"
 import { pluginStore } from "../"
 import { promises as fs } from "fs"
-import { Provider } from "./Provider"
-import { Plugin as PluginEntity } from "@entity/Plugin"
+import { Provider } from "./provider/Provider"
 import { createHash } from "crypto"
+import { Plugin as PluginEntity } from "@entity/Plugin"
 
 export class Repository {
 
@@ -34,19 +32,25 @@ export class Repository {
     this.uuid = createHash("md5").update(`${this.provider.id.toString()}.${this.name}`).digest("hex")
   }
 
-  /** url to the repository archive file */
-  get url() {
-    return `${this.repository}/archive/${this.commit}.zip`
-  }
-
-  /** fetches the repositories archive file via http request */
-  private fetchArchive() {
-    return fetch(this.url)
-  }
-
   /** retrieves folder path for this plugin for the specified instance */
   private getDownloadPath(instance: Instance) {
     return path.join(pluginStore.getBaseDir(instance), this.uuid)
+  }
+
+  /** creates basic internal stuff for this repo */
+  private async initPluginFolder(folder: string, uuid: string) {
+    const pluginLocation = path.join(folder, uuid)
+    const metaLocation = path.join(pluginLocation, Repository.internals.folder)
+    try {
+      await fs.stat(metaLocation)
+      return false
+    } catch (e) {
+      if (e.code !== "ENOENT") throw e
+      await fs.mkdir(folder)
+      await fs.mkdir(pluginLocation)
+      await fs.mkdir(metaLocation)
+      return true
+    }
   }
 
   /**
@@ -54,31 +58,26 @@ export class Repository {
    * @param instance instance to install the plugin to
    */
   async downloadTo(instance: Instance) {
-    await PluginEntity.getPluginWithUpsert({
+    const location = this.getDownloadPath(instance)
+    const created = await this.initPluginFolder(pluginStore.getBaseDir(instance), this.uuid)
+    const storeEntity = this.provider.entity
+    const entity = await PluginEntity.getPluginWithUpsert({
       instance: instance.id,
       name: this.name,
-      store: this.provider.entity,
+      store: storeEntity.id > 0 ? storeEntity : null,
       uuid: this.uuid
     })
-    const location = this.getDownloadPath(instance)
-    const res = await this.fetchArchive()
-    const data = await unzipper.Open.buffer(await res.buffer())
-    //manipulate directory path
-    data.files.forEach(f => f.path = f.path.split("/").slice(1).join("/"))
-    await data.extract({ path: location })
-    await this.initPluginFolder(location)
-    await instance.plugin.reloadPlugins()
-  }
-
-  /** creates basic internal stuff for this repo */
-  private async initPluginFolder(folder: string) {
-    const location = path.join(folder, Repository.internals.folder)
     try {
-      await fs.stat(location)
+      await this.provider.downloadPlugin(this, location)
     } catch (e) {
-      if (e.code !== "ENOENT") throw e
-      await fs.mkdir(location)
+      if (created) await Promise.all([
+        fs.rm(location, { recursive: true, force: true }),
+        entity.remove()
+      ])
+      instance.log.error(`could not download plugin uuid "${this.uuid}", ${e.message}`)
+      throw e
     }
+    await instance.plugin.reloadPlugins()
   }
 
   /**

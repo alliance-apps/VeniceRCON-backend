@@ -11,7 +11,6 @@ export class PluginManager {
 
   readonly parent: Instance
   readonly baseDir: string
-  private shouldRun: boolean = false
   private plugins: Plugin[] = []
   readonly worker: PluginWorker
 
@@ -42,13 +41,11 @@ export class PluginManager {
 
   /** stops the worker */
   stop() {
-    this.shouldRun = false
     return this.worker.stop()
   }
 
   /** starts the worker */
   async start() {
-    this.shouldRun = true
     if (this.plugins.length === 0) return
     await this.worker.spawn()
   }
@@ -84,6 +81,9 @@ export class PluginManager {
   private async reloadPlugin(entity: PluginEntity) {
     let plugin = this.plugins.find(plugin => plugin.id === entity.id)
     if (!plugin) {
+      //plugin has been removed
+      if (!(await this.checkPreconditionPlugin(entity.uuid)))
+        return this.parent.log.warn(`not loading plugin uuid ${entity.uuid} precondition failed`)
       const meta = await this.getMeta(entity)
       plugin = new Plugin({ meta, entity, parent: this })
       this.plugins.push(plugin)
@@ -103,37 +103,19 @@ export class PluginManager {
     }
   }
 
-  private getMeta(entity: PluginEntity) {
-    return loadPluginMeta(path.join(this.baseDir, entity.uuid, "meta.yaml"))
+  /** checks if the folder for a plugin exists */
+  private async checkPreconditionPlugin(uuid: string) {
+    try {
+      await fs.stat(path.join(this.baseDir, uuid))
+      return true
+    } catch (e) {
+      if (e.code === "ENOENT") return false
+      throw e
+    }
   }
 
-  /** reloads all plugins for this instance from disk */
-  async reloadPluginsOld() {
-    const entities = await pluginStore.getPluginsByInstance(this.parent)
-    const enabledUids = entities.map(e => e.uuid)
-    const folders = (await fs.readdir(this.baseDir))
-      .filter(folder => enabledUids.includes(folder))
-    await Promise.allSettled(
-      folders.map(async uuid => {
-        const base = path.join(this.baseDir, uuid)
-        try {
-          const entity = await PluginEntity.findOneOrFail({ uuid })
-          const plugin = new Plugin({
-            meta: await loadPluginMeta(path.join(base, "meta.yaml")),
-            parent: this,
-            entity
-          })
-          if (!plugin.isCompatible())
-            return this.parent.log.info(`ignoring plugin ${uuid} because backend is incompatible`)
-          this.plugins.push(plugin)
-        } catch (e) {
-          this.parent.log.error(`could not load plugin from ${base}`)
-          this.parent.log.error(e)
-        }
-      })
-    )
-    //start the worker again
-    if (this.shouldRun) await this.worker.spawn()
+  private getMeta(entity: PluginEntity) {
+    return loadPluginMeta(path.join(this.baseDir, entity.uuid, "meta.yaml"))
   }
 
   /** retrieves a plugin by its name */

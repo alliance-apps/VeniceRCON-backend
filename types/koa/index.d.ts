@@ -3,7 +3,7 @@ import { JsonWebToken } from "@service/koa/jwt"
 import { Permission } from "@entity/Permission"
 import { Battlefield } from "vu-rcon"
 import { Plugin } from "@service/plugin/main/Plugin"
-import { Provider } from "@service/plugin/store/Provider"
+import { Provider } from "@service/plugin/store/provider/Provider"
 
 declare module "koa" {
 
