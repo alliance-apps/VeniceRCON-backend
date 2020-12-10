@@ -6,6 +6,7 @@ import { promises as fs } from "fs"
 import { Provider } from "./provider/Provider"
 import { createHash } from "crypto"
 import { Plugin as PluginEntity } from "@entity/Plugin"
+import { createFolderSave } from "util/createFolder"
 
 export class Repository {
 
@@ -46,9 +47,9 @@ export class Repository {
       return false
     } catch (e) {
       if (e.code !== "ENOENT") throw e
-      await fs.mkdir(folder)
-      await fs.mkdir(pluginLocation)
-      await fs.mkdir(metaLocation)
+      await createFolderSave(folder)
+      await createFolderSave(pluginLocation)
+      await createFolderSave(metaLocation)
       return true
     }
   }
