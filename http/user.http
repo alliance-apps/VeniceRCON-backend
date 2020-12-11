@@ -28,6 +28,5 @@ Content-Type: application/json
 Authorization: Bearer {{$dotenv jwt}}
 
 {
-  "add": ["INSTANCE#ACCESS", "INSTANCE#UPDATE"],
-  "remove": ["INSTANCE#UPDATE"]
+  "scopes": ["INSTANCE#ACCESS"]
 }

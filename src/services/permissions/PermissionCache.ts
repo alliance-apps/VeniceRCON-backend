@@ -92,7 +92,7 @@ export class CacheItem {
    * @param scope scope to check
    */
   async hasPermissions(instance: number|true, scope: bigint) {
-    return (await this.getInstancePermission(instance)) & scope
+    return ((await this.getInstancePermission(instance)) & scope) === scope
   }
 
   /**

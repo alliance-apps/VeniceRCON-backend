@@ -28,25 +28,25 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      add: Joi.array().allow(...getScopeNames()).optional().default([]),
-      remove: Joi.array().allow(...getScopeNames()).optional().default([])
+      scopes: Joi.array().allow(...getScopeNames()).optional().default([])
     }).required()
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
-    const { add, remove } = ctx.request.body
-    const mask = getBitMaskFromScopes([...add, ...remove])
+    const { scopes } = ctx.request.body
+    const currentMask = ctx.state.permission!.mask
+    const requestedMask = getBitMaskFromScopes(scopes)
+    const diff = currentMask ^ requestedMask
     const ok = await permissionManager.hasPermissions({
       user: ctx.state.token!.id,
       instance: ctx.state.instance!.id,
-      scope: mask
+      scope: diff
     })
     if (!ok) {
       ctx.body = { message: "you tried to update a permission which you do not have access to"}
       return ctx.status = 403
     }
-    ctx.state.permission!.mask |= getBitMaskFromScopes(add)
-    ctx.state.permission!.mask &= ~getBitMaskFromScopes(remove)
+    ctx.state.permission!.mask = requestedMask
     await ctx.state.permission!.save()
     permissionManager.removeUserFromCache(ctx.state.permission!.userId)
     ctx.body = { scopes: getScopesFromMask(ctx.state.permission!.mask) }
