@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, MoreThan } from "typeorm"
+import { Entity, Column, ManyToOne, LessThan } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { Player } from "./Player"
 import { Instance } from "./Instance"
@@ -72,7 +72,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
     const date = from instanceof Date ? from : new Date(from)
     return this.createQueryBuilder()
       .select()
-      .where({ created: MoreThan(date.toISOString()), instanceId })
+      .where({ created: LessThan(date.toISOString()), instanceId })
       .orderBy({ created: "DESC" })
       .limit(count)
       .getMany()
