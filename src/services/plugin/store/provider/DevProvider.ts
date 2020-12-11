@@ -1,6 +1,6 @@
 import { Provider } from "./Provider"
 import { PluginSchema, PluginStoreSchema } from "../schema"
-import fs from "fs/promises"
+import { promises as fs } from "fs"
 import { config } from "@service/config"
 import path from "path"
 import yaml from "yaml"
