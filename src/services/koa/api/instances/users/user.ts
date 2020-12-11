@@ -48,6 +48,7 @@ api.route({
     ctx.state.permission!.mask |= getBitMaskFromScopes(add)
     ctx.state.permission!.mask &= ~getBitMaskFromScopes(remove)
     await ctx.state.permission!.save()
+    permissionManager.removeUserFromCache(ctx.state.permission!.userId)
     ctx.body = { scopes: getScopesFromMask(ctx.state.permission!.mask) }
     ctx.status = 200
   }
