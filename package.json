@@ -18,7 +18,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
-    "@types/jest": "^26.0.18",
+    "@types/jest": "^26.0.19",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
@@ -26,7 +26,7 @@
     "@types/koa-json": "^2.0.18",
     "@types/koa-ratelimit": "^4.2.2",
     "@types/koa-send": "^4.1.2",
-    "@types/node": "^14.14.11",
+    "@types/node": "^14.14.12",
     "@types/node-fetch": "^2.5.7",
     "@types/nodemailer": "^6.4.0",
     "@types/socket.io": "^2.1.12",
@@ -51,7 +51,7 @@
     "koa-send": "^5.0.1",
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.1",
-    "nodemailer": "^6.4.16",
+    "nodemailer": "^6.4.17",
     "pg": "^8.5.1",
     "recursive-copy": "^2.0.11",
     "socket.io": "^3.0.4",
@@ -60,7 +60,7 @@
     "tsconfig-paths": "^3.9.0",
     "typeorm": "^0.2.29",
     "unzipper": "^0.10.11",
-    "vu-rcon": "^1.2.3",
+    "vu-rcon": "^1.2.4",
     "winston": "^3.3.3",
     "yaml": "^1.10.0"
   }

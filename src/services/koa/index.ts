@@ -9,6 +9,7 @@ import path from "path"
 import { Server } from "socket.io"
 import winston from "winston"
 import chalk from "chalk"
+import { randomBytes } from "crypto"
 
 export const app = new Koa()
 export const server = createServer(app.callback())
@@ -32,12 +33,24 @@ export async function initialize() {
       if (ctx.status === 204) return
       await next()
     } catch (error) {
+      applyCors(ctx)
+      //handle schema validation errors
       if (error.isJoi) {
-        applyCors(ctx)
         ctx.status = error.status
         ctx.body = { message: error.message, validationError: true, details: error.details }
       } else {
-        throw error
+        const guid = randomBytes(16).toString("hex")
+        ctx.status = 500
+        //display more informations on rcon command failures
+        if (error.isVuRconError) {
+          ctx.body = { message: `rcon command failed "${error.message}", error guid: "${guid}"` }
+        //display a general error message if from unknown source
+        } else {
+          ctx.body = { message: `something went wrong, error guid: "${guid}"` }
+        }
+        winston.error(`${chalk.bold(chalk.cyan(guid))} unhandled HTTP API error on request ${ctx.method} ${ctx.url}`)
+        winston.error(`${chalk.bold(chalk.cyan(guid))} ${error.message}`)
+        winston.error(`${chalk.bold(chalk.cyan(guid))} ${error.stack}`)
       }
     }
   })

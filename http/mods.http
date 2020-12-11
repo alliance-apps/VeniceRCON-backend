@@ -1,5 +1,5 @@
-@instanceId=2
-@name=ADS
+@instanceId=4
+@name=gameadmin
 
 ### retrieves a list of enabled and available mods
 GET {{$dotenv url}}/api/instances/{{instanceId}}/mods
