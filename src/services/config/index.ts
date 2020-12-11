@@ -3,7 +3,7 @@ import path from "path"
 import yaml from "yaml"
 import winston from "winston"
 import { schema, Configuration } from "./schema"
-import { updateLogLevel } from "util/winston"
+import { updateLogLevel } from "../../util/winston"
 
 export let config: Configuration
 

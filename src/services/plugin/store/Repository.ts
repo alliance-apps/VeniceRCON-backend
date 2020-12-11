@@ -6,7 +6,7 @@ import { promises as fs } from "fs"
 import { Provider } from "./provider/Provider"
 import { createHash } from "crypto"
 import { Plugin as PluginEntity } from "@entity/Plugin"
-import { createFolderSave } from "util/createFolder"
+import { createFolderSave } from "../../../util/createFolder"
 
 export class Repository {
 
