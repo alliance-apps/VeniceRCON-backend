@@ -4,7 +4,6 @@ import { InstanceContainer } from "@service/container/InstanceContainer"
 import { socketManager } from "@service/koa/socket"
 import { InstanceScope } from "@service/permissions/Scopes"
 import { Word } from "vu-rcon/lib/transport/protocol/Word"
-import { SocketManager } from "@service/koa/socket/SocketManager"
 import chalk from "chalk"
 import { EventEmitter } from "typeorm/platform/PlatformTools"
 import { ReconnectEvent } from "vu-rcon/lib/types/Event"
@@ -88,10 +87,7 @@ export class Connection extends EventEmitter {
     socketManager
       .subscribedTo(this.parent.id)
       .hasPermission(this.parent.id, InstanceScope.CONSOLE)
-      .emit(
-        SocketManager.INSTANCE.CONSOLE,
-        { id: this.parent.id, type, words: words.map(w => w.toString()) }
-      )
+      .emitConsoleMessage({ id: this.parent.id, type, words: words.map(w => w.toString()) })
   }
 
   get state() {

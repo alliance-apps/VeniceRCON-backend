@@ -7,7 +7,7 @@
     "name": "Debug Runtime",
     "type": "node",
     "request": "launch",
-    "preLaunchTask": "tsc: build - tsconfig.json",
+    //"preLaunchTask": "tsc: build - tsconfig.json",
     "args": ["${workspaceRoot}/lib/index"],
     "runtimeArgs": ["--inspect-brk", "--enable-source-maps"],
     "skipFiles": [

@@ -38,7 +38,8 @@ export namespace SocketManager {
 
   export enum SELF {
     NAMESPACE = "SELF",
-    PERMISSION_UPDATE = "SELF#PERMISSION_UPDATE"
+    PERMISSION_UPDATE = "SELF#PERMISSION_UPDATE",
+    CMD_FEATURE = "SELF#CMD_FEATURE"
   }
 
 }

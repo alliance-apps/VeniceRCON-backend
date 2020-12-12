@@ -7,12 +7,16 @@ import { permissionManager } from "@service/permissions"
 import { ChatMessage } from "@entity/ChatMessage"
 import { Kill } from "@entity/Kill"
 import { LogMessage } from "@entity/LogMessage"
+import winston from "winston"
 
 export class Socket {
 
   readonly socket: IOSocket
   readonly userId: number
   private instances: number[] = []
+  private features: Socket.Features = {
+    raw: []
+  }
 
   constructor(props: Socket.IProps) {
     this.socket = props.socket
@@ -21,7 +25,30 @@ export class Socket {
       this.socket.removeAllListeners()
       props.handleClose(this)
     })
+    this.socket.on(SocketManager.SELF.CMD_FEATURE, this.onFeatureCommand.bind(this))
     this.checkAccess()
+  }
+
+  /** handles feature requests for this sockets */
+  private onFeatureCommand(data: any) {
+    if (typeof data !== "object" || typeof data.name !== "string")
+      return winston.verbose(`invalid socket payload for "feature" from user ${this.userId}`)
+    switch (data.name) {
+      //enables raw console messages
+      case "raw":
+        if (typeof data.instance !== "number" || typeof data.set !== "boolean")
+        return winston.verbose(`invalid socket payload for "feature" from user ${this.userId}`)
+        if (data.set) {
+          if (this.features.raw.includes(data.instance)) return
+          this.features.raw.push(data.instance)
+        } else {
+          this.features.raw = this.features.raw.filter(id => id !== data.instance)
+        }
+        return
+      //catch all for unknown feature commands
+      default:
+        return winston.verbose(`unknown name in socket "feature" command from user ${this.userId}: "${data.name}"`)
+    }
   }
 
   /**
@@ -104,6 +131,11 @@ export class Socket {
     )
   }
 
+  emitConsoleMessage(message: Socket.ConsoleMessage) {
+    if (!this.features.raw.includes(message.id)) return
+    this.socket.emit(SocketManager.INSTANCE.CONSOLE, message)
+  }
+
   /**
    * checks if the socket has permission to a specific instance and scope
    * @param instanceId instance to check
@@ -124,6 +156,20 @@ export namespace Socket {
     socket: IOSocket
     userId: number
     handleClose: (socket: Socket) => void
+  }
+
+  export type Features = {
+    //instances for which the raw tcp messages should get sent
+    raw: number[]
+  }
+
+  export interface ConsoleMessage {
+    //instanceid
+    id: number
+    //wether the message has been sent or received
+    type: "send"|"receive"
+    //data content
+    words: string[]
   }
 
 }

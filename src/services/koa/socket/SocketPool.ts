@@ -43,6 +43,10 @@ export class SocketPool {
     this.sockets.forEach(s => s.emitInstanceLogMessages(entities))
   }
 
+  emitConsoleMessage(message: Socket.ConsoleMessage) {
+    this.sockets.forEach(s => s.emitConsoleMessage(message))
+  }
+
   emitInstanceUpdate(id: number, changes: [string, any][]) {
     this.sockets.forEach(s => s.emitInstanceUpdate(id, changes))
   }

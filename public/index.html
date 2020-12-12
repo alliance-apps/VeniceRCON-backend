@@ -2,11 +2,20 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js"></script>
   <body>
+    <button onclick="requestConsoleMessages()">Receive Console Messages</button>
     <pre id="state"></pre>
     <script>
 
+      let socket
       const states = {}
   
+      function requestConsoleMessages() {
+        Object.values(states)
+          .map(instance => instance.id)
+          .forEach(id => socket.emit("SELF#CMD_FEATURE", { instance: id, name: "raw", set: true }))
+        console.log("requested console messages")
+      }
+
       function update() {
         document.getElementById("state").innerHTML = JSON.stringify(states, null, 2)
       }
@@ -41,7 +50,7 @@
         await whoami()
         console.log("connecting to socket...")
         const token = localStorage.getItem("token")
-        const socket = io.connect(undefined, {
+        socket = io.connect(undefined, {
           query: `auth_token=${token}`,
           transports: ["websocket"]
         })
@@ -51,7 +60,8 @@
         socket.on("success", () => {
           console.log("successfully connected to socket!")
         })
-        socket.on("INSTANCE#CONSOLE", ({ type, words }) => {
+        socket.on("INSTANCE#CONSOLE", ({ type, words, ...rest }) => {
+          console.log({ type, words, ...rest })
           console.log(type === "send" ? ">>>" : "<<<", words.join(" "))
         })
         socket.on("INSTANCE#ADD", event => {
