@@ -119,7 +119,10 @@ export class Plugin {
   /** removes the plugin from the instance and disk */
   async remove() {
     await this.manager.stop()
-    await fs.rmdir(path.join(this.manager.baseDir, this.name), { recursive: true })
+    await Promise.all([
+      await fs.rmdir(path.join(this.manager.baseDir, this.name), { recursive: true }),
+      await this.entity.remove()
+    ])
     await this.manager.reloadPlugins()
   }
 
