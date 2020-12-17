@@ -70,7 +70,17 @@ export class Player extends AbstractEntity<Player> {
     await Promise.all(inserts.map(async name => {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
-      players.push(await Player.from(data))
+      try {
+        players.push(await Player.from(data))
+      } catch (e) {
+        if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
+          const player = await Player.findOne({ name })
+          if (!player) throw e
+          players.push(player)
+        } else {
+          throw e
+        }
+      }
     }))
     Object.keys(names).forEach(id => {
       const player = players.find(player => player.name === names[id])

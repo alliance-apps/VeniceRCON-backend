@@ -4,7 +4,7 @@ import { User } from "./User"
 import { Instance } from "./Instance"
 import { randomBytes } from "crypto"
 import { permissionManager } from "@service/permissions"
-import { InstanceScope } from "@service/permissions/Scopes"
+import { getScopesFromMask } from "@service/permissions/Scopes"
 
 @Entity()
 export class Invite extends AbstractEntity<Invite> {
@@ -13,6 +13,9 @@ export class Invite extends AbstractEntity<Invite> {
 
   @Column({ unique: true })
   token!: string
+
+  @Column({ default: "0", name: "mask" })
+  protected _mask!: string
 
   @ManyToOne(
     type => User,
@@ -40,6 +43,20 @@ export class Invite extends AbstractEntity<Invite> {
   @Column({ nullable: true })
   userId?: number
 
+  set mask(value: bigint) {
+    if (typeof value !== "bigint") throw new Error(`value needs to be a bigint, got ${typeof value}`)
+    this._mask = String(value)
+  }
+
+  get mask() {
+    return BigInt(this._mask)
+  }
+
+  /** retrieves readable scope names */
+  getScopes() {
+    return getScopesFromMask(this.mask)
+  }
+
   /**
    * uses the token by the specified user
    */
@@ -48,7 +65,7 @@ export class Invite extends AbstractEntity<Invite> {
     await this.setRelation("user", user)
     await this.reload()
     return permissionManager.addInstanceAccess({
-      user, instance: this.instanceId, scopes: [InstanceScope.ACCESS]
+      user, instance: this.instanceId, scopes: [this.mask]
     })
   }
 
@@ -58,6 +75,7 @@ export class Invite extends AbstractEntity<Invite> {
     invite.token = randomBytes(16).toString("hex")
     invite.instanceId = AbstractEntity.fetchId(props.instance)
     invite.issuerId = AbstractEntity.fetchId(props.issuer)
+    invite.mask = props.mask
     return invite.save()
   }
 
@@ -68,6 +86,7 @@ export namespace Invite {
   export interface ICreate {
     issuer: User|number
     instance: Instance|number
+    mask: bigint
   }
 
 }

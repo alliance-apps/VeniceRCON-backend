@@ -5,9 +5,10 @@ import authRouter from "./auth"
 import instanceRouter from "./instances"
 import pluginRouter from "./plugins"
 import repositoryRouter from "./repository"
+import userRouter from "./user"
 import { config } from "@service/config"
 import { jwtMiddleware } from "../jwt"
-import { PluginRepositoryScope } from "@service/permissions/Scopes"
+import { PluginRepositoryScope, UserScope } from "@service/permissions/Scopes"
 import { perm } from "../permission"
 import { isEnabled } from "@service/mail"
 
@@ -34,11 +35,8 @@ export async function createRoute() {
   router.use("/plugins", pluginRouter.middleware())
   router.use(await jwtMiddleware())
   router.use("/instances", instanceRouter.middleware())
-  router.use(
-    "/repository",
-    perm(PluginRepositoryScope.ACCESS),
-    repositoryRouter.middleware()
-  )
+  router.use("/repository", perm(PluginRepositoryScope.ACCESS), repositoryRouter.middleware())
+  router.use("/users", perm(UserScope.ACCESS), userRouter.middleware())
 
   return router
 }

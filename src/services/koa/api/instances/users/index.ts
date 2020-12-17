@@ -1,11 +1,12 @@
-import Router from "koa-joi-router"
+import Router, { Joi } from "koa-joi-router"
 import { getCustomRepository } from "typeorm"
 import { PermissionRepository } from "@repository/PermissionRepository"
 import { Invite } from "@entity/Invite"
 import { Permission } from "@entity/Permission"
 import { perm } from "@service/koa/permission"
 import userRouter from "./user"
-import { InstanceUserScope } from "@service/permissions/Scopes"
+import { getBitMaskFromScopes, getScopeNames, InstanceUserScope } from "@service/permissions/Scopes"
+import { permissionManager } from "@service/permissions"
 
 const api = Router()
 
@@ -33,12 +34,37 @@ api.get("/invite", perm(InstanceUserScope.ACCESS), async ctx => {
   }))
 })
 
-api.post("/invite", perm(InstanceUserScope.CREATE), async ctx => {
-  const { token } = await Invite.from({
-    issuer: ctx.state.token!.id,
-    instance: ctx.state.instance!.id
-  })
-  ctx.body = { token }
+//creates an invite token with certain permissions
+api.route({
+  method: "POST",
+  path: "/invite",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      scopes: Joi.array().allow(...getScopeNames()).optional().default(["INSTANCE#ACCESS"])
+    }).required()
+  },
+  pre: perm(InstanceUserScope.CREATE),
+  handler: async ctx => {
+    const { scopes } = ctx.request.body
+    const mask = getBitMaskFromScopes(scopes)
+    const ok = await permissionManager.hasPermissions({
+      user: ctx.state.token!.id,
+      instance: ctx.state.instance!.id,
+      scope: mask
+    })
+    if (!ok) {
+      ctx.body = { message: "you tried to create a token with permissions you do not have access to"}
+      return ctx.status = 403
+    }
+    const { token } = await Invite.from({
+      issuer: ctx.state.token!.id,
+      instance: ctx.state.instance!.id,
+      mask
+    })
+    ctx.body = { token }
+    ctx.status = 200
+  }
 })
 
 api.param("userId", async (id, ctx, next) => {

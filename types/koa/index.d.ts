@@ -4,6 +4,7 @@ import { Permission } from "@entity/Permission"
 import { Battlefield } from "vu-rcon"
 import { Plugin } from "@service/plugin/main/Plugin"
 import { Provider } from "@service/plugin/store/provider/Provider"
+import { User } from "@entity/User"
 
 declare module "koa" {
 
@@ -17,6 +18,7 @@ declare module "koa" {
     plugin?: Plugin
     mod?: string
     repository?: Provider
+    user?: User
   }
 
 }

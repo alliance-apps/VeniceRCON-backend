@@ -60,6 +60,32 @@ export class User extends AbstractEntity<User> {
     return this
   }
 
+  /**
+   * retrieves serializeable user informations
+   */
+  async getUserAndPermissions() {
+    return {
+      ...this,
+      password: undefined,
+      __permissions__: undefined,
+      permissions: (await this.permissions).map(perm => ({
+        id: perm.id,
+        root: perm.root,
+        instanceId: perm.instanceId,
+        scopes: perm.getScopes()
+      }))
+    }
+  }
+
+  static async getUsersAndPermissions(): Promise<any> {
+    return await Promise.all((await User
+      .createQueryBuilder("u")
+      .select()
+      .leftJoinAndSelect("u.permissions", "permission")
+      .getMany()
+    ).map(user => user.getUserAndPermissions()))
+  }
+
   /** creates a new instance */
   static async from(props: User.ICreate) {
     const user = new User()

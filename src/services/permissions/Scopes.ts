@@ -81,6 +81,13 @@ export const PluginRepositoryScope = {
   REMOVE: 0x080000000000000000000n
 }
 
+export const UserScope = {
+  ACCESS: 0x01000000000000000000000n,
+  MODIFY: 0x02000000000000000000000n,
+  CREATE: 0x04000000000000000000000n,
+  REMOVE: 0x08000000000000000000000n
+}
+
 const translation: Record<string, Scopes> = {
   INSTANCE: InstanceScope,
   INSTANCEUSER: InstanceUserScope,
@@ -92,7 +99,8 @@ const translation: Record<string, Scopes> = {
   VARIABLE: VariableScope,
   EVENT: EventScope,
   MOD: ModScope,
-  PLUGINREPOSITORY: PluginRepositoryScope
+  PLUGINREPOSITORY: PluginRepositoryScope,
+  USER: UserScope
 }
 
 export function getBitMaskWithAllPermissions() {
@@ -168,11 +176,11 @@ export function getScopesFromMask(mask: bigint) {
         instance("CONSOLE")
         return
       case "INSTANCEUSER":
-        const user = validateScope(key, InstanceUserScope)
-        user("ACCESS")
-        user("CREATE")
-        user("UPDATE")
-        user("REMOVE")
+        const instanceUser = validateScope(key, InstanceUserScope)
+        instanceUser("ACCESS")
+        instanceUser("CREATE")
+        instanceUser("UPDATE")
+        instanceUser("REMOVE")
         return
       case "BAN":
         const ban = validateScope(key, BanScope)
@@ -227,6 +235,13 @@ export function getScopesFromMask(mask: bigint) {
         repo("CREATE")
         repo("REMOVE")
         repo("MODIFY")
+        return
+      case "USER":
+        const user = validateScope(key, UserScope)
+        user("ACCESS")
+        user("CREATE")
+        user("REMOVE")
+        user("MODIFY")
         return
     }
   })
