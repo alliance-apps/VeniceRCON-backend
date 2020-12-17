@@ -362,9 +362,9 @@ export namespace Instance {
     "DestructionEnabled", "SuppressionMultiplier",
     "DesertingAllowed", "VehicleDisablingEnabled",
     "HighPerformanceReplication", "ServerBanner",
-    "FrequencyMode", "SpectatorCount",
-    "SunFlareEnabled", "ColorCorrectionEnabled",
-    "TimeScale", "SquadSize"
+    "SpectatorCount", "SunFlareEnabled",
+    "ColorCorrectionEnabled", "TimeScale",
+    "SquadSize"
   ]
 
   export const VAR_VU_SETTER = [
