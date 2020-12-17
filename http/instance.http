@@ -26,6 +26,17 @@ Content-Type: application/json
 GET {{$dotenv url}}/api/instances
 Authorization: Bearer {{$dotenv jwt}}
 
+### updates the connection credentials to an instance
+PATCH {{$dotenv url}}/api/instances/{{id}}
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "host": "{{$dotenv instance1_host}}",
+  "port": {{$dotenv instance1_port}},
+  "password": "{{$dotenv instance1_pass}}"
+}
+
 ### stops an instance by its id
 PATCH {{$dotenv url}}/api/instances/{{id}}/stop
 Authorization: Bearer {{$dotenv jwt}}

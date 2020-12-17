@@ -73,6 +73,13 @@ export class Instance {
     return this.state.get("version")
   }
 
+  get isDisconnected() {
+    return [
+      Instance.State.DISCONNECTED,
+      Instance.State.RECONNECTING_FAILED
+    ].includes(this.state.get("state"))
+  }
+
   /** handles autostart after instance has been created */
   private async doAutostart() {
     try {
@@ -189,6 +196,21 @@ export class Instance {
   /** disconnects to the battlefield instance */
   async stop() {
     return this.connection.stop()
+  }
+
+  /** updates the connection informations for this instance */
+  async updateConnection(props: Battlefield.Options) {
+    const entity = await InstanceEntity.findOneOrFail({ id: this.id })
+    const wasStarted = !this.isDisconnected
+    await this.stop()
+    await this.connection.updateConnection(props)
+    await entity.update({
+      host: props.host,
+      port: props.port,
+      password: props.password
+    })
+    this.state.updateConnection(props.host, props.port)
+    if (wasStarted) await this.start()
   }
 
   /** removes this instance */

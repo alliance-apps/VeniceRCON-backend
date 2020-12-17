@@ -30,6 +30,26 @@ api.get("/", async ctx => {
   ctx.body = ctx.state.instance!.state.get()
 })
 
+
+api.route({
+  method: "PATCH",
+  path: "/",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      host: Joi.string().required(),
+      port: Joi.number().min(1024).max(65536).required(),
+      password: Joi.string().required()
+    }).required()
+  },
+  pre: perm(InstanceScope.UPDATE),
+  handler: async ctx => {
+    await ctx.state.instance!.updateConnection(ctx.request.body)
+    ctx.status = 200
+  }
+})
+
+
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {
   try {
     await ctx.state.instance!.start()
