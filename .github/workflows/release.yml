@@ -60,12 +60,12 @@ jobs:
         run: npm ci
       - name: build release
         run: npm run build
-      - name: cleanup node_modules
+      - name: remove node_modules
         run: rm -R node_modules
       - name: pack project
         run: |
           mkdir venicercon
-          cp -r -t venicercon public node_modules lib package*.json README.md config.default.yaml ecosystem.config.js
+          cp -r -t venicercon public lib package*.json README.md config.default.yaml ecosystem.config.js
           find ./venicercon -name "*.js.map" -type f -delete
           tar -czvf venicercon.tar.gz venicercon
       - name: upload release asset
