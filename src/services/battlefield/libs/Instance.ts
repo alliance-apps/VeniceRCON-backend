@@ -297,7 +297,7 @@ export class Instance {
   /* gets the default battlefield variables */
   private async getVuVariables() {
     const result = Object.fromEntries(
-      await Promise.all(Instance.VAR_VU.map(key => this.getVariable(key, "vu")))
+      await Promise.all(Instance.VAR_GETTER_VU.map(key => this.getVariable(key, "vu")))
     )
     this.state.updateVars(result)
     return result
@@ -330,6 +330,7 @@ export class Instance {
       }
     } else if (this.state.get("version") === InstanceContainer.Version.VU) {
       setters.push(...Instance.VAR_SETTER_VU)
+      getters.push(...Instance.VAR_GETTER_VU)
     }
     return { getters, setters }
   }
@@ -384,13 +385,17 @@ export namespace Instance {
     "DestructionEnabled", "SuppressionMultiplier",
     "DesertingAllowed", "VehicleDisablingEnabled",
     "HighPerformanceReplication", "ServerBanner",
-    "FrequencyMode", "SpectatorCount",
-    "SunFlareEnabled", "ColorCorrectionEnabled",
-    "TimeScale", "SquadSize"
+    "SpectatorCount", "SunFlareEnabled",
+    "ColorCorrectionEnabled", "TimeScale",
+    "SquadSize"
   ]
 
   export const VAR_VU_SETTER = [
     "FadeOutAll", "FadeInAll"
+  ]
+
+  export const VAR_VU_GETTER = [
+    "FrequencyMode"
   ]
 
   export const VAR_BF3_OPTIONAL = {
@@ -409,6 +414,9 @@ export namespace Instance {
   ]
   export const VAR_SETTER_VU = [
     ...VAR_VU, ...VAR_VU_SETTER
+  ]
+  export const VAR_GETTER_VU = [
+    ...VAR_VU, ...VAR_VU_GETTER
   ]
 
 }
