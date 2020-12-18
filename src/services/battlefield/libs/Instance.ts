@@ -257,6 +257,12 @@ export class Instance {
     return info
   }
 
+  /** sets the team ticket count */
+  async setTeamTicketCount(team: number, count: number) {
+    await this.battlefield.setTeamticketCount(team, count)
+    await this.serverInfo()
+  }
+
   /* gets the default battlefield variables */
   private async getDefaultVariables() {
     let result = {

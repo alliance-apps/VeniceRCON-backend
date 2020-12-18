@@ -12,6 +12,7 @@ import varRouter from "./vars"
 import eventRouter from "./events"
 import modRouter from "./mods"
 import { InstanceScope, InstanceUserScope, BanScope, PluginScope, PlayerScope, ModScope } from "@service/permissions/Scopes"
+import { InstanceContainer } from "@service/container/InstanceContainer"
 
 const api = Router()
 const { Joi } = Router
@@ -131,6 +132,29 @@ api.route({
       ctx.status = 500
       ctx.body = { message: e.message }
     }
+  }
+})
+
+
+api.route({
+  method: "PATCH",
+  path: "/teamtickets",
+  validate: {
+    type: "json",
+    body: Joi.object({
+      team: Joi.number().min(0).required(),
+      count: Joi.number().min(0).required()
+    })
+  },
+  pre: perm(PlayerScope.TICKETS),
+  handler: async ctx => {
+    const instance = ctx.state.instance!
+    if (instance.state.get("version") !== InstanceContainer.Version.VU) {
+      ctx.body = { message: "this feature is only available on Venice Unleashed Servers" }
+      return ctx.status = 400
+    }
+    await instance.setTeamTicketCount(ctx.request.body.team, ctx.request.body.count)
+    ctx.status = 200
   }
 })
 

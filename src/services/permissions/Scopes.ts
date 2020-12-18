@@ -37,7 +37,8 @@ export const PlayerScope = {
   KILL:     0x01000000n,
   KICK:     0x02000000n,
   MESSAGE:  0x04000000n,
-  MOVE:     0x08000000n
+  MOVE:     0x08000000n,
+  TICKETS:  0x10000000n
 }
 
 export const MapScope = {
@@ -59,7 +60,7 @@ export const PluginScope = {
 }
 
 export const VariableScope = {
-  MODIFY: 0x0200000000000000n
+  MODIFY:  0x0200000000000000n
 }
 
 export const EventScope = {
@@ -194,6 +195,7 @@ export function getScopesFromMask(mask: bigint) {
         player("KICK")
         player("MESSAGE")
         player("MOVE")
+        player("TICKETS")
         return
       case "MAP":
         const map = validateScope(key, MapScope)
