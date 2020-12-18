@@ -10,6 +10,10 @@ Authorization: Bearer {{$dotenv jwt}}
 GET {{$dotenv url}}/api/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}
 
+### deletes a user
+DELETE {{$dotenv url}}/api/users/{{userId}}
+Authorization: Bearer {{$dotenv jwt}}
+
 ### updates properties of a user
 PATCH {{$dotenv url}}/api/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}

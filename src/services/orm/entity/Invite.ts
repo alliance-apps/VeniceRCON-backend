@@ -20,7 +20,7 @@ export class Invite extends AbstractEntity<Invite> {
   @ManyToOne(
     type => User,
     user => user.invites,
-    { onDelete: "CASCADE", cascade: true }
+    { onDelete: "CASCADE" }
   )
   issuer!: Promise<User>
 
@@ -30,14 +30,14 @@ export class Invite extends AbstractEntity<Invite> {
   @ManyToOne(
     type => Instance,
     instance => instance.invites,
-    { onDelete: "CASCADE", cascade: true }
+    { onDelete: "CASCADE" }
   )
   instance!: Promise<Instance>
 
   @Column()
   instanceId!: number
 
-  @ManyToOne(type => User, { nullable: true })
+  @ManyToOne(type => User, { nullable: true, onDelete: "CASCADE"})
   user!: Promise<User|null>
 
   @Column({ nullable: true })
