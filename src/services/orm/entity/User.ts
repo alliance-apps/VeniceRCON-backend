@@ -64,10 +64,9 @@ export class User extends AbstractEntity<User> {
    * retrieves serializeable user informations
    */
   async getUserAndPermissions() {
-    return {
+    const props = {
       ...this,
       password: undefined,
-      __permissions__: undefined,
       permissions: (await this.permissions).map(perm => ({
         id: perm.id,
         root: perm.root,
@@ -75,6 +74,11 @@ export class User extends AbstractEntity<User> {
         scopes: perm.getScopes()
       }))
     }
+    return Object.fromEntries(
+      Object.keys(props)
+      .filter(key => !key.startsWith("_"))
+      .map(key => ([key, props[key]]))
+    )
   }
 
   static async getUsersAndPermissions(): Promise<any> {

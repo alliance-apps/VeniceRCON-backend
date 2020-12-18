@@ -20,7 +20,7 @@ import { LogMessage } from "@entity/LogMessage"
 import { PluginStore } from "@entity/PluginStore"
 import { getBitMaskWithAllPermissions } from "@service/permissions/Scopes"
 
-const DEFAULT_USERNAME = "admin"
+export const DEFAULT_USERNAME = "admin"
 
 export let connection: Connection
 

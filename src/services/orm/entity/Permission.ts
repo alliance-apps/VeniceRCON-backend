@@ -79,7 +79,8 @@ export class Permission extends AbstractEntity<Permission> {
     if (props.scopes) perm.mask = props.scopes.reduce((mask, bit) => mask | bit, 0n)
     if ("root" in props) perm.root = true
     perm.userId = AbstractEntity.fetchId(props.user)
-    if ("instance" in props) perm.instanceId = AbstractEntity.fetchId(props.instance)
+    if ("instance" in props && typeof props.instance === "number")
+      perm.instanceId = AbstractEntity.fetchId(props.instance)
     return perm.save()
   }
 

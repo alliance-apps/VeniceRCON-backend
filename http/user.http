@@ -1,4 +1,5 @@
 @userId=3
+@permissionId=7
 
 
 ### lists all users for this instance
@@ -8,3 +9,37 @@ Authorization: Bearer {{$dotenv jwt}}
 ### lists a single user
 GET {{$dotenv url}}/api/users/{{userId}}
 Authorization: Bearer {{$dotenv jwt}}
+
+### updates properties of a user
+PATCH {{$dotenv url}}/api/users/{{userId}}
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "email": "foo@example.com"
+}
+
+### creates a new permission for an instance / root permission
+POST {{$dotenv url}}/api/users/{{userId}}/permissions
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "instanceId": 2,
+  "scopes": ["INSTANCE#ACCESS"]
+}
+
+
+### removes a permission from the user
+DELETE {{$dotenv url}}/api/users/{{userId}}/permissions/{{permissionId}}
+Authorization: Bearer {{$dotenv jwt}}
+
+
+### updates scopes for a specific permission
+PATCH {{$dotenv url}}/api/users/{{userId}}/permissions/{{permissionId}}
+Authorization: Bearer {{$dotenv jwt}}
+Content-Type: application/json
+
+{
+  "scopes": ["INSTANCE#ACCESS", "INSTANCE#UPDATE"]
+}
