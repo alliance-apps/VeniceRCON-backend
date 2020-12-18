@@ -10,8 +10,7 @@ export class Kill extends AbstractEntity<Kill> {
   protected entityClass = Kill
 
   @ManyToOne(
-    type => Player,
-    player => player.kills,
+    type => Player, player => player.kills,
     { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
   )
   killer?: Player
@@ -20,8 +19,7 @@ export class Kill extends AbstractEntity<Kill> {
   killerId?: number
 
   @ManyToOne(
-    type => Player,
-    player => player.killed,
+    type => Player, player => player.killed,
     { cascade: true, onDelete: "CASCADE" }
   )
   killed!: Promise<Player>
@@ -30,8 +28,7 @@ export class Kill extends AbstractEntity<Kill> {
   killedId!: number
 
   @ManyToOne(
-    type => Instance,
-    instance => instance.kills,
+    type => Instance, instance => instance.kills,
     { cascade: true, onDelete: "CASCADE" }
   )
   instance!: Promise<Instance>

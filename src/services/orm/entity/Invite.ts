@@ -18,8 +18,7 @@ export class Invite extends AbstractEntity<Invite> {
   protected _mask!: string
 
   @ManyToOne(
-    type => User,
-    user => user.invites,
+    type => User, user => user.invites,
     { onDelete: "CASCADE" }
   )
   issuer!: Promise<User>
@@ -28,8 +27,7 @@ export class Invite extends AbstractEntity<Invite> {
   issuerId!: number
 
   @ManyToOne(
-    type => Instance,
-    instance => instance.invites,
+    type => Instance, instance => instance.invites,
     { onDelete: "CASCADE" }
   )
   instance!: Promise<Instance>
@@ -37,7 +35,10 @@ export class Invite extends AbstractEntity<Invite> {
   @Column()
   instanceId!: number
 
-  @ManyToOne(type => User, { nullable: true, onDelete: "CASCADE"})
+  @ManyToOne(
+    type => User,
+    { nullable: true, onDelete: "CASCADE"}
+  )
   user!: Promise<User|null>
 
   @Column({ nullable: true })

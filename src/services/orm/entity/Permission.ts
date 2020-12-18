@@ -10,8 +10,7 @@ export class Permission extends AbstractEntity<Permission> {
   protected entityClass = Permission
 
   @ManyToOne(
-    type => InstanceEntity,
-    instance => instance.permissions,
+    type => InstanceEntity, instance => instance.permissions,
     { nullable: true, onDelete: "CASCADE", cascade: true }
   )
   instance!: Promise<InstanceEntity|undefined>
@@ -23,8 +22,7 @@ export class Permission extends AbstractEntity<Permission> {
   root!: boolean
 
   @ManyToOne(
-    type => UserEntity,
-    user => user.permissions,
+    type => UserEntity, user => user.permissions,
     { nullable: false, onDelete: "CASCADE", cascade: true }
   )
   user!: Promise<UserEntity>

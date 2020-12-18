@@ -12,13 +12,19 @@ export class Plugin extends AbstractEntity<Plugin> {
   @Index()
   name!: string
 
-  @ManyToOne(type => PluginStore, store => store.plugins, { onDelete: "CASCADE" })
+  @ManyToOne(
+    type => PluginStore, store => store.plugins,
+    { onDelete: "CASCADE" }
+  )
   store!: Promise<PluginStore|null>
 
   @Column({ nullable: true })
   storeId!: number|null
 
-  @ManyToOne(type => Instance, instance => instance.plugins, { onDelete: "CASCADE" })
+  @ManyToOne(
+    type => Instance, instance => instance.plugins,
+    { onDelete: "CASCADE" }
+  )
   instance!: Promise<Instance>
 
   @Column()

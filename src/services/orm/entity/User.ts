@@ -20,14 +20,14 @@ export class User extends AbstractEntity<User> {
   @Column()
   password!: string
 
-  @OneToMany(type => Permission, perm => perm.user, { onDelete: "CASCADE" })
+  @OneToMany(type => Permission, perm => perm.user)
   permissions!: Promise<Permission[]>
 
   @ManyToMany(type => Player, player => player.users)
   @JoinTable()
   players!: Promise<Player[]>
 
-  @OneToMany(type => Invite, invite => invite.user, { onDelete: "CASCADE" })
+  @OneToMany(type => Invite, invite => invite.user)
   invites!: Promise<Invite[]>
 
   /** checks if the password match */

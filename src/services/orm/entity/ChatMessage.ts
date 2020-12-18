@@ -9,8 +9,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
   protected entityClass = ChatMessage
 
   @ManyToOne(
-    type => Player,
-    player => player.chats,
+    type => Player, player => player.chats,
     { nullable: true, eager: true, cascade: true, onDelete: "CASCADE" }
   )
   player?: Player
@@ -19,8 +18,7 @@ export class ChatMessage extends AbstractEntity<ChatMessage> {
   playerId?: number
 
   @ManyToOne(
-    type => Instance,
-    instance => instance.messages,
+    type => Instance, instance => instance.messages,
     { cascade: true, onDelete: "CASCADE" }
   )
   instance!: Promise<Instance>
