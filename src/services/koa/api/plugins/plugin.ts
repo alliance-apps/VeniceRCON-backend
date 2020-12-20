@@ -6,16 +6,11 @@ import Router from "koa-joi-router"
 const api = Router()
 
 const middleware = (method: string) => async (ctx: Context) => {
-  const { plugin, instance } = ctx.state as { plugin: Plugin, instance: Instance }
+  const { plugin } = ctx.state as { plugin: Plugin, instance: Instance }
   const { route } = ctx.request.params
-  try {
-    const { body, status } = await plugin.executeRoute(method, route, ctx)
-    ctx.body = body
-    ctx.status = status
-  } catch (e) {
-    instance.log.error(e)
-    return ctx.status = 500
-  }
+  const { body, status } = await plugin.executeRoute(method, route, ctx)
+  ctx.body = body
+  ctx.status = status
 }
 
 api.get("/:route", middleware("GET"))

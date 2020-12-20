@@ -14,14 +14,8 @@ api.post("/:uuid", perm(PluginScope.CREATE), async ctx => {
   const { uuid } = ctx.request.params
   const plugin = pluginStore.getPluginByUUID(uuid)
   if (!plugin) return ctx.status = 404
-  try {
-    await plugin.downloadTo(instance)
-    ctx.status = 200
-  } catch (e) {
-    ctx.status = 500
-    instance.log.error(`could not download plugin with uuid ${uuid}`)
-    instance.log.error(e)
-  }
+  await plugin.downloadTo(instance)
+  ctx.status = 200
 })
 
 export default api

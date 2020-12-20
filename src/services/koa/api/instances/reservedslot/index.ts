@@ -22,14 +22,8 @@ api.route({
   pre: perm(ReservedSlotScope.CREATE),
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
-    const { name } = ctx.request.body
-    try {
-      await battlefield.addReservedSlot(name)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.addReservedSlot(ctx.request.body.name)
+    ctx.status = 200
   }
 })
 

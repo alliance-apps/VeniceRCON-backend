@@ -23,15 +23,10 @@ api.route({
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { name } = ctx.state.player!
-    try {
-      await battlefield.playerKill(name)
-      const { body } = ctx.request
-      if (body && body.reason) await battlefield.say(body.reason, ["player", name])
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.playerKill(name)
+    const { body } = ctx.request
+    if (body && body.reason) await battlefield.say(body.reason, ["player", name])
+    ctx.status = 200
   }
 })
 
@@ -47,14 +42,11 @@ api.route({
   pre: perm(PlayerScope.KICK),
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
-    const { name } = ctx.state.player!
-    try {
-      await battlefield.playerKick(name, ctx.request.body.reason)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.playerKick(
+      ctx.state.player!.name,
+      ctx.request.body.reason
+    )
+    ctx.status = 200
   }
 })
 
@@ -83,13 +75,8 @@ api.route({
         case "ip": return ["ip", player!.ip] as Battlefield.IdType
       }
     })()
-    try {
-      await battlefield.addBan(banType, [durationType, duration],  reason, true)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.addBan(banType, [durationType, duration],  reason, true)
+    ctx.status = 200
   }
 })
 
@@ -110,25 +97,20 @@ api.route({
     const { battlefield } = ctx.state.instance!
     const { player } = ctx.state
     const { message, subset, yell, yellDuration } = ctx.request.body
-    try {
-      const sub = (() => {
-        switch (subset) {
-          case "squad": return ["squad", `${player!.squadId}`]
-          case "team": return ["team", `${player!.teamId}`]
-          default:
-          case "player": return ["player", player!.name]
-        }
-      })()
-      if (yell) {
-        await battlefield.yell(message, yellDuration, sub)
-      } else {
-        await battlefield.say(message, sub)
+    const sub = (() => {
+      switch (subset) {
+        case "squad": return ["squad", `${player!.squadId}`]
+        case "team": return ["team", `${player!.teamId}`]
+        default:
+        case "player": return ["player", player!.name]
       }
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
+    })()
+    if (yell) {
+      await battlefield.yell(message, yellDuration, sub)
+    } else {
+      await battlefield.say(message, sub)
     }
+    ctx.status = 200
   }
 })
 
@@ -148,13 +130,8 @@ api.route({
     const { battlefield } = ctx.state.instance!
     const { player } = ctx.state
     const { squadId, teamId, kill} = ctx.request.body
-    try {
-      await battlefield.playerMove(player!.name, teamId, squadId, kill)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.playerMove(player!.name, teamId, squadId, kill)
+    ctx.status = 200
   }
 })
 

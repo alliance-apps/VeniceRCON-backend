@@ -45,21 +45,16 @@ router.route({
       return ctx.status = 200
     }
     const password = randomBytes(6).toString("base64")
-    try {
-      const replace = (text: string) => text.replace(/%username%/g, user.username).replace(/%password%/g, password)
-      await user.updatePassword(password)
-      await sendMail(
-        email,
-        replace(config.smtp.content.subject),
-        replace(config.smtp.content.text)
-      )
-      await user.save()
-      winston.info(`sent new password for ${user.username} to ${email} from requester ${ctx.ip}`)
-      ctx.status = 200
-    } catch (e) {
-      winston.error(e)
-      ctx.status = 500
-    }
+    const replace = (text: string) => text.replace(/%username%/g, user.username).replace(/%password%/g, password)
+    await user.updatePassword(password)
+    await sendMail(
+      email,
+      replace(config.smtp.content.subject),
+      replace(config.smtp.content.text)
+    )
+    await user.save()
+    winston.info(`sent new password for ${user.username} to ${email} from requester ${ctx.ip}`)
+    ctx.status = 200
   }
 })
 

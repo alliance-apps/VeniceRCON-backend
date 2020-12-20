@@ -21,23 +21,16 @@ api.route({
   },
   pre: perm(InstanceScope.CREATE),
   handler: async ctx => {
+    const { host, port, password } = ctx.request.body
+    const props = { host, port, password }
     try {
       if (ctx.request.body.test) {
-        await instanceManager.testInstance({
-          host: ctx.request.body.host,
-          port: ctx.request.body.port,
-          password: ctx.request.body.password
-        })
-        ctx.status = 200
+        await instanceManager.testInstance(props)
       } else {
-          const instance = await instanceManager.createInstance({
-            host: ctx.request.body.host,
-            port: ctx.request.body.port,
-            password: ctx.request.body.password
-          })
-          ctx.status = 200
-          ctx.body = instance.state.get()
+        const instance = await instanceManager.createInstance(props)
+        ctx.body = instance.state.get()
       }
+      ctx.status = 200
     } catch (e) {
       ctx.status = 500
       ctx.body = { message: e.message }

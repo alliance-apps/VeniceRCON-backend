@@ -42,14 +42,8 @@ api.route({
   pre: perm(MapScope.SWITCH),
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
-    const { winner } = ctx.request.body
-    try {
-      await battlefield.endRound(winner)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.endRound(ctx.request.body.winner)
+    ctx.status = 200
   }
 })
 
@@ -70,15 +64,10 @@ api.route({
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { map, mode, rounds, index } = ctx.request.body
-    try {
-      await battlefield.addMap(map, mode, rounds, index)
-      ctx.state.instance!.mapList()
-      ctx.state.instance!.currentMapIndices()
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await battlefield.addMap(map, mode, rounds, index)
+    ctx.state.instance!.mapList()
+    ctx.state.instance!.currentMapIndices()
+    ctx.status = 200
   }
 })
 

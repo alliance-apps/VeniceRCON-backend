@@ -30,18 +30,12 @@ api.route({
   },
   pre: perm(VariableScope.MODIFY),
   handler: async ctx => {
-    try {
-      const { instance } = ctx.state
-      await Promise.all(
-        Object.keys(ctx.request.body!)
-          .map(k => instance!.updateVariable(k, ctx.request.body[k]))
-      )
-      ctx.body = instance!.state.get("vars")
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = e.message
-      ctx.state.instance!.log.error(e)
-    }
+    const { instance } = ctx.state
+    await Promise.all(
+      Object.keys(ctx.request.body!)
+        .map(k => instance!.updateVariable(k, ctx.request.body[k]))
+    )
+    ctx.body = instance!.state.get("vars")
   }
 })
 

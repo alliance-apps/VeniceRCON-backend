@@ -41,13 +41,8 @@ api.route({
   path: "/start",
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {
-    try {
-      await ctx.state.plugin!.start()
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await ctx.state.plugin!.start()
+    ctx.status = 200
   }
 })
 
@@ -56,13 +51,8 @@ api.route({
   path: "/stop",
   pre: perm(PluginScope.MODIFY),
   handler: async ctx => {
-    try {
-      await ctx.state.plugin!.stop()
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    await ctx.state.plugin!.stop()
+    ctx.status = 200
   }
 })
 

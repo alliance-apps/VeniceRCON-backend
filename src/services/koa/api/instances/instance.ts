@@ -18,13 +18,8 @@ const api = Router()
 const { Joi } = Router
 
 api.delete("/", perm(InstanceScope.DELETE), async ctx => {
-  try {
-    await instanceManager.removeInstance(ctx.state.instance!.id)
-    ctx.status = 200
-  } catch (e) {
-    ctx.status = 500
-    ctx.body = { message: e.message }
-  }
+  await instanceManager.removeInstance(ctx.state.instance!.id)
+  ctx.status = 200
 })
 
 api.get("/", async ctx => {
@@ -52,23 +47,13 @@ api.route({
 
 
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {
-  try {
-    await ctx.state.instance!.start()
-    ctx.status = 200
-  } catch (e) {
-    ctx.status = 500
-    ctx.body = { message: e.message }
-  }
+  await ctx.state.instance!.start()
+  ctx.status = 200
 })
 
 api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
-  try {
-    await ctx.state.instance!.stop()
-    ctx.status = 200
-  } catch (e) {
-    ctx.status = 500
-    ctx.body = { message: e.message }
-  }
+  await ctx.state.instance!.stop()
+  ctx.status = 200
 })
 
 
@@ -112,26 +97,21 @@ api.route({
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { message, subset, subsetId, yell, yellDuration } = ctx.request.body
-    try {
-      const sub = (() => {
-        switch (subset) {
-          case "squad": return ["squad", subsetId]
-          case "team": return ["team", subsetId]
-          case "player": return ["player", subsetId]
-          default:
-          case "all": return ["all"]
-        }
-      })()
-      if (yell) {
-        await battlefield.yell(message, yellDuration, sub)
-      } else {
-        await battlefield.say(message, sub)
+    const sub = (() => {
+      switch (subset) {
+        case "squad": return ["squad", subsetId]
+        case "team": return ["team", subsetId]
+        case "player": return ["player", subsetId]
+        default:
+        case "all": return ["all"]
       }
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
+    })()
+    if (yell) {
+      await battlefield.yell(message, yellDuration, sub)
+    } else {
+      await battlefield.say(message, sub)
     }
+    ctx.status = 200
   }
 })
 

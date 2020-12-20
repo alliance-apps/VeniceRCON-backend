@@ -27,15 +27,10 @@ api.route({
   handler: async ctx => {
     const { battlefield } = ctx.state.instance!
     const { reason, subset, id, durationType, duration } = ctx.request.body
-    try {
-      const time: Battlefield.Timeout = [durationType]
-      if (durationType !== "perm") time.push(duration)
-      await battlefield.addBan([subset, id], time, reason, true)
-      ctx.status = 200
-    } catch (e) {
-      ctx.status = 500
-      ctx.body = { message: e.message }
-    }
+    const time: Battlefield.Timeout = [durationType]
+    if (durationType !== "perm") time.push(duration)
+    await battlefield.addBan([subset, id], time, reason, true)
+    ctx.status = 200
   }
 })
 
@@ -48,13 +43,8 @@ api.delete("/:subset/:id", perm(BanScope.DELETE), async ctx => {
     return ctx.status = 400
   }
   const { battlefield } = ctx.state.instance!
-  try {
-    await battlefield.delBan([subset, id])
-    ctx.status = 200
-  } catch (e) {
-    ctx.status = 500
-    ctx.body = { message: e.message }
-  }
+  await battlefield.delBan([subset, id])
+  ctx.status = 200
 })
 
 export default api
