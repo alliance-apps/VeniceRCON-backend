@@ -5,6 +5,7 @@ import { Kill } from "./Kill"
 import { Battlefield } from "vu-rcon"
 import winston from "winston"
 import { User } from "./User"
+import util from "util"
 
 @Entity()
 export class Player extends AbstractEntity<Player> {
@@ -38,7 +39,7 @@ export class Player extends AbstractEntity<Player> {
   }
 
   /** gets a list of ids by the name */
-  static async findIdsByName(names: string[]): Promise<Player[]> {
+  static async findIdsByName(names: string[]): Promise<{ id: number, name: string }[]> {
     return Player
       .createQueryBuilder()
       .select("id, name")
@@ -57,7 +58,7 @@ export class Player extends AbstractEntity<Player> {
     const filtered = Object.keys(names)
       .filter(id => typeof names[id] === "string")
       //retrieves all names which should be fetched from database
-      .reduce((acc, id) => acc.includes(names[id]) ? acc : [...acc, names[id]], [] as (string|undefined)[]) as string[]
+      .reduce((acc, id) => acc.includes(names[id] as string) ? acc : [...acc, names[id] as string], [] as string[])
     //gets a list of players in the database
     const players = await Player.findIdsByName(filtered)
     //gets a list of all players which have not been found in the database
@@ -75,9 +76,15 @@ export class Player extends AbstractEntity<Player> {
       } catch (e) {
         if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
           const player = await Player.findOne({ name })
-          if (!player) throw e
+          if (!player) {
+            winston.verbose(`tried to find player after duplicate key entry, but was unable to find him "${name}"`)
+            winston.verbose(util.inspect(e, { depth: 4 }))
+            throw e
+          }
           players.push(player)
         } else {
+          winston.verbose("Could not insert player in getPlayerIds")
+          winston.verbose(util.inspect(e, {depth: 4}))
           throw e
         }
       }
