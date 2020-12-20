@@ -1,0 +1,31 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+---
+
+In order to track down a bug please set your loglevel to "verbose" inside your `config.yaml`
+
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Code to reprodude the behavior
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Versions used**
+ - Backend Version
+ - Node Version
+
+**Additional context**
+Add any other context about the problem here.
+
+**Logs**
+```
+
+```
