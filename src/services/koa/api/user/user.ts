@@ -86,7 +86,7 @@ api.route({
     })
     if (!ok) {
       ctx.body = { message: "you can not set permissions you do not have access to" }
-      return ctx.status = 401
+      return ctx.status = 403
     }
     await Permission.from({
       user: ctx.state.user!,
