@@ -73,8 +73,9 @@ export async function initialize() {
   //post init
   return () => {
     return new Promise<void>(fulfill => {
-      server.listen(config.webserver.listenport, () => {
-        winston.info(`webserver listening on ${chalk.bold(config.webserver.listenport)}`)
+      const { listenport, bindAddress } = config.webserver
+      server.listen(listenport, bindAddress, () => {
+        winston.info(`webserver listening on ${chalk.bold(`${bindAddress}:${listenport}`)}`)
         fulfill()
       })
     })

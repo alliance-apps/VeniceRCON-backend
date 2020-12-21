@@ -21,6 +21,8 @@ logging:
   #loglevel to use available options are "verbose"|"info"|"warn"|"error"
   level: info
 webserver:
+  #set address if you want to bind to a specific interface
+  bindAddress: "0.0.0.0"
   #port which the webserver listens to
   listenport: 8000
   #set this to true when application runs behind a proxy

@@ -16,6 +16,7 @@ export const schema = Joi.object({
     level: Joi.string().allow("verbose", "info", "warn", "error").only().optional().default("info")
   }).required(),
   webserver: Joi.object({
+    bindAddress: Joi.string().ip().optional().default("0.0.0.0"),
     listenport: Joi.number().port().required(),
     proxy: Joi.boolean().optional().default(false),
     prettyJson: Joi.boolean().optional().default(false),
@@ -62,6 +63,7 @@ export interface Configuration {
     level: "verbose"|"info"|"warn"|"error"
   }
   webserver: {
+    bindAddress: string
     listenport: number
     prettyJson: boolean
     proxy: boolean
