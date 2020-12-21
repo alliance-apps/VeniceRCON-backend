@@ -74,7 +74,7 @@ router.route({
   handler: async ({ request, response }) => {
     const user = await User.findOne({ username: request.body.username })
     if (!user || !(await user.validatePassword(request.body.password))) {
-      response.status = 400
+      response.status = 401
       response.body = { message: "invalid username or password" }
       return
     }
@@ -166,7 +166,7 @@ router.route({
     const { currentPassword, password, email } = ctx.request.body
     if (!await user.validatePassword(currentPassword)) {
       ctx.body = { message: "current password invalid"}
-      return ctx.status = 403
+      return ctx.status = 401
     }
     if (!password && email === undefined) return ctx.status = 200
     if (password) await user.updatePassword(password)
