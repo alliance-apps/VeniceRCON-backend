@@ -5,6 +5,8 @@ import Router from "koa-joi-router"
 import userPermissionRouter from "./permission"
 import { DEFAULT_USERNAME } from "@service/orm"
 import { Permission } from "@entity/Permission"
+import { User } from "@entity/User"
+import { Not } from "typeorm"
 
 const api = Router()
 const { Joi } = Router
@@ -42,9 +44,16 @@ api.route({
     if (!password && email === undefined) return ctx.status = 200
     const user = ctx.state.user!
     if (password) await user.updatePassword(password)
-    if (email !== undefined) user.email = email
+    if (email !== undefined) {
+      if (email && await User.findOne({ id: Not(user.id), email })) {
+        ctx.body = { message: "this email is already being used on a different account" }
+        return ctx.status = 400
+      }
+      user.email = email
+    }
     await user.save()
-    ctx.status = 200
+    await user.reload()
+    ctx.body = await user.getUserAndPermissions()
   }
 })
 

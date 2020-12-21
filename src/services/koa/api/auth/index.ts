@@ -4,7 +4,7 @@ import { Player } from "@entity/Player"
 import { createToken } from "@service/koa/jwt"
 import { permissionManager } from "@service/permissions"
 import { Invite } from "@entity/Invite"
-import { FindOperator, IsNull, Like } from "typeorm"
+import { FindOperator, IsNull, Like, Not } from "typeorm"
 import ratelimit from "koa-ratelimit"
 import { isEnabled, sendMail } from "@service/mail"
 import { config } from "@service/config"
@@ -167,6 +167,10 @@ router.route({
     if (!await user.validatePassword(currentPassword)) {
       ctx.body = { message: "current password invalid"}
       return ctx.status = 401
+    }
+    if (email && await User.findOne({ id: Not(user.id), email })) {
+      ctx.body = { message: "this email is already being used on a different account" }
+      return ctx.status = 400
     }
     if (!password && email === undefined) return ctx.status = 200
     if (password) await user.updatePassword(password)
