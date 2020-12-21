@@ -51,10 +51,10 @@ export type HTTP_COMMON_PROPS = {
   token: () => string
 }
 
-export class Cache {
-  protected cache: Record<string, any> = {}
+export class Cache<T = any> {
+  protected cache: Record<string, T> = {}
 
-  set(key: string, data: any) {
+  set(key: string, data: T) {
     this.cache[key] = data
     return this
   }
@@ -74,24 +74,16 @@ export class Cache {
   }
 }
 
-export class TokenManager extends Cache {
+export class TokenManager extends Cache<string> {
 
-  private loadNext: string|null = "DEFAULT"
+  private useToken: string = "DEFAULT"
 
   get(key?: string) {
-    let next: string|null = "DEFAULT"
-    if (key) {
-      next = key
-    } else {
-      next = this.loadNext
-      this.loadNext = "DEFAULT"
-    }
-    if (next === null) return undefined
-    return this.cache[next]
+    return this.cache[key ? key : this.useToken]
   }
 
-  next(key: string|null) {
-    this.loadNext = key
+  use(key: string = "DEFAULT") {
+    this.useToken = key
     return this
   }
 }
