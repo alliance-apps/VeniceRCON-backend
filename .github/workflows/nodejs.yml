@@ -18,6 +18,9 @@ jobs:
     - name: install dependencies
       run: |
         npm ci
+    - name: compile typescript
+      run: |
+        npm run build
     - name: run linter
       run: |
         npm run tslint
