@@ -1,0 +1,60 @@
+database:
+  #see https://github.com/typeorm/typeorm/blob/master/docs/connection-options.md for details
+  use: "sqlite"
+  sqlite:
+    database: "./__TEST__.db"
+  mariadb:
+    host: "127.0.0.1"
+    port: 3306
+    username: ""
+    password: ""
+    database: "battlefield"
+  postgres:
+    host: "127.0.0.1"
+    port: 5432
+    username: ""
+    password: ""
+    database: ""
+logging:
+  #enable logging of query messages
+  orm: false
+  #loglevel to use available options are "verbose"|"info"|"warn"|"error"
+  level: info
+webserver:
+  #port which the webserver listens to
+  listenport: 45321
+  #set this to true when application runs behind a proxy
+  proxy: false
+  #enable pretty json output for development purposes
+  prettyJson: false
+  jwt:
+    #maxmimum token age in days
+    maxAge: 7
+    #time in days after a new token gets issued
+    sendRefresh: 5
+  #set cors when requests comes from one of those domains
+  cors:
+    - "https://alliance-apps.github.io"
+instance:
+  #default time in ms of how many updates get sent to the rcon server
+  syncInterval: 5000
+  plugins:
+    #location of the directory to read plugins from
+    baseDir: "./__PLUGINS__"
+#smtp settings in order to send forgot-password requests
+smtp:
+  #enable this feature?
+  enable: false
+  #email address to send mails from
+  senderAddress: "foo@example.com"
+  #connection options, for more informations see https://nodemailer.com/smtp/
+  options:
+    host: "smpt.example.com"
+    port: 587
+    auth:
+      user: ""
+      pass: ""
+  content:
+    #you can use wildcards  %username% and %password% for subject and text
+    subject: "Forgot Password request"
+    text: "Hello %username%, your new password is %password%"
