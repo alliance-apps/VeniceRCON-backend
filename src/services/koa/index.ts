@@ -91,6 +91,6 @@ export function applyCors(ctx: Context) {
   ctx.set("Access-Control-Allow-Credentials", "true")
   ctx.set("Access-Control-Allow-Origin", origin)
   ctx.set("Access-Control-Allow-Methods", ["GET", "HEAD", "OPTIONS", "POST", "PATCH", "DELETE"].join(","))
-  ctx.set("Access-Control-Allow-Headers", ["Authorization", "Content-Type"].join(","))
+  ctx.set("Access-Control-Allow-Headers", ["Authorization", "Content-Type", "sentry-trace"].join(","))
   if (["HEAD", "OPTIONS"].includes(ctx.method.toUpperCase())) ctx.status = 204
 }
