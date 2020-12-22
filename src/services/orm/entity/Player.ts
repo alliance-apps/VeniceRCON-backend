@@ -78,8 +78,17 @@ export class Player extends AbstractEntity<Player> {
         }))
       } catch (e) {
         if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
-          const player = await Player.findOne({ name })
+          let player = await Player.findOne({ name })
           if (!player) {
+            player = await Player.findOne({ guid: data.playerGuid || data.guid })
+            if (player) {
+              winston.warn(`client was not found by name but guid has been found and player name is ${player.name} replacing correct name in database...`)
+              player.name = data.name
+              await player.save()
+              return players.push(player)
+            } else {
+              winston.warn(`well shit neither guid "${data.playerGuid || data.guid}" nor name "${data.name}" is on the server but still gives an unique constraint error`)
+            }
             winston.verbose(`tried to find player after duplicate key entry, but was unable to find him "${name}"`)
             winston.verbose(util.inspect(e, { depth: 4 }))
             throw e
