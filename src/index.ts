@@ -10,15 +10,6 @@ const cleanup = register({
   }
 })
 
-process.on("uncaughtException", error => {
-  winston.error("uncaught exception")
-  winston.error(error)
-})
-
-process.on("unhandledRejection", error => {
-  winston.error("unhandled Promise rejection")
-  winston.error(error)
-})
 
 ;(async () => {
 
@@ -45,5 +36,16 @@ process.on("unhandledRejection", error => {
   await postInitKoa()
   winston.info("initialization done!")
   cleanup()
+
+  process.on("uncaughtException", error => {
+    winston.error("uncaught exception")
+    winston.error(error)
+  })
+
+  process.on("unhandledRejection", error => {
+    winston.error("unhandled Promise rejection")
+    winston.error(error)
+  })
+
 })()
 
