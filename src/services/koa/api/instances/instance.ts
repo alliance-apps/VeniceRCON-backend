@@ -47,13 +47,23 @@ api.route({
 
 
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {
-  await ctx.state.instance!.start()
-  ctx.status = 200
+  try {
+    await ctx.state.instance!.start()
+    ctx.status = 200
+  } catch (e) {
+    ctx.status = 400
+    ctx.body = { message: e.message }
+  }
 })
 
 api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
-  await ctx.state.instance!.stop()
-  ctx.status = 200
+  try {
+    await ctx.state.instance!.stop()
+    ctx.status = 200
+  } catch (e) {
+    ctx.status = 400
+    ctx.body = { message: e.message }
+  }
 })
 
 

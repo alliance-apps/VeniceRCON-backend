@@ -31,9 +31,14 @@ api.route({
         return ctx.status = 500
       }
     }
-    const instance = await instanceManager.createInstance(props)
-    await instance.ready
-    ctx.body = instance.state.get()
+    try {
+      const instance = await instanceManager.createInstance(props)
+      await instance.ready
+      ctx.body = instance.state.get()
+    } catch (e) {
+      ctx.status = 400
+      ctx.body = { message: e.message }
+    }
   }
 })
 

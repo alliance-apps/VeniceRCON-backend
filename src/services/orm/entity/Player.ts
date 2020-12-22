@@ -47,6 +47,33 @@ export class Player extends AbstractEntity<Player> {
       .getRawMany()
   }
 
+  static async createPlayerSave(props: { guid: string, name: string }) {
+    try {
+      return Player.from(props)
+    } catch (e) {
+      if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
+        let player = await Player.findOne({ name: props.name })
+        if (player) return player
+        player = await Player.findOne({ guid: props.guid })
+        if (player) {
+          winston.warn(`client was not found by name but guid has been found and player name is ${player.name} replacing correct name in database...`)
+          player.name = props.name
+          await player.save()
+          return player
+        } else {
+          winston.warn(`well shit neither guid "${props.guid}" nor name "${props.name}" is on the server but still gives an unique constraint error`)
+        }
+        winston.verbose(`tried to find player after duplicate key entry, but was unable to find him "${props.name}"`)
+        winston.verbose(util.inspect(e, { depth: 4 }))
+        throw e
+      } else {
+        winston.verbose("Could not insert player in getPlayerIds")
+        winston.verbose(util.inspect(e, {depth: 4}))
+        throw e
+      }
+    }
+  }
+
   /** retrieves multiple player ids by their name and indexes them by an identifier */
   static async getPlayerIds(
     names: Record<string, string|undefined>,
@@ -71,35 +98,7 @@ export class Player extends AbstractEntity<Player> {
     await Promise.all(inserts.map(async name => {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
-      try {
-        players.push(await Player.from({
-          guid: data.playerGuid || data.guid,
-          name: data.name
-        }))
-      } catch (e) {
-        if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
-          let player = await Player.findOne({ name })
-          if (!player) {
-            player = await Player.findOne({ guid: data.playerGuid || data.guid })
-            if (player) {
-              winston.warn(`client was not found by name but guid has been found and player name is ${player.name} replacing correct name in database...`)
-              player.name = data.name
-              await player.save()
-              return players.push(player)
-            } else {
-              winston.warn(`well shit neither guid "${data.playerGuid || data.guid}" nor name "${data.name}" is on the server but still gives an unique constraint error`)
-            }
-            winston.verbose(`tried to find player after duplicate key entry, but was unable to find him "${name}"`)
-            winston.verbose(util.inspect(e, { depth: 4 }))
-            throw e
-          }
-          players.push(player)
-        } else {
-          winston.verbose("Could not insert player in getPlayerIds")
-          winston.verbose(util.inspect(e, {depth: 4}))
-          throw e
-        }
-      }
+      this.createPlayerSave({ guid: data.playerGuid || data.guid, name: data.name })
     }))
     Object.keys(names).forEach(id => {
       const player = players.find(player => player.name === names[id])

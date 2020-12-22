@@ -174,7 +174,7 @@ export class Instance {
   async createPlayerFromName(name: string) {
     const player = Object.values(this.state.get("players")).find(p => p.name === name)
     if (!player) return undefined
-    return Player.from(player)
+    return Player.createPlayerSave(player)
   }
 
   async getPlayerDataByName(name: string) {
