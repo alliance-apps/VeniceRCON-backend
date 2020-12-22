@@ -72,7 +72,10 @@ export class Player extends AbstractEntity<Player> {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
       try {
-        players.push(await Player.from(data))
+        players.push(await Player.from({
+          guid: data.playerGuid || data.guid,
+          name: data.name
+        }))
       } catch (e) {
         if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
           const player = await Player.findOne({ name })
