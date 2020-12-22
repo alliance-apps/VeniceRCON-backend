@@ -58,6 +58,8 @@ export class Instance extends AbstractEntity<Instance> {
     instance.host = props.host
     instance.port = props.port
     instance.password = props.password
+    if (typeof props.autostart === "boolean")
+      instance.autostart = props.autostart
     return instance.save()
   }
 
@@ -69,5 +71,6 @@ export namespace Instance {
     port: number
     password: string
     name?: string
+    autostart?: boolean
   }
 }

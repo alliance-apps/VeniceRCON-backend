@@ -25,13 +25,24 @@ export class Instance {
   private intervalModulo = -1
   private syncInterval: number
   private playerListAction: PrependAction<Battlefield.PlayerList>
+  private readyPromise: { resolver: Promise<void>, resolve: () => void } = {
+    resolver: new Promise(() => null),
+    resolve: () => null
+  }
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
     this.log = new InstanceLogger({ instance: this })
     this.syncInterval = props.entity.syncInterval
+    this.readyPromise.resolver = new Promise(fulfill => {
+      this.readyPromise.resolve = fulfill
+    })
     this.connection = new Connection({
-      battlefield: props.battlefield,
+      options: {
+        host: props.entity.host,
+        port: props.entity.port,
+        password: props.entity.password
+      },
       instance: this
     })
     this.chat = new ChatManager({ instance: this })
@@ -55,7 +66,16 @@ export class Instance {
       this.startUpdateInterval()
       await this.plugin.start()
     })
-    if (props.entity.autostart) this.doAutostart()
+    if (props.entity.autostart) {
+      this.doAutostart()
+        .catch(() => this.readyPromise.resolve())
+    } else {
+      this.readyPromise.resolve()
+    }
+  }
+
+  get ready() {
+    return this.readyPromise.resolver
   }
 
   /** retrieves the current battlefield connection */
@@ -122,6 +142,7 @@ export class Instance {
       this.updateInterval(),
       this.currentMapIndices()
     ])
+    this.readyPromise.resolve()
   }
 
   /** stopts the update interval */
@@ -343,8 +364,7 @@ export class Instance {
 
   /** creates a new instance from given properties */
   static async from(props: Instance.CreateProps) {
-    const battlefield = new Battlefield({ ...props.entity, autoconnect: false })
-    const instance = new Instance({ battlefield, entity: props.entity })
+    const instance = new Instance({ entity: props.entity })
     return instance
   }
 
@@ -353,7 +373,6 @@ export class Instance {
 export namespace Instance {
 
   export interface Props {
-    battlefield: Battlefield,
     entity: InstanceEntity,
     serverinfo?: Battlefield.ServerInfo
   }

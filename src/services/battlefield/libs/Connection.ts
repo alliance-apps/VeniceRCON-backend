@@ -22,7 +22,9 @@ export class Connection extends EventEmitter {
 
   constructor(props: Connection.Props) {
     super()
-    this.battlefield = props.battlefield
+    this.battlefield = new Battlefield({
+      ...props.options, autoconnect: false
+    })
     this.parent = props.instance
     this.registerEvents()
   }
@@ -52,7 +54,7 @@ export class Connection extends EventEmitter {
     //checks if closing of connection has been requested
     if (this.requestStop) {
       const { host, port } = this.battlefield.options
-      this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}!`)
+      this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}`)
       this.updateConnectionState(Instance.State.DISCONNECTED)
       return
     }
@@ -164,7 +166,7 @@ export class Connection extends EventEmitter {
 
 export namespace Connection {
   export interface Props {
-    battlefield: Battlefield
+    options: Battlefield.Options
     instance: Instance
   }
 }
