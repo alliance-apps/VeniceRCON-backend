@@ -148,6 +148,7 @@ export class Connection extends EventEmitter {
   async stop() {
     if (this.parent.isDisconnected) return
     this.requestStop = true
+    this.battlefield.abortReconnect()
     this.updateConnectionState(Instance.State.DISCONNECTING)
     const { host, port } = this.battlefield.options
     this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}...`)
