@@ -10,10 +10,17 @@ import { Repository } from "./Repository"
 import { Provider } from "./provider/Provider"
 import { DevProvider } from "./provider/DevProvider"
 import { Brackets } from "typeorm"
+import { createFolderSave } from "util/createFolder"
 
 export class PluginStore {
 
   providers: Provider[] = []
+
+  async init() {
+    await createFolderSave(path.join(
+      config.basepath, config.instance.plugins.baseDir
+    ))
+  }
 
   /**
    * retrieves the plugin installation path for the specified instance
