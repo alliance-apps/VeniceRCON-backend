@@ -10,7 +10,7 @@ import { Repository } from "./Repository"
 import { Provider } from "./provider/Provider"
 import { DevProvider } from "./provider/DevProvider"
 import { Brackets } from "typeorm"
-import { createFolderSave } from "util/createFolder"
+import { createFolderSave } from "../../../util/createFolder"
 
 export class PluginStore {
 
