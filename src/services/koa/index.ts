@@ -62,13 +62,18 @@ export async function initialize() {
 
   app.use(async ctx => {
     if (ctx.path.startsWith("/api")) return ctx.status = 404
-    await koaSend(
-      ctx, ctx.path, {
-        root: path.join(__dirname, "/../../../public/"),
-        index: "index.html"
-      }
-    )
+    try {
+      await koaSend(
+        ctx, ctx.path, {
+          root: path.join(__dirname, "/../../../public/"),
+          index: "index.html"
+        }
+      )
+    } catch (e) {
+      ctx.status = 404
+    }
   })
+
 
   //post init
   return () => {
