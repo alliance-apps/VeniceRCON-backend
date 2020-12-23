@@ -28,8 +28,10 @@ export class Message<T = any> {
   }
 
   /** acknowledges the message with an error */
-  except(message: string) {
-    return this.parent.sendErrorAck(this.id, message, new Error().stack)
+  except(message: string|Error) {
+    const stack = typeof message === "string" ? new Error().stack : message.stack
+    message = typeof message === "string" ? message : message.message
+    return this.parent.sendErrorAck(this.id, message, stack)
   }
 }
 

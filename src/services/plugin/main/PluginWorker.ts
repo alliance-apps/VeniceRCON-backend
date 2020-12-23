@@ -59,7 +59,11 @@ export class PluginWorker {
       if (!plugin) break
       const state = await this.getPluginState(plugin)
       if (state === PluginState.RUNNING) continue
-      await this.sendStartPlugin(plugin)
+      try {
+        await this.sendStartPlugin(plugin)
+      } catch (e) {
+        this.instance.log.error(e, LogMessage.Source.PLUGIN, plugin.name)
+      }
     }
     this.queue.missingDependencies().forEach(({ plugin, missing }) => {
       this.instance.log.warn(`refusing to load plugin ${plugin.name} because of missing dependencies: ${missing.join(", ")}`, LogMessage.Source.PLUGIN, plugin.name)

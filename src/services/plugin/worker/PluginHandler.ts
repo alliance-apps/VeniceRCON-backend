@@ -67,7 +67,7 @@ export class PluginHandler {
       await plugin.start()
       message.done()
     } catch (e) {
-      message.except(e.message)
+      message.except(e)
     }
   }
 }
