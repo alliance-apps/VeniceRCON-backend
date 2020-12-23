@@ -1,4 +1,5 @@
 import { Battlefield } from "vu-rcon"
+import { EventError } from "vu-rcon/lib/exceptions/EventError"
 import { Instance } from "./Instance"
 import { InstanceContainer } from "@service/container/InstanceContainer"
 import { socketManager } from "@service/koa/socket"
@@ -45,8 +46,12 @@ export class Connection extends EventEmitter {
 
   /** handles error events from the socket */
   private async onError(error: Error) {
-    this.parent.log.error(`received error from battlefield socket ${error.message}`)
-    this.battlefield.quit()
+    if (error instanceof EventError) {
+      this.parent.log.warn(`event handler in battlefield had an error in event ${error.event}: ${error.message}`)
+    } else {
+      this.parent.log.error(`received error from battlefield socket ${error.message}`)
+      this.battlefield.quit()
+    }
   }
 
   /** handles connections closed to the battlefield server */
