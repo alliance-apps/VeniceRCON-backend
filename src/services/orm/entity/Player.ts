@@ -53,9 +53,7 @@ export class Player extends AbstractEntity<Player> {
    */
   static async createPlayerSave(props: { guid: string, name: string }) {
     try {
-      //in order to catch the error here and not outside of the function
-      const player = await Player.from(props)
-      return player
+      return await Player.from(props)
     } catch (e) {
       if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
         let player = await Player.findOne({ name: props.name })
