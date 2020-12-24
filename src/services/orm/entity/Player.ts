@@ -102,7 +102,13 @@ export class Player extends AbstractEntity<Player> {
     await Promise.all(inserts.map(async name => {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
-      players.push(await this.createPlayerSave({ guid: data.playerGuid || data.guid, name: data.name }))
+      try {
+        const { playerGuid, name, guid } = data
+        players.push(await this.createPlayerSave({ guid: typeof playerGuid === "string" && playerGuid.length > 0 ? playerGuid : guid, name }))
+      } catch (e) {
+        winston.error(`could not insert player, name: "${data.name}", playerGuid: "${data.playerGuid}" guid: "${data.guid}" `)
+        winston.error(e)
+      }
     }))
     Object.keys(names).forEach(id => {
       const player = players.find(player => player.name === names[id])
