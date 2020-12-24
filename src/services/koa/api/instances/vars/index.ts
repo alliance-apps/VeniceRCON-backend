@@ -31,10 +31,12 @@ api.route({
   pre: perm(VariableScope.MODIFY),
   handler: async ctx => {
     const { instance } = ctx.state
-    await Promise.all(
+    const result = await Promise.allSettled(
       Object.keys(ctx.request.body!)
         .map(k => instance!.updateVariable(k, ctx.request.body[k]))
     )
+    result.filter(({ status }) => status === "rejected")
+      .forEach(res => ctx.state.instance!.log.error(`could not update a variable: ${(res as PromiseRejectedResult).reason}`))
     ctx.body = instance!.state.get("vars")
   }
 })

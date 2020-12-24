@@ -178,7 +178,9 @@ export class Instance {
   }
 
   async getPlayerDataByName(name: string) {
-    return Object.values(this.state.get("players")).find(p => p.name === name)
+    let player = Object.values(this.state.get("players")).find(p => p.name === name)
+    if (!player) player = (await this.playerList()).find(p => p.name === name)
+    return player
   }
 
   /** retrieves multiple player ids by their name */
