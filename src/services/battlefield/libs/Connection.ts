@@ -34,8 +34,8 @@ export class Connection extends EventEmitter {
     this.battlefield.on("error", this.onError.bind(this))
     this.battlefield.on("reconnect", this.onReconnect.bind(this))
     this.battlefield.on("close", this.onClose.bind(this))
-    this.battlefield.on("sendData", ({ words }) => this.publishSocketEvent("send", words))
-    this.battlefield.on("receiveData", ({ words }) => this.publishSocketEvent("receive", words))
+    this.battlefield.on("requestReceive", ({ request }) => this.publishSocketEvent("receive", request.getContentWords()))
+    this.battlefield.on("requestSend", ({ request }) => this.publishSocketEvent("send", request.packet.words))
   }
 
   /** handles a reconnect event from the server */
