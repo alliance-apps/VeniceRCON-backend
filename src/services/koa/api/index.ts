@@ -11,9 +11,31 @@ import { jwtMiddleware } from "../jwt"
 import { PluginRepositoryScope, UserScope } from "@service/permissions/Scopes"
 import { perm } from "../permission"
 import { isEnabled } from "@service/mail"
+import auth from "koa-basic-auth"
+import client from "prom-client"
+import { httpRequestDuration } from "@service/metrics/prometheus"
 
 export async function createRoute() {
   const router = Router()
+
+  //prometheus metrics collection
+  if (config.metrics.prometheus.enable) {
+    router.use(async (ctx, next) => {
+      const stop = httpRequestDuration.startTimer()
+      await next()
+      stop({
+        method:ctx.method,
+        url: ctx.url,
+        statusCode: String(ctx.status)
+      })
+    })
+    router.get(
+      "/metrics",
+      auth(config.metrics.prometheus.basicauth),
+      async ctx => {
+        ctx.body = await client.register.metrics()
+      })
+  }
 
   router.use(bodyParser({
     enableTypes: ["json"],

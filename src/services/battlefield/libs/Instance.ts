@@ -12,6 +12,7 @@ import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
 import { getScopesFromMask } from "@service/permissions/Scopes"
+import { instancePlayerOnlineStats } from "../../metrics/prometheus"
 
 export class Instance {
 
@@ -277,6 +278,7 @@ export class Instance {
   async serverInfo() {
     const info = await this.battlefield.serverInfo()
     this.state.updateServerInfo(info)
+    instancePlayerOnlineStats.labels(String(this.id)).set(info.slots)
     return info
   }
 

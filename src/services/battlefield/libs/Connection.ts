@@ -8,6 +8,7 @@ import { Word } from "vu-rcon/lib/transport/protocol/Word"
 import chalk from "chalk"
 import { EventEmitter } from "typeorm/platform/PlatformTools"
 import { ReconnectEvent } from "vu-rcon/lib/types/Event"
+import { activeInstances } from "@service/metrics/prometheus"
 
 export interface Connection {
   on(event: "connected"|"disconnected", handler: () => void): this
@@ -31,6 +32,7 @@ export class Connection extends EventEmitter {
   }
 
   private registerEvents() {
+    this.battlefield.on("ready", this.onReady.bind(this))
     this.battlefield.on("error", this.onError.bind(this))
     this.battlefield.on("reconnect", this.onReconnect.bind(this))
     this.battlefield.on("close", this.onClose.bind(this))
@@ -38,10 +40,14 @@ export class Connection extends EventEmitter {
     this.battlefield.on("requestSend", ({ request }) => this.publishSocketEvent("send", request.packet.words))
   }
 
+  private onReady() {
+    activeInstances.inc()
+  }
+
   /** handles a reconnect event from the server */
   private async onReconnect({ success, attempt }: ReconnectEvent) {
-    if (!success) return
-    this.parent.log.warn(`reconnect attempt ${attempt}/${Connection.RECONNECT_ATTEMPTS} failed`)
+    if (success) return
+    this.parent.log.warn(`reconnect attempt ${attempt} failed`)
   }
 
   /** handles error events from the socket */
@@ -56,6 +62,7 @@ export class Connection extends EventEmitter {
 
   /** handles connections closed to the battlefield server */
   private async onClose() {
+    activeInstances.dec()
     //checks if closing of connection has been requested
     if (this.requestStop) {
       const { host, port } = this.battlefield.options

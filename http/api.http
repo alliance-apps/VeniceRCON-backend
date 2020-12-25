@@ -1,0 +1,7 @@
+### retrieve api informations
+GET {{$dotenv url}}/api
+
+
+### retrieve metrics for prometheus
+GET {{$dotenv url}}/api/metrics
+Authorization: Basic cHJvbWV0aGV1czprZWt0dXM=

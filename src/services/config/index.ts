@@ -25,5 +25,4 @@ export async function initialize(args: Record<string, string>) {
     winston.error("could not validate configuration! please check your config.yaml against config.dist.yaml!")
     throw e
   }
-
 }

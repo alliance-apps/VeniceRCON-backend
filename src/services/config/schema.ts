@@ -47,7 +47,17 @@ export const schema = Joi.object({
       subject: Joi.string().optional().default("Forgot Password request"),
       text: Joi.string().optional().default("Hello %username%,\na password reset has been requested for your account!\nYour new password is:\n\n%password%")
     })
-  })
+  }),
+  metrics: Joi.object({
+    prometheus: Joi.object({
+      enable: Joi.boolean().optional().default(false),
+      instance: Joi.string().default("default"),
+      basicauth: Joi.object({
+        name: Joi.string(),
+        pass: Joi.string()
+      }),
+    }).default({ enable: false, instance: "default" })
+  }).default({ prometheus: { enable: false, instance: "default" }})
 })
 
 export interface Configuration {
@@ -93,6 +103,16 @@ export interface Configuration {
     content: {
       subject: string
       text: string
+    }
+  },
+  metrics: {
+    prometheus: {
+      enable: boolean
+      instance: string
+      basicauth: {
+        name: string,
+        pass: string
+      }
     }
   }
 }
