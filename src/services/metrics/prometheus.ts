@@ -15,12 +15,18 @@ export const httpRequestDuration = new client.Histogram({
 export const instancePlayerOnlineStats = new client.Gauge({
   name: "venicercon_instance_active_players_count",
   help: "active players on a specific instance",
-  labelNames: ["instance"]
+  labelNames: ["id", "name"]
 })
 
 export const activeInstances = new client.Gauge({
   name: "venicercon_online_instances_count",
-  help: "active players on a specific instance",
+  help: "online instances",
+  labelNames: []
+})
+
+export const inActiveInstances = new client.Gauge({
+  name: "venicercon_offline_instances_count",
+  help: "offline",
   labelNames: []
 })
 

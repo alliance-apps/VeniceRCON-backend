@@ -8,7 +8,7 @@ import { Word } from "vu-rcon/lib/transport/protocol/Word"
 import chalk from "chalk"
 import { EventEmitter } from "typeorm/platform/PlatformTools"
 import { ReconnectEvent } from "vu-rcon/lib/types/Event"
-import { activeInstances } from "@service/metrics/prometheus"
+import { activeInstances, inActiveInstances } from "@service/metrics/prometheus"
 
 export interface Connection {
   on(event: "connected"|"disconnected", handler: () => void): this
@@ -42,6 +42,7 @@ export class Connection extends EventEmitter {
 
   private onReady() {
     activeInstances.inc()
+    inActiveInstances.dec()
   }
 
   /** handles a reconnect event from the server */
@@ -63,6 +64,7 @@ export class Connection extends EventEmitter {
   /** handles connections closed to the battlefield server */
   private async onClose() {
     activeInstances.dec()
+    inActiveInstances.inc()
     //checks if closing of connection has been requested
     if (this.requestStop) {
       const { host, port } = this.battlefield.options

@@ -280,7 +280,7 @@ export class Instance {
   async serverInfo() {
     const info = await this.battlefield.serverInfo()
     this.state.updateServerInfo(info)
-    instancePlayerOnlineStats.labels(String(this.id)).set(info.slots)
+    instancePlayerOnlineStats.labels(String(this.id), this.state.get("name")).set(info.slots)
     if (this.name !== info.name) {
       await InstanceEntity.update({ id: this.id }, { name: info.name })
       this.name = info.name
