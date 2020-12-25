@@ -29,6 +29,7 @@ export class Connection extends EventEmitter {
     })
     this.parent = props.instance
     this.registerEvents()
+    inActiveInstances.inc()
   }
 
   private registerEvents() {
