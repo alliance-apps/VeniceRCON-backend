@@ -10,6 +10,7 @@ const schema = (meta: Partial<Meta> = {}): Meta => ({
   name: "example",
   description: "description of example",
   version: "1.0.0",
+  author: "foobar",
   backend: "*",
   entry: "index.js",
   dependency: [],
