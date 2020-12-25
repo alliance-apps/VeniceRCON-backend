@@ -65,6 +65,7 @@ export const metaSchema = Joi.object({
   name: Joi.string().min(3).required(),
   description: Joi.string().optional(),
   version: Joi.string().regex(/^\d+\.\d+\.\d+$/).required(),
+  author: Joi.string().optional().allow("").default(""),
   backend: Joi.string().valid("VU", "BF3", "*").insensitive().uppercase().required(),
   entry: Joi.string().required(),
   dependency: Joi.array().items(Joi.string()).optional().default([]),
@@ -96,6 +97,7 @@ export interface Meta {
   name: string
   description?: string
   version: string
+  author: string
   backend: "BF3"|"VU"|"*"
   entry: string
   dependency: string[]
