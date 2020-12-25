@@ -19,15 +19,16 @@ export async function createRoute() {
   const router = Router()
 
   //prometheus metrics collection
-  if (config.metrics.prometheus.enable) {
+  if (config.metrics && config.metrics.prometheus.enable) {
     router.use(async (ctx, next) => {
       const stop = httpRequestDuration.startTimer()
-      await next()
-      stop({
-        method:ctx.method,
-        url: ctx.url,
-        statusCode: String(ctx.status)
-      })
+      try {
+        await next()
+        stop({  method:ctx.method, url: ctx.url, statusCode: String(ctx.status) })
+      } catch (e) {
+        stop({  method:ctx.method, url: ctx.url, statusCode: String(ctx.status) })
+        throw e
+      }
     })
     router.get(
       "/metrics",

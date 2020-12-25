@@ -16,6 +16,7 @@ import { instancePlayerOnlineStats } from "../../metrics/prometheus"
 
 export class Instance {
 
+  private lastName: string
   readonly connection: Connection
   readonly state: InstanceContainer
   readonly plugin: PluginManager
@@ -33,6 +34,7 @@ export class Instance {
 
   constructor(props: Instance.Props) {
     this.state = new InstanceContainer({ entity: props.entity })
+    this.lastName = props.entity.name
     this.log = new InstanceLogger({ instance: this })
     this.syncInterval = props.entity.syncInterval
     this.readyPromise.resolver = new Promise(fulfill => {
@@ -279,6 +281,10 @@ export class Instance {
     const info = await this.battlefield.serverInfo()
     this.state.updateServerInfo(info)
     instancePlayerOnlineStats.labels(String(this.id)).set(info.slots)
+    if (this.lastName !== info.name) {
+      await InstanceEntity.update({ id: this.id }, { name: info.name })
+      this.lastName = info.name
+    }
     return info
   }
 

@@ -60,3 +60,10 @@ smtp:
     #you can use wildcards  %username% and %password% for subject and text
     subject: "Forgot Password request"
     text: "Hello %username%, your new password is %password%"
+metrics:
+  prometheus:
+    enable: false
+    instance: "default"
+    basicauth:
+      user: admin
+      pass: ""

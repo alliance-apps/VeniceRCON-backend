@@ -1,7 +1,7 @@
 import client from "prom-client"
 import { config } from "@service/config"
 
-client.register.setDefaultLabels({ host: config.metrics.prometheus.instance })
+client.register.setDefaultLabels({ host: config.metrics ? config.metrics.prometheus.instance : "default" })
 client.collectDefaultMetrics({
   prefix: "venicercon_"
 })

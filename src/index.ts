@@ -10,6 +10,7 @@ const cleanup = register({
   }
 })
 
+
 ;(async () => {
 
   //check arguments
@@ -37,13 +38,13 @@ const cleanup = register({
   cleanup()
 
   process.on("uncaughtException", error => {
-    require("@service/metrics/prometheus").exceptionsCounter.labels("uncaughtException").inc()
+    require("./services/metrics/prometheus").exceptionsCounter.labels("uncaughtException").inc()
     winston.error("uncaught exception")
     winston.error(error)
   })
 
   process.on("unhandledRejection", error => {
-    require("@service/metrics/prometheus").exceptionsCounter.labels("unhandledRejection").inc()
+    require("./services/metrics/prometheus").exceptionsCounter.labels("unhandledRejection").inc()
     winston.error("unhandled Promise rejection")
     winston.error(error)
   })

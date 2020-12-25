@@ -105,7 +105,7 @@ export interface Configuration {
       text: string
     }
   },
-  metrics: {
+  metrics?: {
     prometheus: {
       enable: boolean
       instance: string
