@@ -5,7 +5,6 @@ import path from "path"
 import { Plugin } from "./Plugin"
 import { PluginWorker } from "./PluginWorker"
 import { Plugin as PluginEntity } from "@entity/Plugin"
-import { loadPluginMeta } from "./PluginUtil"
 
 export class PluginManager {
 
@@ -84,12 +83,31 @@ export class PluginManager {
       //plugin has been removed
       if (!(await this.checkPreconditionPlugin(entity.uuid)))
         return this.parent.log.warn(`not loading plugin uuid ${entity.uuid} precondition failed`)
-      const meta = await this.getMeta(entity)
+      let meta: any
+      try {
+        meta = await Plugin.loadMeta(this.getPath(entity.uuid, "meta.yaml"))
+      } catch (e) {
+        this.parent.log.error(`could not load meta.yaml (plugin: ${entity.uuid})`)
+        this.parent.log.error(e)
+        return
+      }
       plugin = new Plugin({ meta, entity, parent: this })
       this.plugins.push(plugin)
     } else {
+      try {
+        await plugin.reloadMeta()
+      } catch (e) {
+        this.parent.log.error(`could not reload meta.yaml (plugin: ${entity.uuid})`)
+        this.parent.log.error(e)
+        return
+      }
       plugin.entity = entity
     }
+  }
+
+  /** retrieves the path to the plugin installation directory */
+  getPath(uuid: string, file: string = "") {
+    return path.join(this.baseDir, uuid, file)
   }
 
   /** check preconditions if folder exists */
@@ -112,10 +130,6 @@ export class PluginManager {
       if (e.code === "ENOENT") return false
       throw e
     }
-  }
-
-  private getMeta(entity: PluginEntity) {
-    return loadPluginMeta(path.join(this.baseDir, entity.uuid, "meta.yaml"))
   }
 
   /** retrieves a plugin by its name */

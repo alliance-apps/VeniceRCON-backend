@@ -20,7 +20,17 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "foo": "non default"
+  "fooKey": "something",
+  "arrayKey": [{
+    "nestedStringKey": "something else",
+    "arrayRecursive": [{
+      "nestedStringKey2": "123",
+      "nestedStringNumber2": 123
+    }, {
+      "nestedStringKey2": "1234",
+      "nestedStringNumber2": 1234
+    }]
+  }]
 }
 
 ### starts a plugin

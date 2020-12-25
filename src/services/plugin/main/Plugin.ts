@@ -6,12 +6,13 @@ import { Context } from "koa"
 import { promises as fs } from "fs"
 import path from "path"
 import { pluginStore } from ".."
+import { loadPluginMeta } from "./PluginUtil"
 
 export class Plugin {
 
   entity: PluginEntity
   readonly manager: PluginManager
-  readonly meta: Meta
+  meta: Meta
   state: Plugin.State = Plugin.State.STOPPED
   private config: Record<string, any> = {}
 
@@ -147,6 +148,14 @@ export class Plugin {
     }
   }
 
+  async reloadMeta() {
+    const path = this.manager.getPath(this.entity.uuid, "meta.yaml")
+    this.meta = await Plugin.loadMeta(path)
+  }
+
+  static loadMeta(path: string) {
+    return loadPluginMeta(path)
+  }
 }
 
 export namespace Plugin {

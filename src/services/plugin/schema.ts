@@ -39,7 +39,6 @@ export const selectSchema = baseVarSchema.keys({
   options: Joi.object().pattern(/.*/, Joi.string()).required(),
   default: Joi.array().items(Joi.string()).default("").optional()
 })
-
 const baseSchemas = [
   stringSchema,
   numberSchema,
@@ -48,17 +47,17 @@ const baseSchemas = [
   selectSchema
 ]
 
-
 /** allows an array of strings */
 export const arraySchema = baseVarSchema.keys({
   type: Joi.string().valid("array").required(),
-  vars: Joi.array().items(...baseSchemas).required(),
+  vars: Joi.array().items(Joi.link("#self"), ...baseSchemas).required(),
   default: Joi.array().default([]).optional()
-})
+}).id("self")
+
 
 /** create schema early so it can be required a circular dependency */
 export const varSchema = Joi.array()
-  .items(...baseSchemas, arraySchema)
+  .items(arraySchema, ...baseSchemas)
   .default([])
   .optional()
 
@@ -114,7 +113,8 @@ export type PluginVariable =
   PluginBooleanVariable |
   PluginStringsVariable |
   PluginArrayVariable |
-  PluginSelectVariable
+  PluginSelectVariable |
+  PluginArrayVariable
 
 export interface PluginBaseVariable {
   name: string
