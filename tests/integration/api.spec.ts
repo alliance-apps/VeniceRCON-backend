@@ -222,6 +222,16 @@ describe("API", () => {
     const scopes = ["INSTANCE#ACCESS"]
     const res = await api.post(`/users/${user.id}/permissions`, { root: true, scopes })
     expect(res.status).toBe(200)
+    const body = await res.json()
+    cache.set("permId", body.id)
+    //cache.set(res.json(body.))
+  })
+
+  it("DELETE /users/:id/permissions - secondary user should successfully assign permissions to the newly created user", async () => {
+    expect.assertions(1)
+    const user = cache.get("bar")
+    const res = await api.delete(`/users/${user.id}/permissions/${cache.get("permId")}`)
+    expect(res.status).toBe(200)
   })
 
   it("POST /users/:id/permissions - secondary user should fail assigning permissions he do not have", async () => {
