@@ -68,7 +68,7 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "name": "Mu"
+  "guid": "984a4d8aefd4494fa6e8d35de3151dd5"
 }
 
 

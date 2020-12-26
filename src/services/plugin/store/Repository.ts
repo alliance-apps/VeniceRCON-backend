@@ -78,7 +78,7 @@ export class Repository {
       instance.log.error(`could not download plugin uuid "${this.uuid}", ${e.message}`)
       throw e
     }
-    await instance.plugin.reloadPlugins()
+    await instance.plugin.reloadPlugins(true)
   }
 
   /**

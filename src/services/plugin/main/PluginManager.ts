@@ -50,7 +50,7 @@ export class PluginManager {
   }
 
   /** reloads all available plugins for this manager */
-  async reloadPlugins() {
+  async reloadPlugins(force: boolean = false) {
     const condition = await this.checkPrecondition()
     if (condition === PluginManager.PreCondition.PLUGIN_FOLDER_NOT_FOUND)
       return this.parent.log.info("skipping reload (plugin folder does not exist)")
@@ -63,7 +63,7 @@ export class PluginManager {
     //check if worker needs to be restarted
     if (
       (this.plugins.length !== preRemove || preRemove !== preAdd) &&
-      !this.worker.isStopped
+      !this.worker.isStopped || force
     ) {
       await this.worker.restart()
     //check if worker start conditions are okay

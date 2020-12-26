@@ -78,10 +78,7 @@ export class Plugin {
    * @param config updated values from the config
    */
   async updateConfig(config: Record<string, any>) {
-    this.config = {
-      ...this.getConfig(),
-      ...config
-    }
+    this.config = { ...this.getConfig(), ...config }
     await PluginEntity.updateConfig(await this.entity.id, config)
     await this.entity.reload()
   }
