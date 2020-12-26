@@ -90,8 +90,6 @@ export async function connect(args: Record<string, string>) {
   permission.mask = getBitMaskWithAllPermissions()
   await permission.save()
 
-  console.log(await Permission.find({userId: admin.id }))
-
   if (Object.keys(args).includes("--override-password")) {
     const password = args["--override-password"]
     if (password.length < 6) throw new Error(`override password should have a minimum length of 6 characters! (got ${password.length})`)

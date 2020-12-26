@@ -78,6 +78,17 @@ api.route({
       ctx.body = { message: "either root is true or instanceId should be a number" }
       return ctx.status = 400
     }
+    if (root) {
+      if (await Permission.findOne({ root: true, userId: ctx.state.user!.id })) {
+        ctx.body = { message: "a root permission already exists for this user" }
+        return ctx.status = 409
+      }
+    } else if (instanceId) {
+      if (await Permission.findOne({ root: false, instanceId, userId: ctx.state.user!.id })) {
+        ctx.body = { message: "this user already has permissions for this instance" }
+        return ctx.status = 409
+      }
+    }
     const mask = getBitMaskFromScopes(scopes)
     const ok = await permissionManager.hasPermissions({
       user: ctx.state.token!.id,
