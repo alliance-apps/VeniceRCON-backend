@@ -7,8 +7,30 @@ import yaml from "yaml"
 import winston from "winston"
 import { Repository } from "../Repository"
 import copy from "recursive-copy"
+import chokidar from "chokidar"
 
 export class DevProvider extends Provider {
+
+  private watcher: chokidar.FSWatcher
+
+  constructor(props: Provider.Props) {
+    super(props)
+    const location = DevProvider.folderLocation()
+    this.watcher = chokidar.watch([
+      `${location}/**/*`, //watch everything inside the dev folder
+      `!${location}/*/node_modules`, //ignore all node_moodules
+      `!${location}/*/package(-lock)?.json`, //ignores all package jsons
+      `!${location}/**/.*` //ignore all files which starts with "."
+    ], {
+      awaitWriteFinish: true
+    })
+    this.watcher
+      .on("add", file => winston.verbose(`adding file watcher to ${file}`))
+      .on("addDir", dir => winston.verbose(`adding directoy watcher to ${dir}`))
+      .on("unlink", file => winston.verbose(`removing file watcher from ${file}`))
+      .on("unlinkDir", dir => winston.verbose(`removing dir watcher from ${dir}`))
+      .on("change", () => this.reload())
+  }
 
   /** retrieves a list of plugins from the dev folder */
   protected async fetchPlugins(): Promise<PluginStoreSchema> {
