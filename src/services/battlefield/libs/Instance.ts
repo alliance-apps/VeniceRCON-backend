@@ -13,6 +13,7 @@ import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
 import { getScopesFromMask } from "@service/permissions/Scopes"
 import { instancePlayerOnlineStats } from "../../metrics/prometheus"
+import { activeInstances, inActiveInstances } from "@service/metrics/prometheus"
 
 export class Instance {
 
@@ -34,6 +35,7 @@ export class Instance {
 
   constructor(props: Instance.Props) {
     this.name = props.entity.name
+    inActiveInstances.inc()
     this.state = new InstanceContainer({ entity: props.entity, parent: this })
     this.log = new InstanceLogger({ instance: this })
     this.syncInterval = props.entity.syncInterval
@@ -63,10 +65,15 @@ export class Instance {
     this.registerEvents()
     this.connection.on("disconnected", async () => {
       this.stopUpdateInterval()
+      instancePlayerOnlineStats.remove(String(this.id), this.state.get("name"))
+      inActiveInstances.inc()
+      activeInstances.dec()
       await this.plugin.stop()
     })
     this.connection.on("connected", async () => {
       this.startUpdateInterval()
+      inActiveInstances.dec()
+      activeInstances.inc()
       await this.plugin.start()
     })
     if (props.entity.autostart) {
@@ -242,8 +249,11 @@ export class Instance {
   /** removes this instance */
   async remove() {
     await this.stop()
-    this.battlefield.removeAllListeners()
-    this.state.remove()
+    setTimeout(() => {
+      this.battlefield.removeAllListeners()
+      this.state.remove()
+      inActiveInstances.dec()
+    }, 500)
   }
 
   /** updates a single variable on the server */
