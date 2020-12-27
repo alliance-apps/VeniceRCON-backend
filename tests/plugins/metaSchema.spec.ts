@@ -14,6 +14,7 @@ const schema = (meta: Partial<Meta> = {}): Meta => ({
   backend: "*",
   entry: "index.js",
   dependency: [],
+  optionalDependency: [],
   vars: [],
   ...meta
 })
