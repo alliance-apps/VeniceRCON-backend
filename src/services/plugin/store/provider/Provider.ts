@@ -6,20 +6,16 @@ import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
 export abstract class Provider {
 
   entity: PluginStoreEntity
-  private interval: any
   /** list of plugins in this repository */
   plugins: Repository[] = []
 
   /** retrieve a list of plugins from the source store */
   protected abstract fetchPlugins(): Promise<PluginStoreSchema>
+  abstract destroy(): void
   abstract downloadPlugin(repository: Repository, location: string): Promise<void>
 
   constructor(props: Provider.Props) {
     this.entity = props.entity
-  }
-
-  destroy() {
-    clearInterval(this.interval)
   }
 
   get id() {
@@ -32,14 +28,13 @@ export abstract class Provider {
   }
 
   /** loads all plugins defined in the repository.yaml */
-  async reload() {
-    clearInterval(this.interval)
-    winston.info(`reading external plugins from store ${this.id}...`)
+  async reload(reason?: string) {
+    reason = reason ? ` (${reason})` : ""
+    winston.info(`reading external plugins from store ${this.id}${reason}`)
     try {
       const store = await this.validateSchema(await this.fetchPlugins())
       this.plugins = store.plugins.map(schema => new Repository({ provider: this, schema }))
       const i = this.plugins.length
-      this.interval = setInterval(() => this.reload(), this.entity.reloadTime || 60 * 60 * 1000)
       winston.info(`received ${i} plugin${i === 1 ? "" : "s"} from store ${this.id}`)
     } catch (e) {
       winston.error(`could not fetch plugins from repository ${this.id}`)

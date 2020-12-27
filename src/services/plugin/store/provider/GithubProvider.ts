@@ -7,6 +7,18 @@ import unzipper from "unzipper"
 
 export class GithubProvider extends Provider {
 
+  private interval: any
+
+  constructor(props: Provider.Props) {
+    super(props)
+    this.interval = setInterval(() => this.reload("timer"), this.reloadTime)
+  }
+
+  get reloadTime() {
+    return this.entity.reloadTime > 60 * 1000 ? this.entity.reloadTime : 60 * 60 * 1000
+  }
+
+
   /** retrieves a list of plugins */
   protected async fetchPlugins(): Promise<PluginStoreSchema> {
     const response = await fetch(this.url, {
@@ -14,6 +26,10 @@ export class GithubProvider extends Provider {
       redirect: "follow"
     })
     return yaml.parse(await response.text())
+  }
+
+  destroy() {
+    clearInterval(this.interval)
   }
 
   async downloadPlugin(repository: Repository, location: string) {

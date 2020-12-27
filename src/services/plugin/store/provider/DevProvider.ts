@@ -11,7 +11,9 @@ import chokidar from "chokidar"
 
 export class DevProvider extends Provider {
 
+  static WAIT_TIME = 500
   private watcher: chokidar.FSWatcher
+  private timeout: any
 
   constructor(props: Provider.Props) {
     super(props)
@@ -29,7 +31,15 @@ export class DevProvider extends Provider {
       .on("addDir", dir => winston.verbose(`adding directoy watcher to ${dir}`))
       .on("unlink", file => winston.verbose(`removing file watcher from ${file}`))
       .on("unlinkDir", dir => winston.verbose(`removing dir watcher from ${dir}`))
-      .on("change", () => this.reload())
+      .on("change", file => {
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => this.reload(`changes in "${file}"`), DevProvider.WAIT_TIME)
+      })
+  }
+
+  destroy() {
+    this.watcher.close()
+    clearTimeout(this.timeout)
   }
 
   /** retrieves a list of plugins from the dev folder */
