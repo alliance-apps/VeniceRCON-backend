@@ -45,8 +45,7 @@ export class PluginQueue {
    */
   next(): Plugin|false {
     if (this.state === PluginQueue.State.NO_DEPENDENCY) {
-      const plugin = this.plugins
-        .find(p => !p.meta.dependency || p.meta.dependency.length === 0)
+      const plugin = this.plugins.find(p => p.meta.dependency.length === 0 && p.meta.optionalDependency.length === 0)
       if (plugin) {
         return this.retrievePlugin(plugin)
       } else {
@@ -54,8 +53,17 @@ export class PluginQueue {
       }
     }
     if (this.state === PluginQueue.State.WITH_DEPENDENCY) {
-      const plugin = this.plugins
-        .find(p => p.meta.dependency!.every(name => this.started.includes(name)))
+      const plugin = this.plugins.find(p => (
+        p.meta.dependency.every(name => this.started.includes(name)) && p.meta.optionalDependency.length === 0
+      ))
+      if (plugin) {
+        return this.retrievePlugin(plugin)
+      } else {
+        this.state = PluginQueue.State.WITH_OPTIONAL_DEPENDENCY
+      }
+    }
+    if (this.state === PluginQueue.State.WITH_OPTIONAL_DEPENDENCY) {
+      const plugin = this.plugins.find(p => p.meta.dependency.every(name => this.started.includes(name)))
       if (plugin) return this.retrievePlugin(plugin)
     }
     return false
@@ -75,6 +83,7 @@ export class PluginQueue {
 export namespace PluginQueue {
   export enum State {
     NO_DEPENDENCY,
-    WITH_DEPENDENCY
+    WITH_DEPENDENCY,
+    WITH_OPTIONAL_DEPENDENCY
   }
 }

@@ -69,6 +69,7 @@ export const metaSchema = Joi.object({
   backend: Joi.string().valid("VU", "BF3", "*").insensitive().uppercase().required(),
   entry: Joi.string().required(),
   dependency: Joi.array().items(Joi.string()).optional().default([]),
+  optionalDependency: Joi.array().items(Joi.string()).optional().default([]),
   vars: varSchema
 })
 
@@ -101,6 +102,7 @@ export interface Meta {
   backend: "BF3"|"VU"|"*"
   entry: string
   dependency: string[]
+  optionalDependency: string[]
   vars: PluginVariable[]
 }
 

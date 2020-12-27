@@ -16,12 +16,14 @@ export class WorkerPlugin {
   exported: any
   router: PluginRouter = new PluginRouter()
   engine: PluginEngine
+  logger: PluginLogger
 
   constructor(props: WorkerPlugin.Props) {
     this.parent = props.parent
     this.basePath = props.basePath
     this.info = props.info
     this.engine = new PluginEngine({ messenger: this.parent.messenger })
+    this.logger = new PluginLogger(this.parent.messenger, this.info.name)
   }
 
   get meta() {
@@ -50,7 +52,7 @@ export class WorkerPlugin {
       config: await this.getConfig(),
       battlefield: this.parent.battlefield,
       dependency: this.getDependencies(),
-      logger: new PluginLogger(this.parent.messenger, this.info.name),
+      logger: this.logger,
       store: await PluginStore.from({ file: this.storePath }),
       router: this.router,
       engine: await this.engine
@@ -59,11 +61,15 @@ export class WorkerPlugin {
   }
 
   private getDependencies(): Record<string, any> {
-    if (!this.info.meta.dependency || this.info.meta.dependency.length === 0) return {}
     const dependency: Record<string, any> = {}
     this.info.meta.dependency.forEach(name => {
       const plugin = this.parent.getPluginByName(name)
-      if (!plugin) throw new Error(`could not find dependency ${name} for plugin ${this.info.name}`)
+      if (!plugin) throw new Error(`could not find required dependency ${name} for plugin ${this.info.name}`)
+      dependency[name] = plugin.exported
+    })
+    this.info.meta.optionalDependency.forEach(name => {
+      const plugin = this.parent.getPluginByName(name)
+      if (!plugin) return this.logger.info(`skipping optional dependency "${name}"`)
       dependency[name] = plugin.exported
     })
     return dependency
