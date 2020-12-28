@@ -12,8 +12,13 @@ import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
 import { getScopesFromMask } from "@service/permissions/Scopes"
-import { instancePlayerOnlineStats } from "../../metrics/prometheus"
-import { activeInstances, inActiveInstances } from "@service/metrics/prometheus"
+import {
+  addServerMetrics,
+  connectServerMetrics,
+  removeServerMetrics,
+  disconnectServerMetrics,
+  updateServerMetrics
+} from "../../metrics/prometheus"
 
 export class Instance {
 
@@ -35,8 +40,8 @@ export class Instance {
 
   constructor(props: Instance.Props) {
     this.name = props.entity.name
-    inActiveInstances.inc()
     this.state = new InstanceContainer({ entity: props.entity, parent: this })
+    addServerMetrics(this.state)
     this.log = new InstanceLogger({ instance: this })
     this.syncInterval = props.entity.syncInterval
     this.readyPromise.resolver = new Promise(fulfill => {
@@ -65,15 +70,12 @@ export class Instance {
     this.registerEvents()
     this.connection.on("disconnected", async () => {
       this.stopUpdateInterval()
-      instancePlayerOnlineStats.remove(String(this.id), this.state.get("name"))
-      inActiveInstances.inc()
-      activeInstances.dec()
+      disconnectServerMetrics(this.state)
       await this.plugin.stop()
     })
     this.connection.on("connected", async () => {
       this.startUpdateInterval()
-      inActiveInstances.dec()
-      activeInstances.inc()
+      connectServerMetrics(this.state)
       await this.plugin.start()
     })
     if (props.entity.autostart) {
@@ -251,8 +253,8 @@ export class Instance {
     await this.stop()
     setTimeout(() => {
       this.battlefield.removeAllListeners()
+      removeServerMetrics(this.state)
       this.state.remove()
-      inActiveInstances.dec()
     }, 500)
   }
 
@@ -290,11 +292,11 @@ export class Instance {
   async serverInfo() {
     const info = await this.battlefield.serverInfo()
     this.state.updateServerInfo(info)
-    instancePlayerOnlineStats.labels(String(this.id), this.state.get("name")).set(info.slots)
     if (this.name !== info.name) {
       await InstanceEntity.update({ id: this.id }, { name: info.name })
       this.name = info.name
     }
+    updateServerMetrics(this.state)
     return info
   }
 
