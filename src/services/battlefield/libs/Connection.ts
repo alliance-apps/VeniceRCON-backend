@@ -51,6 +51,8 @@ export class Connection extends EventEmitter {
     } else {
       this.parent.log.error(`received error from battlefield socket ${error.message}`)
       this.battlefield.quit()
+      //force instance state to be disconnected
+      this.updateConnectionState(Instance.State.DISCONNECTED)
     }
   }
 
