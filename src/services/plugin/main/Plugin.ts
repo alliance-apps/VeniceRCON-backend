@@ -81,6 +81,14 @@ export class Plugin {
     this.config = { ...this.getConfig(), ...config }
     await PluginEntity.updateConfig(await this.entity.id, config)
     await this.entity.reload()
+    if (this.state !== Plugin.State.STARTED) return
+    await this.restart()
+  }
+
+  /** restarts the worker */
+  restart() {
+    if (this.state !== Plugin.State.STARTED) return this.start()
+    return this.worker.restart()
   }
 
   /** sets the plugin to autostart after a reboot */
@@ -108,8 +116,7 @@ export class Plugin {
 
   /** stops the plugin if its currently running */
   stop() {
-    if (this.state === Plugin.State.STOPPED)
-    return this.instance.log.info(`plugin ${this.name} already stopped`)
+    if (this.state === Plugin.State.STOPPED) return this.instance.log.info(`plugin ${this.name} already stopped`)
     this.state = Plugin.State.STOPPED
     return this.worker.stopPlugin(this)
   }
