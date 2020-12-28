@@ -63,8 +63,12 @@ export const exceptionsCounter = new client.Counter({
 export const metaData = new client.Gauge({
   name: `${prefix}build_info`,
   help: "build information about the current runtime",
-  labelNames: ["package_version", "platform", "arch", "node_version"]
+  labelNames: ["package_version", "platform", "arch", "node_version", "description"]
 })
 
+const packageVersion = config.packageInfo.version
+const platform = process.platform
+const arch = process.arch
+const version = process.version
 
-metaData.labels(config.packageInfo.version, process.platform, process.arch, process.version).set(Date.now())
+metaData.labels(packageVersion, platform, arch, version, `running on ${platform} ${arch} with node ${version} and package ${packageVersion}`).set(Date.now())
