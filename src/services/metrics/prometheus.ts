@@ -72,4 +72,4 @@ const platform = process.platform
 const arch = process.arch
 const version = process.version
 
-metaData.labels(packageVersion, platform, arch, version, `${host}: running on ${platform} ${arch} with node ${version} and package ${packageVersion}`).set(Date.now())
+metaData.labels(packageVersion, platform, arch, version, `${host}: ${platform} ${arch}, node ${version}, package ${packageVersion}`).set(Date.now())
