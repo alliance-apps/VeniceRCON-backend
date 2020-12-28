@@ -24,9 +24,9 @@ export async function createRoute() {
       const stop = httpRequestDuration.startTimer()
       try {
         await next()
-        stop({  method:ctx.method, url: ctx.url, statusCode: String(ctx.status) })
+        stop({ method: ctx.method.toUpperCase(), url: ctx.url, statusCode: String(ctx.status), address: ctx.request.ip })
       } catch (e) {
-        stop({  method:ctx.method, url: ctx.url, statusCode: String(ctx.status) })
+        stop({ method: ctx.method.toUpperCase(), url: ctx.url, statusCode: String(ctx.status), address: ctx.request.ip })
         throw e
       }
     })

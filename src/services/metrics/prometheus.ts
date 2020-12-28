@@ -12,7 +12,7 @@ client.collectDefaultMetrics({ prefix })
 export const httpRequestDuration = new client.Histogram({
   name: `${prefix}http_request_duration`,
   help: "http request durations",
-  labelNames: ["method", "url", "statusCode"]
+  labelNames: ["method", "url", "statusCode", "address"]
 })
 
 export const instancePlayerOnlineStats = new client.Gauge({
