@@ -54,6 +54,7 @@ describe("MetaSchema", () => {
 
     const vars = (type: any, data: Partial<PluginVariable> = {}): [PluginVariable] => ([{
       name: "foo",
+      title: "",
       description: "description of foo",
       type,
       conditions: [],
@@ -98,12 +99,14 @@ describe("MetaSchema", () => {
       })
       expect(await varSchema.validateAsync(schema))
         .toEqual([{
+          title: "",
           name: "foo",
           description: "description of foo",
           type: "array",
           default: [],
           conditions: [],
           vars: [{
+            title: "",
             name: "foo",
             description: "description of foo",
             type: "string",
@@ -118,27 +121,32 @@ describe("MetaSchema", () => {
   describe("validate variables updates", () => {
     const varSchema = (): PluginVariable[] => ([{
       name: "fooString",
+      title: "foo string title",
       description: "",
       type: "string",
       multiline: false,
       default: "default"
     }, {
       name: "fooNumber",
+      title: "foo number title",
       description: "",
       type: "number",
       default: 123
     }, {
       name: "fooBoolean",
+      title: "foo boolean title",
       description: "",
       type: "boolean",
       default: true
     }, {
       name: "fooStrings",
+      title: "foo strings title",
       description: "",
       type: "strings",
       default: ["foo", "bar"]
     }, {
       name: "fooSelect",
+      title: "foo select title",
       description: "",
       type: "select",
       options: {
@@ -182,11 +190,13 @@ describe("MetaSchema", () => {
       expect.assertions(1)
       const result = { fooArray: [{ bar: "baz" }, { bar: "foo" }] }
       expect(await checkVariableSchema([{
+        title: "foo title",
         name: "fooArray",
         description: "descriptor",
         type: "array",
         vars: [{
           name: "bar",
+          title: "bar title",
           description: "descriptor",
           type: "string"
         }]
