@@ -1,17 +1,18 @@
 import { Joi } from "koa-joi-router"
 
 const baseVarSchema = Joi.object({
+  title: Joi.string().allow("").optional().default(""),
   name: Joi.string().required(),
   description: Joi.string().required(),
   conditions: Joi.array().items(
-    Joi.object().pattern(/.*/, [Joi.string().allow(""), Joi.number(), Joi.boolean()])
+    Joi.object().pattern(/.*/, Joi.any())
   ).default([]).optional()
 })
 
 /** allows simple strings */
 export const stringSchema = baseVarSchema.keys({
   type: Joi.string().valid("string").required(),
-  default: Joi.string().default("").optional(),
+  default: Joi.string().default("").allow("").optional(),
   multiline: Joi.boolean().default(false).optional()
 })
 
@@ -30,7 +31,7 @@ export const booleanSchema = baseVarSchema.keys({
 /** allows an array of strings */
 export const stringsSchema = baseVarSchema.keys({
   type: Joi.string().valid("strings").required(),
-  default: Joi.array().items(Joi.string()).default([]).optional()
+  default: Joi.array().items(Joi.string().allow("")).default([]).optional()
 })
 
 /** allows multiple options */
@@ -39,6 +40,7 @@ export const selectSchema = baseVarSchema.keys({
   options: Joi.object().pattern(/.*/, Joi.string()).required(),
   default: Joi.array().items(Joi.string()).default("").optional()
 })
+
 const baseSchemas = [
   stringSchema,
   numberSchema,
@@ -121,6 +123,7 @@ export type PluginVariable =
   PluginArrayVariable
 
 export interface PluginBaseVariable {
+  title: string
   name: string
   description: string
   conditions?: {
