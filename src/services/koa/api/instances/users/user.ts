@@ -16,6 +16,10 @@ api.get("/", perm(InstanceUserScope.ACCESS), async ctx => {
 
 api.delete("/", perm(InstanceUserScope.REMOVE), async ctx => {
   const { userId, instanceId } = ctx.state.permission!
+  if (userId === ctx.state.token!.id) {
+    ctx.body = { message: "can not remove yourself from an instance" }
+    return ctx.status = 403
+  }
   const ok = await permissionManager.removeInstanceAccess(userId, instanceId)
   if (ok) return ctx.status = 200
   ctx.status = 400
@@ -33,6 +37,10 @@ api.route({
   },
   pre: perm(InstanceUserScope.UPDATE),
   handler: async ctx => {
+    if (ctx.state.permission!.userId === ctx.state.token!.id) {
+      ctx.body = { message: "can not modify own permissions" }
+      return ctx.status = 403
+    }
     const { scopes } = ctx.request.body
     const currentMask = ctx.state.permission!.mask
     const requestedMask = getBitMaskFromScopes(scopes)
