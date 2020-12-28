@@ -1,9 +1,7 @@
 import client from "prom-client"
 import { config } from "@service/config"
-import { InstanceContainer } from "../container/InstanceContainer"
 import { instanceManager } from "../battlefield"
 import { Instance } from "@service/battlefield/libs/Instance"
-import { server } from "../koa"
 
 client.register.setDefaultLabels({ host: config.metrics ? config.metrics.prometheus.instance : "default" })
 client.collectDefaultMetrics({
