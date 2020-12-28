@@ -1,6 +1,9 @@
 import client from "prom-client"
 import { config } from "@service/config"
 import { InstanceContainer } from "../container/InstanceContainer"
+import { instanceManager } from "../battlefield"
+import { Instance } from "@service/battlefield/libs/Instance"
+import { server } from "../koa"
 
 client.register.setDefaultLabels({ host: config.metrics ? config.metrics.prometheus.instance : "default" })
 client.collectDefaultMetrics({
@@ -16,19 +19,41 @@ export const httpRequestDuration = new client.Histogram({
 export const instancePlayerOnlineStats = new client.Gauge({
   name: "venicercon_instance_active_players_count",
   help: "active players on a specific instance",
-  labelNames: ["id", "name", "version"]
+  labelNames: ["id", "name", "version"],
+  collect() {
+    this.reset()
+    const { CONNECTED } = Instance.State
+    instanceManager.instances
+      .filter(({ state }) => state.get("state") === CONNECTED)
+      .forEach(({ state }) => {
+        const { id, name, version, serverinfo } = state.get()
+        this.labels(String(id), name, version).set(serverinfo.slots || 0)
+      })
+  }
 })
 
 export const activeInstances = new client.Gauge({
   name: "venicercon_online_instances_count",
   help: "online instances",
-  labelNames: []
+  labelNames: [],
+  collect() {
+    const { CONNECTED } = Instance.State
+    this.set(instanceManager.instances.filter(({ state }) => {
+      return state.get("state") === CONNECTED
+    }).length)
+  }
 })
 
 export const inActiveInstances = new client.Gauge({
   name: "venicercon_offline_instances_count",
   help: "offline",
-  labelNames: []
+  labelNames: [],
+  collect() {
+    const { CONNECTED } = Instance.State
+    this.set(instanceManager.instances.filter(({ state }) => {
+      return state.get("state") !== CONNECTED
+    }).length)
+  }
 })
 
 export const exceptionsCounter = new client.Counter({
@@ -36,41 +61,3 @@ export const exceptionsCounter = new client.Counter({
   help: "amount of unhandled exceptions happened",
   labelNames: ["type"]
 })
-
-/** adds an instance from metrics collection */
-export function addServerMetrics(state: InstanceContainer) {
-  inActiveInstances.inc()
-  updateServerMetrics(state)
-}
-
-/** removes an instance from metrics collection */
-export function removeServerMetrics(state: InstanceContainer) {
-  inActiveInstances.dec()
-  removeInstancePlayerStatsLabel(state)
-}
-
-/** sets metrics from an instance to connected state */
-export function connectServerMetrics(state: InstanceContainer) {
-  inActiveInstances.dec()
-  activeInstances.inc()
-}
-
-/** sets metrics from an instance to disconnected state */
-export function disconnectServerMetrics(state: InstanceContainer) {
-  inActiveInstances.inc()
-  activeInstances.dec()
-  removeInstancePlayerStatsLabel(state)
-}
-
-/** updates the server metrics with its state */
-export function updateServerMetrics(state: InstanceContainer) {
-  removeInstancePlayerStatsLabel(state)
-  instancePlayerOnlineStats
-    .labels(String(state.get("id")), state.get("name"), state.get("version"))
-    .set(state.get("serverinfo").slots || 0)
-}
-
-/** removes instance player online stats metrics */
-function removeInstancePlayerStatsLabel(state: InstanceContainer) {
-  instancePlayerOnlineStats.remove(String(state.get("id")))
-}
