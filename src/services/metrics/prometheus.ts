@@ -4,8 +4,9 @@ import { instanceManager } from "../battlefield"
 import { Instance } from "@service/battlefield/libs/Instance"
 
 const prefix = "venicercon_"
+const host = config.metrics ? config.metrics.prometheus.instance : "default"
 
-client.register.setDefaultLabels({ host: config.metrics ? config.metrics.prometheus.instance : "default" })
+client.register.setDefaultLabels({ host })
 client.collectDefaultMetrics({ prefix })
 
 export const httpRequestDuration = new client.Histogram({
@@ -71,4 +72,4 @@ const platform = process.platform
 const arch = process.arch
 const version = process.version
 
-metaData.labels(packageVersion, platform, arch, version, `running on ${platform} ${arch} with node ${version} and package ${packageVersion}`).set(Date.now())
+metaData.labels(packageVersion, platform, arch, version, `${host}: running on ${platform} ${arch} with node ${version} and package ${packageVersion}`).set(Date.now())
