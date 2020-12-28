@@ -3,19 +3,19 @@ import { config } from "@service/config"
 import { instanceManager } from "../battlefield"
 import { Instance } from "@service/battlefield/libs/Instance"
 
+const prefix = "venicercon_"
+
 client.register.setDefaultLabels({ host: config.metrics ? config.metrics.prometheus.instance : "default" })
-client.collectDefaultMetrics({
-  prefix: "venicercon_"
-})
+client.collectDefaultMetrics({ prefix })
 
 export const httpRequestDuration = new client.Histogram({
-  name: "venicercon_http_request_duration",
+  name: `${prefix}http_request_duration`,
   help: "http request durations",
   labelNames: ["method", "url", "statusCode"]
 })
 
 export const instancePlayerOnlineStats = new client.Gauge({
-  name: "venicercon_instance_active_players_count",
+  name: `${prefix}instance_active_players_count`,
   help: "active players on a specific instance",
   labelNames: ["id", "name", "version"],
   collect() {
@@ -31,7 +31,7 @@ export const instancePlayerOnlineStats = new client.Gauge({
 })
 
 export const activeInstances = new client.Gauge({
-  name: "venicercon_online_instances_count",
+  name: `${prefix}online_instances_count`,
   help: "online instances",
   labelNames: [],
   collect() {
@@ -43,7 +43,7 @@ export const activeInstances = new client.Gauge({
 })
 
 export const inActiveInstances = new client.Gauge({
-  name: "venicercon_offline_instances_count",
+  name: `${prefix}offline_instances_count`,
   help: "offline",
   labelNames: [],
   collect() {
@@ -55,7 +55,15 @@ export const inActiveInstances = new client.Gauge({
 })
 
 export const exceptionsCounter = new client.Counter({
-  name: "venicercon_exceptions_count",
+  name: `${prefix}exceptions_count`,
   help: "amount of unhandled exceptions happened",
   labelNames: ["type"]
 })
+
+const metaData = new client.Gauge({
+  name: `${prefix}build_info`,
+  help: "build information about the current runtime",
+  labelNames: ["package_version", "platform", "arch", "node_version"]
+})
+
+metaData.labels(config.packageInfo.version, process.platform, process.arch, process.version).set(1)

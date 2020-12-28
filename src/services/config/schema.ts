@@ -60,7 +60,12 @@ export const schema = Joi.object({
   }).default({ prometheus: { enable: false, instance: "default" }})
 })
 
+export type PackageInfo = {
+  version: string
+}
+
 export interface Configuration {
+  packageInfo: PackageInfo
   basepath: string
   database: {
     use: "sqlite"|"mariadb"|"postgres"
