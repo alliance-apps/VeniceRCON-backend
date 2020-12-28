@@ -103,10 +103,10 @@ export class Player extends AbstractEntity<Player> {
       const data = await retrieve(name)
       if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
       try {
-        const { playerGuid, name, guid } = data
-        players.push(await this.createPlayerSave({ guid: typeof playerGuid === "string" && playerGuid.length > 0 ? playerGuid : guid, name }))
+        const { name, guid } = data
+        players.push(await this.createPlayerSave({ guid, name }))
       } catch (e) {
-        winston.error(`could not insert player, name: "${data.name}", playerGuid: "${data.playerGuid}" guid: "${data.guid}" `)
+        winston.error(`could not insert player, name: "${data.name}", guid: "${data.guid}" `)
         winston.error(e)
       }
     }))
