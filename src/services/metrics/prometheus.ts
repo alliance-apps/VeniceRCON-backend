@@ -22,9 +22,9 @@ export const instancePlayerOnlineStats = new client.Gauge({
     this.reset()
     const { CONNECTED } = Instance.State
     instanceManager.instances
-      .filter(({ state }) => state.get("state") === CONNECTED)
+      .filter(({ state }) => state.state.all().state === CONNECTED)
       .forEach(({ state }) => {
-        const { id, name, version, serverinfo } = state.get()
+        const { id, name, version, serverinfo } = state.state.all()
         this.labels(String(id), name, version).set(serverinfo.slots || 0)
       })
   }
@@ -37,7 +37,7 @@ export const activeInstances = new client.Gauge({
   collect() {
     const { CONNECTED } = Instance.State
     this.set(instanceManager.instances.filter(({ state }) => {
-      return state.get("state") === CONNECTED
+      return state.state.all().state === CONNECTED
     }).length)
   }
 })
@@ -49,7 +49,7 @@ export const inActiveInstances = new client.Gauge({
   collect() {
     const { CONNECTED } = Instance.State
     this.set(instanceManager.instances.filter(({ state }) => {
-      return state.get("state") !== CONNECTED
+      return state.state.all().state !== CONNECTED
     }).length)
   }
 })

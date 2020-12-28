@@ -18,6 +18,10 @@ export class State<T extends State.Type> {
     return State.getPaths(<any>State.updateDeep(this.state, props))
   }
 
+  all(): Readonly<T> {
+    return this.state
+  }
+
   /**
    * retrieves lodash queryable paths from changes
    */

@@ -4,7 +4,7 @@ import { socketManager } from "@service/koa/socket"
 export abstract class StreamingContainer<T extends State.Type> {
 
   abstract readonly id: number
-  private state: State<T>
+  readonly state: State<T>
 
   constructor(state: T) {
     this.state = new State(state)
