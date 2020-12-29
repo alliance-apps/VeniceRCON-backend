@@ -71,8 +71,8 @@ export class Player extends AbstractEntity<Player> {
         winston.error(util.inspect(e, { depth: 4 }))
         throw e
       } else {
-        winston.verbose("Could not insert player in getPlayerIds")
-        winston.verbose(util.inspect(e, {depth: 4}))
+        winston.error("Could not insert player in getPlayerIds")
+        winston.error(util.inspect(e, {depth: 4}))
         throw e
       }
     }
