@@ -4,31 +4,60 @@ import { WorkerPlugin } from "./WorkerPlugin"
 import { PluginState, WorkerState } from "../shared/state"
 import { Battlefield } from "vu-rcon"
 import type { PluginWorker } from "../main/PluginWorker"
+import { PluginLogger } from "./util/PluginLogger"
 
 export class PluginHandler {
 
   private basePath: string
   readonly messenger: Messenger
+  readonly instanceId: number
   private plugins: WorkerPlugin[] = []
-  //private instanceId: number
   battlefield!: Battlefield
   private state: WorkerState = WorkerState.UNKNOWN
+  private logger: PluginLogger
 
   constructor(props: PluginHandler.Props) {
     this.messenger = props.messenger
     this.basePath = props.basePath
-    //this.instanceId = props.instanceId
+    this.instanceId = props.instanceId
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
     this.messenger.on("executeRoute", this.executeRoute.bind(this))
     this.messenger.on("pluginState", this.onPluginState.bind(this))
     this.state = WorkerState.INIT
     this.init(props.rcon)
+    this.logger = new PluginLogger(this.messenger, "PLUGIN_WORKER")
   }
 
   private async init(options: PluginHandler.BattlefieldOpts) {
     this.battlefield = await Battlefield.connect(options)
     this.state = WorkerState.READY
+    process.on("uncaughtException", this.handleUncaughtException.bind(this))
+    process.on("unhandledRejection", this.handleUncaughtException.bind(this))
     await this.messenger.send("STATE", WorkerState.READY)
+  }
+
+  private handleUncaughtException(error: Error) {
+    const plugin = this.getExceptionPlugin(error)
+    if (plugin) {
+      plugin.logger.error("unhandled exception")
+      plugin.logger.error(error.stack)
+    } else {
+      this.logger.error("unhandled exception")
+      this.logger.error(error.stack)
+    }
+  }
+
+  /**
+   * tries to get the plugin which possibly sent the error from the stack
+   * @param error error with the stack attached
+   */
+  private getExceptionPlugin(error: Error): WorkerPlugin|undefined {
+    const stack = error.stack
+    if (!stack) return
+    const basePath = this.basePath.replace(".", "\\.").replace("\\", "\\\\")
+    const match = stack.match(new RegExp(`${basePath}\\/([a-f0-9]{32})\\/`))
+    if (!match) return
+    return this.getPluginByUUID(match[1])
   }
 
   /**
@@ -37,6 +66,14 @@ export class PluginHandler {
    */
   getPluginByName(name: string) {
     return this.plugins.find(p => p.info.name === name)
+  }
+
+  /**
+   * retrieves a plugin by its uuid
+   * @param uuid the plugin uuid
+   */
+  getPluginByUUID(uuid: string) {
+    return this.plugins.find(p => p.info.uuid === uuid)
   }
 
   private async executeRoute({ message }: Messenger.Event<PluginWorker.ExecuteRouteProps>) {
