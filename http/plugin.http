@@ -1,5 +1,5 @@
 @instanceId=6
-@pluginId=6
+@pluginId=11
 @uuid=2978958113a65be4f18e7f48e566db43
 
 ### retrieve a list of useable plugins
@@ -20,17 +20,7 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "fooKey": "something",
-  "arrayKey": [{
-    "nestedStringKey": "something else",
-    "arrayRecursive": [{
-      "nestedStringKey2": "123",
-      "nestedStringNumber2": 123
-    }, {
-      "nestedStringKey2": "1234",
-      "nestedStringNumber2": 1234
-    }]
-  }]
+  "enableRules": true
 }
 
 ### starts a plugin

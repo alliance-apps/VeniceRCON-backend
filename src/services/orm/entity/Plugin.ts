@@ -59,13 +59,6 @@ export class Plugin extends AbstractEntity<Plugin> {
     return Plugin.from(props)
   }
 
-  static updateConfig(id: number, config: Record<string, any>) {
-    return Plugin.createQueryBuilder()
-      .update()
-      .where({ id })
-      .update({ config: JSON.stringify(config) })
-  }
-
   /** creates a new plugin */
   static async from(props: Plugin.ICreate) {
     const plugin = new Plugin()

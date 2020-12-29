@@ -79,7 +79,7 @@ export class Plugin {
    */
   async updateConfig(config: Record<string, any>) {
     this.config = { ...this.getConfig(), ...config }
-    await PluginEntity.updateConfig(await this.entity.id, config)
+    await PluginEntity.update({ id: this.entity.id }, { config: JSON.stringify(this.config) })
     await this.entity.reload()
     if (this.state !== Plugin.State.STARTED) return
     await this.restart()

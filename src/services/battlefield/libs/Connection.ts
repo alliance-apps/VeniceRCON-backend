@@ -85,6 +85,7 @@ export class Connection extends EventEmitter {
     if (this.isUnstable()) {
       this.parent.log.error("connection considered unstable stopping reconnect attempts")
       this.requestStop = true
+      await this.parent.setAutostart(false)
       return
     }
     //handle reconnect since connection close has not been requested
@@ -93,11 +94,12 @@ export class Connection extends EventEmitter {
     try {
       await this.battlefield.reconnect(Connection.RECONNECT_ATTEMPTS, Connection.RECONNECT_TIMEOUT)
     } catch (e) {
-      this.parent.log.error(`was not able to reconnect to the battlefield server after ${Connection.RECONNECT_ATTEMPTS} attempts!`)
       this.updateConnectionState(Instance.State.RECONNECTING_FAILED)
+      await this.parent.setAutostart(false)
+      this.parent.log.error(`was not able to reconnect to the battlefield server after ${Connection.RECONNECT_ATTEMPTS} attempts!`)
       return
     }
-    this.parent.log.info("battlefield server reconnected!")
+    this.parent.log.info("battlefield server reconnected")
     this.updateConnectionState(Instance.State.CONNECTED)
   }
 

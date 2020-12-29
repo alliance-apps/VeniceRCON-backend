@@ -102,6 +102,11 @@ export class Instance {
     ].includes(this.state.get("state"))
   }
 
+  /** (re-)sets this instance to autostart after venicercon restarts */
+  setAutostart(set: boolean) {
+    return InstanceEntity.update({ autostart: set }, { id: this.id })
+  }
+
   /** handles autostart after instance has been created */
   private async doAutostart() {
     try {
