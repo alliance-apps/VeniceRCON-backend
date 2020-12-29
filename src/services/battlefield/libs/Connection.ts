@@ -15,8 +15,9 @@ export interface Connection {
 
 export class Connection extends EventEmitter {
 
-  static RECONNECT_ATTEMPTS = 20
-  static RECONNECT_TIMEOUT = 60 * 1000
+  static RECONNECT_ATTEMPTS = 40
+  static RECONNECT_TIMEOUT = 5 * 1000
+  static RECONNECT_STEP_INCREASE = 10 * 1000
   static UNSTABLE_CONNECTION_TIMEOUT = 2 * 60 * 1000
   static UNSTABLE_CONNECTION_RETRY = 10
 
@@ -44,9 +45,9 @@ export class Connection extends EventEmitter {
   }
 
   /** handles a reconnect event from the server */
-  private async onReconnect({ success, attempt }: ReconnectEvent) {
-    if (success) return
-    this.parent.log.warn(`reconnect attempt ${attempt} failed`)
+  private async onReconnect(event: ReconnectEvent) {
+    if (event.success) return
+    this.parent.log.warn(`reconnect attempt ${event.attempt}/${event.maxAttempts} failed retrying in ${Math.floor(event.nextAttemptIn/1000)}s`)
   }
 
   /** handles error events from the socket */
@@ -158,9 +159,11 @@ export class Connection extends EventEmitter {
       this.requestStop = false
       this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}!`)
       this.updateConnectionState(Instance.State.CONNECTED)
+      await this.parent.setAutostart(true)
     } catch (e) {
       this.parent.log.info(`failed to connect to ${chalk.bold(`${host}:${port}`)}!`)
       this.battlefield.quit()
+      await this.parent.setAutostart(false)
       this.updateConnectionState(Instance.State.DISCONNECTED)
       throw e
     }
@@ -177,6 +180,7 @@ export class Connection extends EventEmitter {
     this.parent.log.info(`disconnecting from ${chalk.bold(`${host}:${port}`)}...`)
     await this.battlefield.quit()
     this.updateConnectionState(Instance.State.DISCONNECTED)
+    await this.parent.setAutostart(false)
     return this
   }
 
@@ -187,7 +191,7 @@ export class Connection extends EventEmitter {
       this.state.updateGameVersion(InstanceContainer.Version.VU)
     } catch (e) {
       if (this.battlefield.version.game !== InstanceContainer.Version.BF3 as string)
-       throw new Error(`unsupported game ${this.battlefield.version.game}`)
+        throw new Error(`unsupported game ${this.battlefield.version.game}`)
       this.state.updateGameVersion(InstanceContainer.Version.BF3)
     }
   }
