@@ -51,8 +51,6 @@ export class Connection extends EventEmitter {
     } else {
       this.parent.log.error(`received error from battlefield socket ${error.message}`)
       this.battlefield.quit()
-      //force instance state to be disconnected
-      this.updateConnectionState(Instance.State.DISCONNECTED)
     }
   }
 
@@ -125,20 +123,16 @@ export class Connection extends EventEmitter {
   async start() {
     if (!this.parent.isDisconnected)
       throw new Error(`can not start: instance is not in correct state (${this.state.get("state")})`)
-    this.requestStop = false
     this.updateConnectionState(Instance.State.CONNECTING)
     try {
       const { host, port } = this.battlefield.options
       this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}...`)
       await this.battlefield.connect()
+      await this.checkServerVersion()
+      this.requestStop = false
       this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}!`)
-      try {
-        await this.checkServerVersion()
-      } catch(e) {
-        this.battlefield.quit()
-        throw e
-      }
     } catch (e) {
+      this.battlefield.quit()
       this.updateConnectionState(Instance.State.DISCONNECTED)
       throw e
     }
