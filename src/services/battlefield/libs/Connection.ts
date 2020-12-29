@@ -15,8 +15,8 @@ export interface Connection {
 
 export class Connection extends EventEmitter {
 
-  static RECONNECT_ATTEMPTS = 100
-  static RECONNECT_TIMEOUT = 10 * 1000
+  static RECONNECT_ATTEMPTS = 20
+  static RECONNECT_TIMEOUT = 60 * 1000
   static UNSTABLE_CONNECTION_TIMEOUT = 2 * 60 * 1000
   static UNSTABLE_CONNECTION_RETRY = 10
 
