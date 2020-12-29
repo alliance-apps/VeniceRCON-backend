@@ -93,7 +93,11 @@ export class Connection extends EventEmitter {
     this.parent.log.warn("battlefield server disconnected, reconnecting...")
     await this.updateConnectionState(Instance.State.RECONNECTING)
     try {
-      await this.battlefield.reconnect(Connection.RECONNECT_ATTEMPTS, Connection.RECONNECT_TIMEOUT)
+      await this.battlefield.reconnect(
+        Connection.RECONNECT_ATTEMPTS,
+        Connection.RECONNECT_TIMEOUT,
+        Connection.RECONNECT_STEP_INCREASE
+      )
     } catch (e) {
       this.updateConnectionState(Instance.State.RECONNECTING_FAILED)
       await this.parent.setAutostart(false)
