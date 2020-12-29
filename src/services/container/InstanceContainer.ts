@@ -11,6 +11,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
 
   constructor(props: InstanceContainer.IProps) {
     super({
+      id: props.entity.id,
       host: props.entity.host,
       port: props.entity.port,
       state: Instance.State.DISCONNECTED,
@@ -167,6 +168,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
 export namespace InstanceContainer {
 
   export interface State extends State.Type {
+    id: number
     host: string
     port: number
     state: Instance.State
