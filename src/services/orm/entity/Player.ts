@@ -55,7 +55,7 @@ export class Player extends AbstractEntity<Player> {
     try {
       return await Player.from({ guid, name })
     } catch (e) {
-      if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
+      if (e.constructor.name === "QueryFailedError" && e.code === "ER_DUP_ENTRY") {
         let player = await Player.findOne({ name })
         if (player) return player
         player = await Player.findOne({ guid })
