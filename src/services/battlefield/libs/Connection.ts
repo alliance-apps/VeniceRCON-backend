@@ -17,9 +17,14 @@ export class Connection extends EventEmitter {
 
   static RECONNECT_ATTEMPTS = 100
   static RECONNECT_TIMEOUT = 10 * 1000
+  static UNSTABLE_CONNECTION_TIMEOUT = 2 * 60 * 1000
+  static UNSTABLE_CONNECTION_RETRY = 10
+
   battlefield: Battlefield
   private readonly parent: Instance
   private requestStop: boolean = false
+  private reconnectErrors: number = 0
+  private reconnectErrorsReset: any
 
   constructor(props: Connection.Props) {
     super()
@@ -54,13 +59,32 @@ export class Connection extends EventEmitter {
     }
   }
 
+  private incrementReconnect() {
+    clearTimeout(this.reconnectErrorsReset)
+    this.reconnectErrors++
+    this.reconnectErrorsReset = setTimeout(
+      () => this.reconnectErrors = 0,
+      Connection.UNSTABLE_CONNECTION_TIMEOUT
+    )
+  }
+
+  private isUnstable() {
+    return this.reconnectErrors > Connection.UNSTABLE_CONNECTION_RETRY
+  }
+
   /** handles connections closed to the battlefield server */
   private async onClose() {
+    this.incrementReconnect()
     //checks if closing of connection has been requested
     if (this.requestStop) {
       const { host, port } = this.battlefield.options
       this.parent.log.info(`disconnected from ${chalk.bold(`${host}:${port}`)}`)
       this.updateConnectionState(Instance.State.DISCONNECTED)
+      return
+    }
+    if (this.isUnstable()) {
+      this.parent.log.error("connection considered unstable stopping reconnect attempts")
+      this.requestStop = true
       return
     }
     //handle reconnect since connection close has not been requested
@@ -124,19 +148,20 @@ export class Connection extends EventEmitter {
     if (!this.parent.isDisconnected)
       throw new Error(`can not start: instance is not in correct state (${this.state.get("state")})`)
     this.updateConnectionState(Instance.State.CONNECTING)
+    const { host, port } = this.battlefield.options
     try {
-      const { host, port } = this.battlefield.options
       this.parent.log.info(`connecting to ${chalk.bold(`${host}:${port}`)}...`)
       await this.battlefield.connect()
       await this.checkServerVersion()
       this.requestStop = false
       this.parent.log.info(`connected to ${chalk.bold(`${host}:${port}`)}!`)
+      this.updateConnectionState(Instance.State.CONNECTED)
     } catch (e) {
+      this.parent.log.info(`failed to connect to ${chalk.bold(`${host}:${port}`)}!`)
       this.battlefield.quit()
       this.updateConnectionState(Instance.State.DISCONNECTED)
       throw e
     }
-    this.updateConnectionState(Instance.State.CONNECTED)
     return this
   }
 
