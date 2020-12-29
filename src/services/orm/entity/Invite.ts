@@ -58,6 +58,15 @@ export class Invite extends AbstractEntity<Invite> {
     return getScopesFromMask(this.mask)
   }
 
+  /** checks if this token is consumeable */
+  async isConsumeable(user?: User) {
+    if (!this.instanceId) return Invite.Consumeable.NO_INSTANCE
+    if (this.userId) return Invite.Consumeable.ALREADY_ISSUED
+    if (!user || await permissionManager.hasInstanceAccess(user, this.instanceId))
+      return Invite.Consumeable.USER_HAS_PERMISSIONS
+    return Invite.Consumeable.OK
+  }
+
   /**
    * uses the token by the specified user
    */
@@ -65,9 +74,8 @@ export class Invite extends AbstractEntity<Invite> {
     if (this.userId) throw new Error(`can not use this token, it already has been used by someone else`)
     await this.setRelation("user", user)
     await this.reload()
-    return permissionManager.addInstanceAccess({
-      user, instance: this.instanceId, scopes: [this.mask]
-    })
+    if (typeof this.userId !== "number") throw new Error(`failed to assign user to token id ${this.id}, userid is still null after assignment`)
+    return permissionManager.addInstanceAccess({ user, instance: this.instanceId, scopes: [this.mask] })
   }
 
   /** creates a new instance */
@@ -88,6 +96,13 @@ export namespace Invite {
     issuer: User|number
     instance: Instance|number
     mask: bigint
+  }
+
+  export enum Consumeable {
+    OK,
+    NO_INSTANCE,
+    ALREADY_ISSUED,
+    USER_HAS_PERMISSIONS
   }
 
 }

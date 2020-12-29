@@ -10,6 +10,7 @@ import { isEnabled, sendMail } from "@service/mail"
 import { config } from "@service/config"
 import winston from "winston"
 import { randomBytes } from "crypto"
+import { instanceManager } from "../../../battlefield"
 
 
 const { Joi } = Router
@@ -102,6 +103,18 @@ router.route({
     if (!invite) {
       ctx.body = { message: "invalid token or token has already been used"}
       return ctx.status = 400
+    } else {
+      const status = await invite.isConsumeable()
+      if (status !== Invite.Consumeable.OK) {
+        if (status === Invite.Consumeable.ALREADY_ISSUED) {
+          ctx.body = { message: "this token has already been used by another user" }
+        } else if (status === Invite.Consumeable.NO_INSTANCE) {
+          ctx.body = { message: "this token has no instance attached" }
+        } else {
+          ctx.body = { message: `got invalid status code invite token status code ${status}` }
+        }
+        return ctx.status = 400
+      }
     }
     if (await User.findOne({ username: ctx.request.body.username })) {
       ctx.bdoy = { message: "username already taken" }
@@ -113,6 +126,8 @@ router.route({
       email: ctx.request.body.email
     })
     await invite.consume(user)
+    instanceManager.getInstanceById(invite.instanceId).log
+      .info(`newly created user ${user.username} (${user.id}) consumed token "${invite.token}"`)
     ctx.body = { token: await createToken({ user }) }
   }
 })
@@ -131,14 +146,32 @@ router.route({
   },
   handler: async ctx => {
     if (!ctx.state.token) return ctx.status = 401
-    const user = await User.findOne({ id: ctx.state.token.id })
+    const { token } = ctx.request.body!
+    const { username, id } = ctx.state.token!
+    const user = await User.findOne({ id })
     if (!user) return ctx.status = 401
-    const invite = await Invite.findOne({ token: ctx.request.body.token, userId: IsNull() })
-    if (!invite || await permissionManager.hasInstanceAccess(user.id, invite.instanceId)) {
-      ctx.body = { message: "invalid token, token has already been used or you already have access to this instance"}
+    const invite = await Invite.findOne({ token })
+    if (!invite) {
+      ctx.body = { message: "invalid token, this invite token does not exist" }
       return ctx.status = 400
+    } else {
+      const status = await invite.isConsumeable(user)
+      if (status !== Invite.Consumeable.OK) {
+        if (status === Invite.Consumeable.ALREADY_ISSUED) {
+          ctx.body = { message: "this token has already been used by another user" }
+        } else if (status === Invite.Consumeable.NO_INSTANCE) {
+          ctx.body = { message: "this token has no instance attached" }
+        } else if (status === Invite.Consumeable.USER_HAS_PERMISSIONS) {
+          ctx.body = { message: "you already have permissions to this instance" }
+        } else {
+          ctx.body = { message: `got invalid status code invite token status code ${status}` }
+        }
+        return ctx.status = 400
+      }
     }
     await invite.consume(user)
+    instanceManager.getInstanceById(invite.instanceId).log
+      .info(`existing user ${username} (${id}) consumed token "${token}"`)
     ctx.status = 200
   }
 })
