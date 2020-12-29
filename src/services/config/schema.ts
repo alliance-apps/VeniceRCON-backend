@@ -13,7 +13,10 @@ export const schema = Joi.object({
   }).required(),
   logging: Joi.object({
     orm: Joi.boolean().optional().default(false),
-    level: Joi.string().allow("verbose", "info", "warn", "error").only().optional().default("info")
+    level: Joi.string().allow("verbose", "info", "warn", "error").only().optional().default("info"),
+    removeLogs: Joi.number().optional().default(0),
+    removeKills: Joi.number().optional().default(0),
+    removeChat: Joi.number().optional().default(0)
   }).required(),
   webserver: Joi.object({
     bindAddress: Joi.string().ip().optional().default("0.0.0.0"),
@@ -76,6 +79,9 @@ export interface Configuration {
   logging: {
     orm: boolean
     level: "verbose"|"info"|"warn"|"error"
+    removeLogs: number
+    removeKills: number
+    removeChat: number
   }
   webserver: {
     bindAddress: string

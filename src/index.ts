@@ -34,6 +34,8 @@ const cleanup = register({
   await require("@service/battlefield").initialize(args)
   winston.info("start listen for webserver...")
   await postInitKoa()
+  winston.info("registering cleaner")
+  await require("@service/cleaner").registerCleaner()
   winston.info("initialization done!")
   cleanup()
 

@@ -20,6 +20,12 @@ logging:
   orm: false
   #loglevel to use available options are "verbose"|"info"|"warn"|"error"
   level: info
+  #removes logs after x days (set 0 to disable removal)
+  removeLogs: 30
+  #removes kill history after x days (set 0 to disable removal)
+  removeKills: 7
+  #removes chat history after x days (set 0 to disable removal)
+  removeChat: 14
 webserver:
   #set address if you want to bind to a specific interface
   bindAddress: "0.0.0.0"
