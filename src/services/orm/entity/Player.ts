@@ -51,24 +51,24 @@ export class Player extends AbstractEntity<Player> {
    * tries to savely create a player
    * @param props
    */
-  static async createPlayerSave(props: { guid: string, name: string }) {
+  static async createPlayerSave({ guid, name }: { guid: string, name: string }) {
     try {
-      return await Player.from(props)
+      return await Player.from({ guid, name })
     } catch (e) {
       if (e.constructor.name === "QueryFailedError" && e.code === "23505") {
-        let player = await Player.findOne({ name: props.name })
+        let player = await Player.findOne({ name })
         if (player) return player
-        player = await Player.findOne({ guid: props.guid })
+        player = await Player.findOne({ guid })
         if (player) {
           winston.warn(`client was not found by name but guid has been found and player name is ${player.name} replacing correct name in database...`)
-          player.name = props.name
+          player.name = name
           await player.save()
           return player
         } else {
-          winston.warn(`well shit neither guid "${props.guid}" nor name "${props.name}" is on the server but still gives an unique constraint error`)
+          winston.warn(`well shit neither guid "${guid}" nor name "${name}" is on the server but still gives an unique constraint error`)
         }
-        winston.verbose(`tried to find player after duplicate key entry, but was unable to find him "${props.name}"`)
-        winston.verbose(util.inspect(e, { depth: 4 }))
+        winston.error(`tried to find player after duplicate key entry, but was unable to find him "${name}"`)
+        winston.error(util.inspect(e, { depth: 4 }))
         throw e
       } else {
         winston.verbose("Could not insert player in getPlayerIds")
