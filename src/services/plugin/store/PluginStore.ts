@@ -5,11 +5,9 @@ import { Instance } from "@service/battlefield/libs/Instance"
 import { PluginStore as PluginStoreEntity, PluginStoreType } from "@entity/PluginStore"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { instanceManager } from "@service/battlefield"
-import fetch from "node-fetch"
 import { Repository } from "./Repository"
 import { Provider } from "./provider/Provider"
 import { DevProvider } from "./provider/DevProvider"
-import { Brackets } from "typeorm"
 import { createFolderSave } from "../../../util/createFolder"
 
 export class PluginStore {
@@ -52,21 +50,19 @@ export class PluginStore {
   /** create a dummy provider for dev plugins */
   private loadDevEntity() {
     //create a dummy object
-    const entity = {} as PluginStoreEntity
+    const entity = {} as PluginStoreEntity<any>
     entity.save = () => { throw new Error("save not implemented for 'dev' provider") }
     entity.remove = () => { throw new Error("remove not implemented for 'dev' provider") }
     entity.update = () => { throw new Error("update not implemented for 'dev' provider") }
     entity.type = PluginStoreType.DEV
     entity.enabled = true
     entity.id = 0
-    entity.url = ""
-    //every 10 minutes
     entity.reloadTime = 10 * 60 * 1000
     return entity
   }
 
   /** adds or updates a provider with the given entity */
-  async updateProvider(entity: PluginStoreEntity) {
+  async updateProvider(entity: PluginStoreEntity<any>) {
     let provider = this.providers.find(provider => provider.id === entity.id)
     if (provider) {
       provider.entity = entity
@@ -79,11 +75,13 @@ export class PluginStore {
   }
 
   /** creates a provider instance from the entity type */
-  private createProviderFromType(entity: PluginStoreEntity): Provider {
+  private createProviderFromType<T>(entity: PluginStoreEntity<T>): Provider<T> {
     switch (entity.type) {
       case PluginStoreType.GITHUB:
+        //@ts-ignore
         return new GithubProvider({ entity })
       case PluginStoreType.DEV:
+        //@ts-ignore
         return new DevProvider({ entity })
       default:
         throw new Error(`unknown provider type "${entity.type}"`)
@@ -109,7 +107,7 @@ export class PluginStore {
 
   /** retrieves a plugin instance by its uuid */
   getPluginByUUID(uuid: string) {
-    let plugin: Repository|undefined
+    let plugin: Repository<any>|undefined
     this.providers.some(provider => {
       const repo = provider.plugins.find(plugin => plugin.uuid === uuid)
       if (!repo) return false
@@ -124,33 +122,7 @@ export class PluginStore {
     return PluginEntity.createQueryBuilder("plugin")
       .leftJoin("plugin.store", "store")
       .where("plugin.instance.id = :id", { id: instance.id })
-      .andWhere(new Brackets(qb => qb
-        .where("store.enabled = true")
-        .orWhere("plugin.storeId IS NULL")
-      ))
       .getMany()
   }
 
-  /** checks a repository for validity */
-  static async verifyProvider(props: PluginStore.TestProps) {
-    if (!(/^https:\/\/github.com/i).test(props.url))
-      throw new Error("only github as url supported!")
-    const url = Provider.url(props.url, props.branch || "main")
-    const res = await fetch(url, {
-      headers: JSON.parse(props.headers || "{}"),
-      redirect: "follow"
-    })
-    if (res.status < 200 || res.status > 299)
-      throw new Error(`invalid status code from ${url} (code: ${res.status})`)
-    return res.text()
-  }
-
-}
-
-export namespace PluginStore {
-  export interface TestProps {
-    url: string
-    branch?: string
-    headers?: string
-  }
 }

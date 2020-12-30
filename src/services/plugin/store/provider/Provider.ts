@@ -1,20 +1,20 @@
 import winston from "winston"
-import { schema, PluginStoreSchema } from "../schema"
 import { Repository } from "../Repository"
 import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
+import { Meta, metaSchema } from "../../schema"
 
-export abstract class Provider {
+export abstract class Provider<T = any, Y = any> {
 
-  entity: PluginStoreEntity
+  entity: PluginStoreEntity<T>
   /** list of plugins in this repository */
-  plugins: Repository[] = []
+  plugins: Repository<T>[] = []
 
   /** retrieve a list of plugins from the source store */
-  protected abstract fetchPlugins(): Promise<PluginStoreSchema>
+  protected abstract fetchPlugins(): Promise<Provider.FetchPluginsResponse<T>>
   abstract destroy(): void
-  abstract downloadPlugin(repository: Repository, location: string): Promise<void>
+  abstract downloadPlugin(repository: Repository<Y>, location: string): Promise<void>
 
-  constructor(props: Provider.Props) {
+  constructor(props: Provider.Props<T>) {
     this.entity = props.entity
   }
 
@@ -22,18 +22,13 @@ export abstract class Provider {
     return this.entity.id
   }
 
-  /** url to fetch the repository yaml file from */
-  get url() {
-    return Provider.url(this.entity.url, this.entity.branch)
-  }
-
   /** loads all plugins defined in the repository.yaml */
   async reload(reason?: string) {
     reason = reason ? ` (${reason})` : ""
     winston.info(`reading external plugins from store ${this.id}${reason}`)
     try {
-      const store = await this.validateSchema(await this.fetchPlugins())
-      this.plugins = store.plugins.map(schema => new Repository({ provider: this, schema }))
+      const plugins = await this.fetchPlugins()
+      this.plugins = plugins.map(plugin => new Repository({ provider: this, ...plugin }))
       const i = this.plugins.length
       winston.info(`received ${i} plugin${i === 1 ? "" : "s"} from store ${this.id}`)
     } catch (e) {
@@ -47,19 +42,18 @@ export abstract class Provider {
     return this.plugins.find(p => p.name === name)
   }
 
-  /** parses and validates a plugins repository schema */
-  private validateSchema(data: PluginStoreSchema): Promise<PluginStoreSchema> {
-    return schema.validateAsync(data, { allowUnknown: true })
-  }
-
-  static url(baseUrl: string, branch: string) {
-    return `${baseUrl}/raw/${branch}/repository.yaml`
+  /** validates a plugin meta object */
+  static validatePluginMeta(data: any): Promise<Meta> {
+    return metaSchema.validateAsync(data)
   }
 
   toJSON() {
     return {
-      ...this.entity,
-      repositoryUrl: this.url,
+      type: this.entity.type,
+      id: this.entity.id,
+      options: this.entity.options,
+      created: this.entity.created,
+      modified: this.entity.modified,
       plugins: this.plugins.map(p => p.toJSON())
     }
   }
@@ -67,7 +61,14 @@ export abstract class Provider {
 }
 
 export namespace Provider {
-  export interface Props {
-    entity: PluginStoreEntity
+  export interface Props<T> {
+    entity: PluginStoreEntity<T>
+  }
+
+  export type FetchPluginsResponse<T> = FetchPluginResponse<T>[]
+
+  export type FetchPluginResponse<T> = {
+    info: Repository.PluginInfoProps,
+    props: T
   }
 }

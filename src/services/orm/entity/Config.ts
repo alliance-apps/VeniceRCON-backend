@@ -42,7 +42,7 @@ export namespace Config {
     public: false
   }, {
     name: "dbversion",
-    value: "1",
+    value: "2",
     public: false
   }]
 }

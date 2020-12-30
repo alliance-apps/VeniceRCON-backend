@@ -14,8 +14,10 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "branch": "master",
-  "url": "https://github.com/Multivit4min/vu-plugin-repo"
+  "type": "GITHUB",
+  "username": "Multivit4min",
+  "repository": "vu-plugin-repo",
+  "branch": "master"
 }
 
 ### gets a single repository

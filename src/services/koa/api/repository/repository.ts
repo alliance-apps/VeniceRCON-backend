@@ -24,20 +24,23 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      url: Joi.string().uri().optional().default(null),
+      username: Joi.string().optional().default(null),
+      repository: Joi.string().optional().default(null),
       branch: Joi.string().optional().default(null),
-      headers: Joi.string().optional().default(null),
       enabled: Joi.boolean().optional().default(null)
     }).required()
   },
   pre: perm(PluginRepositoryScope.CREATE),
   handler: async ctx => {
-    const { url, branch, headers, enabled } = ctx.request.body
-    const { repository } = ctx.state
-    if (url !== null) repository!.entity.url = url
-    if (branch !== null) repository!.entity.branch = branch
-    if (headers !== null) repository!.entity.headers = headers
-    if (enabled !== null) repository!.entity.enabled = enabled
+    const { username, repository, branch, enabled } = ctx.request.body
+    const { entity } = ctx.state.repository!
+    const { options } = entity
+    entity.options = {
+      username: username || options.username,
+      repository: repository || options.repository,
+      branch: branch || options.branch
+    }
+    if (enabled !== null) entity.enabled = enabled
     await repository!.entity.save()
     await pluginStore.reload()
     ctx.body = repository!.toJSON()

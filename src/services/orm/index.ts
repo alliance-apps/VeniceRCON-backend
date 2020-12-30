@@ -19,6 +19,7 @@ import { Weapon } from "@entity/Weapon"
 import { LogMessage } from "@entity/LogMessage"
 import { PluginStore } from "@entity/PluginStore"
 import { getBitMaskWithAllPermissions } from "@service/permissions/Scopes"
+import { migrations } from "./migrations"
 
 export const DEFAULT_USERNAME = "admin"
 
@@ -47,27 +48,7 @@ export async function connect(args: Record<string, string>) {
     ]
   })
 
-  if (config.database.use.toLowerCase() === "sqlite") {
-    await connection.query("PRAGMA foreign_keys=OFF")
-    await connection.synchronize()
-    await connection.query("PRAGMA foreign_keys=ON")
-  } else if (config.database.use.toLowerCase() === "mariadb") {
-    await connection.query("SET FOREIGN_KEY_CHECKS = 0")
-    await connection.synchronize()
-    await connection.query("SET FOREIGN_KEY_CHECKS = 1")
-  } else if (config.database.use.toLowerCase() === "postgres"){
-    await connection.synchronize()
-  } else {
-    winston.warn(`UNSUPPORTED DATBASE USED: "${config.database.use.toLowerCase()}"`)
-  }
-
-  //create default configuration
-  const configs = await Config.find()
-  await Promise.all(
-    Config.DEFAULTS
-      .filter(({ name }) => !configs.map(c => c.name).includes(name))
-      .map(c => Config.from(c))
-  )
+  await migrations(connection)
 
   //create and update default "admin" user
   let admin = await User.findOne({ username: DEFAULT_USERNAME })

@@ -34,8 +34,8 @@ export class PluginManager {
     return this.worker.isStopped
   }
 
-  async toJSON() {
-    return await Promise.all(this.plugins.map(plugin => plugin.toJSON()))
+  toJSON() {
+    return Promise.all(this.plugins.map(plugin => plugin.toJSON()))
   }
 
   /** stops the worker */

@@ -3,30 +3,25 @@ import { AbstractEntity } from "./Abstract"
 import { Plugin } from "./Plugin"
 
 export enum PluginStoreType {
-  GITHUB = "GITHUB_PROVIDER",
-  DEV = "DEV_PROVIDER"
+  INVALID = "INVALID",
+  GITHUB = "GITHUB",
+  DEV = "DEV"
 }
 
 @Entity()
-export class PluginStore extends AbstractEntity<PluginStore> {
+export class PluginStore<T extends {}> extends AbstractEntity<PluginStore<any>> {
 
   protected entityClass = PluginStore
 
   @Column({
-    type: "simple-enum",
-    default: PluginStoreType.GITHUB,
-    enum: PluginStoreType
+    type: "varchar",
+    length: 32,
+    default: PluginStoreType.GITHUB
   })
   type!: PluginStoreType
 
-  @Column()
-  url!: string
-
-  @Column({ default: "" })
-  branch!: string
-
-  @Column({ default: "{}" })
-  headers!: string
+  @Column({ default: "{}", name: "options" })
+  private _options!: string
 
   @Column({ default: true })
   enabled!: boolean
@@ -34,28 +29,32 @@ export class PluginStore extends AbstractEntity<PluginStore> {
   @OneToMany(type => Plugin, plugin => plugin.store)
   plugins!: Plugin
 
-  @Column({ default: 15 * 60 * 1000 })
+  @Column({ default: 60 * 60 * 1000 })
   reloadTime!: number
 
+  get options(): T {
+    return JSON.parse(this._options)
+  }
+
+  set options(options: T) {
+    this._options = JSON.stringify(options)
+  }
+
   /** creates a new plugin */
-  static async from(props: PluginStore.ICreate) {
-    const store = new PluginStore()
+  static async from<T>(props: PluginStore.ICreate<T>) {
+    const store = new PluginStore<T>()
     store.type = props.type || PluginStoreType.GITHUB
-    store.url = props.url
-    store.headers = props.headers
-    store.enabled = !props.enabled
-    store.branch = props.branch || ""
+    store.options = props.options
+    store.enabled = props.enabled === false ? false : true
     return store.save()
   }
 
 }
 
 export namespace PluginStore {
-  export interface ICreate {
-    url: string
-    type?: PluginStoreType
-    branch?: string
-    headers: string
+  export interface ICreate<T extends {}> {
+    type: PluginStoreType
+    options: T
     enabled?: boolean
   }
 }

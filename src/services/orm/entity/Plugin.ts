@@ -16,7 +16,7 @@ export class Plugin extends AbstractEntity<Plugin> {
     type => PluginStore, store => store.plugins,
     { onDelete: "CASCADE" }
   )
-  store!: Promise<PluginStore|null>
+  store!: Promise<PluginStore<any>|null>
 
   @Column({ nullable: true })
   storeId!: number|null
@@ -28,14 +28,14 @@ export class Plugin extends AbstractEntity<Plugin> {
   instance!: Promise<Instance>
 
   @Column()
+  instanceId!: number
+
+  @Column()
   @Index()
   uuid!: string
 
   @Column({ default: false })
   start!: boolean
-
-  @Column()
-  instanceId!: number
 
   @Column({ default: "{}" })
   config!: string
@@ -77,7 +77,7 @@ export class Plugin extends AbstractEntity<Plugin> {
 export namespace Plugin {
   export interface ICreate {
     name: string
-    store: PluginStore|null
+    store: PluginStore<any>|null
     uuid: string
     config?: string
     instance: Instance|number

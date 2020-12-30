@@ -5,3 +5,5 @@ config.yaml
 .env
 /plugins
 /lib
+ecosystem.config.js
+orm.sh

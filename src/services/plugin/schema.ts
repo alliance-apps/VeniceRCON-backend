@@ -65,7 +65,7 @@ export const varSchema = Joi.array()
 
 export const metaSchema = Joi.object({
   name: Joi.string().min(3).required(),
-  description: Joi.string().optional(),
+  description: Joi.string().allow("").default("").optional(),
   version: Joi.string().regex(/^\d+\.\d+\.\d+$/).required(),
   author: Joi.string().optional().allow("").default(""),
   backend: Joi.string().valid("VU", "BF3", "*").insensitive().uppercase().required(),
@@ -98,7 +98,7 @@ function getVariableType(meta: PluginVariable): any {
 
 export interface Meta {
   name: string
-  description?: string
+  description: string
   version: string
   author: string
   backend: "BF3"|"VU"|"*"

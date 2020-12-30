@@ -1,9 +1,9 @@
-import { PluginStore as PluginStoreEntity } from "@entity/PluginStore"
+import { PluginStoreType } from "@entity/PluginStore"
 import { perm } from "@service/koa/permission"
 import { PluginRepositoryScope } from "@service/permissions/Scopes"
 import { pluginStore } from "@service/plugin"
-import { PluginStore } from "@service/plugin/store/PluginStore"
 import Router from "koa-joi-router"
+import { GithubProvider } from "../../../plugin/store/provider/GithubProvider"
 import repositoryRouter from "./repository"
 
 const api = Router()
@@ -24,21 +24,22 @@ api.route({
   validate: {
     type: "json",
     body: Joi.object({
-      url: Joi.string().uri().required(),
-      branch: Joi.string().optional().default("main"),
-      headers: Joi.string().optional().default("{}")
+      type: Joi.string().allow(PluginStoreType.GITHUB).required(),
+      username: Joi.string().required(),
+      repository: Joi.string().required(),
+      branch: Joi.string().required()
     }).required()
   },
   pre: perm(PluginRepositoryScope.CREATE),
   handler: async ctx => {
-    const { url, branch, headers } = ctx.request.body
+    const { username, repository, branch } = ctx.request.body
     try {
-      await PluginStore.verifyProvider({ url, branch, headers })
+      await GithubProvider.verify({ username, repository, branch })
     } catch (e) {
       ctx.body = { message: e.message }
       return ctx.status = 400
     }
-    const repo = await PluginStoreEntity.from({ url, branch, headers, enabled: false })
+    const repo = await GithubProvider.createProvider({ username, repository, branch })
     await pluginStore.reload()
     ctx.body = repo
   }

@@ -1,6 +1,6 @@
-@instanceId=6
-@pluginId=11
-@uuid=2978958113a65be4f18e7f48e566db43
+@instanceId=1
+@pluginId=1
+@uuid=f3db4f27780ced7ba8f20f460ca6df23
 
 ### retrieve a list of useable plugins
 GET {{$dotenv url}}/api/instances/{{instanceId}}/plugins
@@ -20,7 +20,7 @@ Authorization: Bearer {{$dotenv jwt}}
 Content-Type: application/json
 
 {
-  "enableRules": true
+  "message": "test"
 }
 
 ### starts a plugin

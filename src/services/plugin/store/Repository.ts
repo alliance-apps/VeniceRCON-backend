@@ -1,36 +1,45 @@
-import { PluginSchema } from "./schema"
 import path from "path"
 import { Instance } from "@service/battlefield/libs/Instance"
 import { pluginStore } from "../"
 import { promises as fs } from "fs"
 import { Provider } from "./provider/Provider"
-import { createHash } from "crypto"
 import { Plugin as PluginEntity } from "@entity/Plugin"
 import { createFolderSave } from "../../../util/createFolder"
+import { createHash } from "crypto"
+import { PluginStoreType } from "../../orm/entity/PluginStore"
 
-export class Repository {
+export class Repository<T> {
 
   static internals = {
     folder: ".meta",
     store: "store.json"
   }
 
-  name: string
-  description: string
-  version: string
-  repository: string
-  commit: string
-  provider: Provider
-  uuid: string
+  info: Repository.PluginPublicInfo
+  providerProps: T
+  provider: Provider<{}>
 
-  constructor(props: Repository.Props) {
+  constructor(props: Repository.Props<T>) {
     this.provider = props.provider
-    this.name = props.schema.name
-    this.description = props.schema.description
-    this.version = props.schema.version
-    this.repository = props.schema.repository
-    this.commit = props.schema.commit
-    this.uuid = createHash("md5").update(`${this.provider.id.toString()}.${this.name}`).digest("hex")
+    this.providerProps = props.props
+    const uuid = `${this.provider.id}.${props.info.name}`
+    this.info = {
+      ...props.info,
+      type: this.provider.entity.type,
+      uuid: createHash("md5").update(uuid).digest("hex")
+    }
+  }
+
+  get name() {
+    return this.info.name
+  }
+
+  get version() {
+    return this.info.version
+  }
+
+  get uuid() {
+    return this.info.uuid
   }
 
   /** retrieves folder path for this plugin for the specified instance */
@@ -81,23 +90,29 @@ export class Repository {
     await instance.plugin.reloadPlugins(true)
   }
 
-  /**
-   * json schema for the api
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      description: this.description,
-      version: this.version,
-      uuid: this.uuid
-    }
+  /** json schema for the api */
+  toJSON(): Repository.PluginPublicInfo {
+    return this.info
   }
 
 }
 
 export namespace Repository {
-  export interface Props {
-    schema: PluginSchema,
-    provider: Provider
+  export interface Props<T> {
+    info: PluginInfoProps
+    props: T
+    provider: Provider<T>
+  }
+
+  export type PluginInfoProps = {
+    name: string
+    description: string
+    version: string
+    author: string
+  }
+
+  export type PluginPublicInfo = PluginInfoProps & {
+    type: PluginStoreType
+    uuid: string
   }
 }

@@ -132,9 +132,9 @@ export class Plugin {
   }
 
   checkUpdate() {
-    const store = pluginStore.getProvider(this.entity.storeId || 0)
-    if (!store) return "0.0.0"
-    const plugin = store.getPlugin(this.name)
+    const provider = pluginStore.getProvider(this.entity.storeId || 0)
+    if (!provider) return "0.0.0"
+    const plugin = provider.getPlugin(this.name)
     if (!plugin) return "0.0.0"
     return plugin.version
   }
