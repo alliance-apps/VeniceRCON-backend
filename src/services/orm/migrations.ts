@@ -2,6 +2,7 @@ import { Connection, QueryRunner, TableColumn } from "typeorm"
 import { config } from "@service/config"
 import { Config } from "./entity/Config"
 import winston from "winston"
+import { PluginStore, PluginStoreType } from "./entity/PluginStore"
 
 /**
  * runs a custom migration on a database with final synchronisation
@@ -56,16 +57,22 @@ export async function toV2(runner: QueryRunner) {
   await runner.addColumn("plugin_store", new TableColumn({
     name: "options", default: "'{}'", type: "varchar", length: "512"
   }))
-  await runner.dropColumn("plugin_store", "type")
-  await runner.addColumn("plugin_store", new TableColumn({
+  await runner.changeColumn("plugin_store", "type", new TableColumn({
     name: "type", default: "'INVALID'", type: "varchar", length: "32"
+  }))
+  await Promise.all(formatted.map(([id, options]: [number, string]) => {
+    return runner.manager
+      .getRepository(PluginStore)
+      .createQueryBuilder()
+      .update()
+      //@ts-ignore
+      .set({ _options: options, type: PluginStoreType.GITHUB })
+      .where({ id })
+      .execute()
   }))
   await runner.dropColumn("plugin_store", "url")
   await runner.dropColumn("plugin_store", "headers")
   await runner.dropColumn("plugin_store", "branch")
-  await Promise.all(formatted.map((change: [number, string]) => {
-    return runner.query("UPDATE plugin_store SET options = $2, type = 'GITHUB' WHERE id = $1", change)
-  }))
 }
 
 export async function synchronize(connection: Connection) {
