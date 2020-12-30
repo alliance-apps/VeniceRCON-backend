@@ -7,15 +7,22 @@ import { Messenger } from "../shared/messenger/Messenger"
 import { PluginState, WorkerState } from "../shared/state"
 import { PluginQueue } from "./PluginQueue"
 
-/**
- * Handles communication between worker and main thread
- */
+/** handles communication between worker and main thread */
 export class PluginWorker {
+
+  static MONITORING_INTERVAL = 1000
+  static MONITORING_TIMEOUT = 200
+  static MONITORING_ALLOWED_FAILS = 5
+  static MONITORING_MAX_RESTARTS = 2
+
   private worker: Worker|undefined
   private messenger: Messenger|undefined
   private parent: PluginManager
   private baseDir: string
   private queue: PluginQueue = new PluginQueue([])
+  private monitoringInterval: any
+  private monitoringMisses: number = 0
+  private monitoringRestarts: number = 0
   state: WorkerState = WorkerState.STOP
 
   constructor(props: PluginWorker.Props) {
@@ -49,7 +56,44 @@ export class PluginWorker {
     await this.initializeQueue()
     if (!this.queue.hasPlugins) return this.state = WorkerState.STOP
     await this.createWorker()
+    await this.startMonitoring()
     await this.startQueuedPlugins()
+  }
+
+  private startMonitoring() {
+    this.stopMonitoring()
+    this.monitoringInterval = setInterval(async () => {
+      if (!this.messenger) {
+        this.instance.log.warn(`monitoring received no messenger`)
+        return this.monitoringMisses++
+      }
+      const timeout = new Promise(fulfill => setTimeout(fulfill, PluginWorker.MONITORING_TIMEOUT))
+      const response = this.messenger.send("PING")
+      if (await Promise.race([timeout, response]) === "PONG") {
+        this.monitoringRestarts = 0
+        if (this.monitoringMisses <= 0) return
+        this.monitoringMisses--
+      } else {
+        this.monitoringMisses++
+        this.instance.log.warn(`worker thread missed timeout ${this.monitoringMisses}/${PluginWorker.MONITORING_ALLOWED_FAILS}`)
+      }
+      if (this.monitoringMisses >= PluginWorker.MONITORING_ALLOWED_FAILS) {
+        if (this.monitoringRestarts >= PluginWorker.MONITORING_MAX_RESTARTS) {
+          this.instance.log.warn(`worker thread missed in time monitoring requests after ${this.monitoringRestarts} restarts... stopping...`)
+          this.monitoringRestarts = 0
+          this.stop()
+        } else {
+          this.instance.log.warn(`worker thread missed in time monitoring requests... restarting...`)
+          this.monitoringRestarts++
+          this.restart()
+        }
+      }
+    }, PluginWorker.MONITORING_INTERVAL)
+  }
+
+  private stopMonitoring() {
+    this.monitoringMisses = 0
+    clearInterval(this.monitoringInterval)
   }
 
   /** starts all currently queued plugins */
@@ -191,6 +235,7 @@ export class PluginWorker {
    */
   stop() {
     if (!this.worker) return
+    this.stopMonitoring()
     return this.worker.terminate()
   }
 

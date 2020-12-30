@@ -23,6 +23,7 @@ export class PluginHandler {
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
     this.messenger.on("executeRoute", this.executeRoute.bind(this))
     this.messenger.on("pluginState", this.onPluginState.bind(this))
+    this.messenger.on("PING", ev => ev.message.done("PONG"))
     this.state = WorkerState.INIT
     this.init(props.rcon)
     this.logger = new PluginLogger(this.messenger, "PLUGIN_WORKER")
