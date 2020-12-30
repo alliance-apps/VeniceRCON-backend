@@ -26,7 +26,12 @@ export async function migrations(connection: Connection) {
     if (typeof cb !== "function") throw new Error(`invalid migration version ${version}`)
     try {
       await cb(queryRunner)
-      await queryRunner.query("UPDATE config SET value = $1 WHERE name = 'dbversion'", [String(version)])
+      await queryRunner.manager.getRepository(Config)
+        .createQueryBuilder()
+        .update()
+        .set({ value: String(version) })
+        .where({ name: "dbversion" })
+        .execute()
     } catch (e) {
       winston.error("well... this is reallyyyy bad")
       throw e
