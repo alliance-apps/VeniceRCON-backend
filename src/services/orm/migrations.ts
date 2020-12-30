@@ -53,21 +53,16 @@ export async function toV2(runner: QueryRunner) {
     if (!match) throw new Error(`could not match provider url ${url} against ${regex}`)
     return [store.id, `${JSON.stringify({ username, repository, branch })}`]
   })
+  await runner.addColumn("plugin_store", new TableColumn({
+    name: "options", default: "'{}'", type: "varchar", length: "512"
+  }))
+  await runner.dropColumn("plugin_store", "type")
+  await runner.addColumn("plugin_store", new TableColumn({
+    name: "type", default: "'INVALID'", type: "varchar", length: "32"
+  }))
   await runner.dropColumn("plugin_store", "url")
   await runner.dropColumn("plugin_store", "headers")
   await runner.dropColumn("plugin_store", "branch")
-  await runner.dropColumn("plugin_store", "type")
-  await runner.addColumn("plugin_store", new TableColumn({
-    name: "options",
-    default: "'{}'",
-    type: "character varying",
-  }))
-  await runner.addColumn("plugin_store", new TableColumn({
-    name: "type",
-    default: "'INVALID'",
-    type: "varchar",
-    length: "32"
-  }))
   await Promise.all(formatted.map((change: [number, string]) => {
     return runner.query("UPDATE plugin_store SET options = $2, type = 'GITHUB' WHERE id = $1", change)
   }))

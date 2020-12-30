@@ -20,7 +20,7 @@ export class PluginStore<T extends {}> extends AbstractEntity<PluginStore<any>> 
   })
   type!: PluginStoreType
 
-  @Column({ default: "{}", name: "options" })
+  @Column({ default: "{}", name: "options", length: 512 })
   private _options!: string
 
   @Column({ default: true })
