@@ -6,7 +6,6 @@ import { permissionManager } from "@service/permissions"
 import { PrependAction } from "../../../util/PrependAction"
 import { Connection } from "./Connection"
 import { PluginManager } from "@service/plugin/main/PluginManager"
-import { Variable } from "vu-rcon/lib/Variable"
 import { Player } from "@entity/Player"
 import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
@@ -252,7 +251,7 @@ export class Instance {
   async updateVariables(vars: Record<string, any>) {
     let changes: Record<string, any> = {}
     ;(await Promise.allSettled(
-      Object.keys(vars) .map(k => this.updateVariable(k, vars[k]))
+      Object.keys(vars) .map((k: any) => this.updateVariable(k, vars[k]))
     )).forEach(result => {
       if (result.status === "rejected") return this.log.warn(`could not update a variable: ${result.reason}`)
       changes = { ...changes, ...Object.fromEntries(result.value) }
@@ -264,22 +263,11 @@ export class Instance {
   }
 
   /** updates a single variable on the server */
-  async updateVariable(key: string, value: any) {
-    let val: any
-    let varStore: Variable<any>
-    if (Instance.VAR_SETTER_BF3.includes(key)) {
-      varStore = this.battlefield.var
-    } else if (
-      Instance.VAR_SETTER_VU.includes(key) &&
-      this.state.get("version") === InstanceContainer.Version.VU
-    ) {
-      varStore = this.battlefield.vu
-    } else {
-      throw new Error(`unknown variable ${key}`)
-    }
-    await varStore.set(key, value)
-    val = await varStore.get(key)
-    return this.state.updateVars({ [key]: val })
+  async updateVariable(key: Battlefield.BattlefieldVariables, value: any) {
+    const setters = [...Instance.VAR_SETTER_BF3, ...Instance.VAR_SETTER_VU]
+    if (!setters.includes(key)) throw new Error(`unknown variable ${key}`)
+    await this.battlefield.set(key, value)
+    return this.state.updateVars({ [key]: String(value) })
   }
 
   /** retrieves the current maplist */
@@ -317,12 +305,12 @@ export class Instance {
   private async getDefaultVariables() {
     let result = {
       ...Object.fromEntries(
-        await Promise.all(Instance.VAR_BF3.map(async key => [key, await this.connection.battlefield.var.get(key)]))
+        await Promise.all(Instance.VAR_BF3.map(async key => [key, await this.connection.battlefield.get(key)]))
       ),
       ...Object.fromEntries(
         await Promise.all(Object.keys(Instance.VAR_BF3_OPTIONAL).map(async key => {
           try {
-            return [key, await this.connection.battlefield.var.get(key)]
+            return [key, await this.connection.battlefield.get(key as Battlefield.BattlefieldVariables)]
           } catch (e) {
             //@ts-ignore
             return [key, Instance.VAR_BF3_OPTIONAL[key]]
@@ -330,7 +318,7 @@ export class Instance {
         }))
       )
     }
-    if (result.ranked) {
+    if (result["vars.ranked"] === "true") {
       result = {
         ...result,
         ...Object.fromEntries(
@@ -342,7 +330,7 @@ export class Instance {
       result = {
         ...result,
         ...Object.fromEntries(await Promise.all(
-          Object.keys(Instance.VAR_BF3_RANKED).map(key => this.getVariable(key, "var"))
+          Object.keys(Instance.VAR_BF3_RANKED).map(key => this.getVariable(key as Battlefield.BattlefieldVariables))
         ))
       }
     }
@@ -353,18 +341,18 @@ export class Instance {
   /* gets the default battlefield variables */
   private async getVuVariables() {
     const result = Object.fromEntries(
-      await Promise.all(Instance.VAR_GETTER_VU.map(key => this.getVariable(key, "vu")))
+      await Promise.all(Instance.VAR_GETTER_VU.map(key => this.getVariable(key)))
     )
     this.state.updateVars(result)
     return result
   }
 
   /** tries to retrieve a variable with namespace and key */
-  private async getVariable(key: string, namespace: "vu"|"var") {
+  private async getVariable(key: Battlefield.BattlefieldVariables) {
     try {
-      return [key, await this.connection.battlefield[namespace].get(key)]
+      return [key, await this.connection.battlefield.get(key)]
     } catch (e) {
-      this.log.error(`Could not get variable "${namespace}.${key}": ${e.message}`)
+      this.log.error(`Could not get variable "${key}": ${e.message}`)
       return [key, undefined]
     }
   }
@@ -380,9 +368,9 @@ export class Instance {
     const getters = [...Instance.VAR_BF3]
     const setters = [...Instance.VAR_SETTER_BF3]
     if (this.state.get("version") === InstanceContainer.Version.BF3) {
-      getters.push(...Object.keys(Instance.VAR_BF3_OPTIONAL))
+      getters.push(...Object.keys(Instance.VAR_BF3_OPTIONAL) as Battlefield.BattlefieldVariables[])
       if (this.state.get("vars").ranked) {
-        getters.push(...Object.keys(Instance.VAR_BF3_RANKED))
+        getters.push(...Object.keys(Instance.VAR_BF3_RANKED) as Battlefield.BattlefieldVariables[])
       }
     } else if (this.state.get("version") === InstanceContainer.Version.VU) {
       setters.push(...Instance.VAR_SETTER_VU)
@@ -420,45 +408,71 @@ export namespace Instance {
     RECONNECTING_FAILED = 6
   }
 
-  export const VAR_BF3 = [
-    "serverName", "autoBalance",
-    "friendlyFire", "maxPlayers", "serverDescription",
-    "serverMessage", "killCam", "miniMap",
-    "hud", "3dSpotting", "miniMapSpotting",
-    "nametag", "3pCam", "regenerateHealth",
-    "teamKillCountForKick", "teamKillValueForKick", "teamKillValueIncrease",
-    "teamKillValueDecreasePerSecond", "teamKillKickForBan", "idleTimeout",
-    "idleBanRounds", "roundStartPlayerCount", "roundRestartPlayerCount",
-    "roundLockdownCountdown", "vehicleSpawnAllowed", "vehicleSpawnDelay",
-    "soldierHealth", "playerRespawnTime", "playerManDownTime", "bulletDamage",
-    "gameModeCounter", "onlySquadLeaderSpawn",
-    "premiumStatus", "gunMasterWeaponsPreset"
+  export const VAR_BF3: Battlefield.BattlefieldVariables[] = [
+    "vars.serverName",
+    "vars.autoBalance",
+    "vars.friendlyFire",
+    "vars.maxPlayers",
+    "vars.serverDescription",
+    "vars.serverMessage",
+    "vars.killCam",
+    "vars.miniMap",
+    "vars.hud",
+    "vars.3dSpotting",
+    "vars.miniMapSpotting",
+    "vars.nametag",
+    "vars.3pCam",
+    "vars.regenerateHealth",
+    "vars.teamKillCountForKick",
+    "vars.teamKillValueForKick",
+    "vars.teamKillValueIncrease",
+    "vars.teamKillValueDecreasePerSecond",
+    "vars.teamKillKickForBan",
+    "vars.idleTimeout",
+    "vars.idleBanRounds",
+    "vars.roundStartPlayerCount",
+    "vars.roundRestartPlayerCount",
+    "vars.roundLockdownCountdown",
+    "vars.vehicleSpawnAllowed",
+    "vars.vehicleSpawnDelay",
+    "vars.soldierHealth",
+    "vars.playerRespawnTime",
+    "vars.playerManDownTime",
+    "vars.bulletDamage",
+    "vars.gameModeCounter",
+    "vars.onlySquadLeaderSpawn",
+    "vars.premiumStatus",
+    "vars.gunMasterWeaponsPreset"
   ]
 
-  export const VAR_VU = [
-    "DestructionEnabled", "SuppressionMultiplier",
-    "DesertingAllowed", "VehicleDisablingEnabled",
-    "HighPerformanceReplication", "ServerBanner",
-    "SpectatorCount", "SunFlareEnabled",
-    "ColorCorrectionEnabled", "TimeScale",
-    "SquadSize"
+  export const VAR_VU: Battlefield.BattlefieldVariables[] = [
+    "vu.DestructionEnabled",
+    "vu.SuppressionMultiplier",
+    "vu.DesertingAllowed",
+    "vu.VehicleDisablingEnabled",
+    "vu.HighPerformanceReplication",
+    "vu.ServerBanner",
+    "vu.SpectatorCount",
+    "vu.SunFlareEnabled",
+    "vu.ColorCorrectionEnabled",
+    "vu.SquadSize"
   ]
 
-  export const VAR_VU_SETTER = [
-    "FadeOutAll", "FadeInAll"
+  export const VAR_VU_SETTER: Battlefield.BattlefieldVariables[] = [
+    "vu.FadeOutAll", "vu.FadeInAll"
   ]
 
-  export const VAR_VU_GETTER = [
-    "FrequencyMode"
+  export const VAR_VU_GETTER: Battlefield.BattlefieldVariables[] = [
+    "vu.FrequencyMode"
   ]
 
-  export const VAR_BF3_OPTIONAL = {
-    ranked: false,
-    unlockMode: 0
+  export const VAR_BF3_OPTIONAL: Record<string, string> = {
+    "vars.ranked": "false",
+    "vars.unlockMode": "0"
   }
 
-  export const VAR_BF3_RANKED =  {
-    gamePassword: false
+  export const VAR_BF3_RANKED: Record<string, string> =  {
+    "vars.gamePassword": "false"
   }
 
   export const VAR_SETTER_BF3 = [
