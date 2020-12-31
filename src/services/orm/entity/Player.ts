@@ -1,8 +1,7 @@
-import { Entity, Column, OneToMany, In, ManyToMany } from "typeorm"
+import { Entity, Column, OneToMany, ManyToMany } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { ChatMessage } from "./ChatMessage"
 import { Kill } from "./Kill"
-import { Battlefield } from "vu-rcon"
 import winston from "winston"
 import { User } from "./User"
 import util from "util"
@@ -39,12 +38,12 @@ export class Player extends AbstractEntity<Player> {
   }
 
   /** gets a list of ids by the name */
-  static async findIdsByName(names: string[]): Promise<{ id: number, name: string }[]> {
+  static async findByName(name: string): Promise<{ id: number, guid: string, name: string }> {
     return Player
       .createQueryBuilder()
-      .select("id, name")
-      .where({ name: In(names) })
-      .getRawMany()
+      .select("id, guid, name")
+      .where({ name })
+      .getRawOne()
   }
 
   /**
@@ -55,7 +54,7 @@ export class Player extends AbstractEntity<Player> {
     try {
       return await Player.from({ guid, name })
     } catch (e) {
-      if (e.constructor.name === "QueryFailedError" && e.code === "ER_DUP_ENTRY") {
+      if (e.constructor.name === "QueryFailedError" && ["ER_DUP_ENTRY", "23505"].includes(e.code)) {
         let player = await Player.findOne({ name })
         if (player) return player
         player = await Player.findOne({ guid })
@@ -76,48 +75,6 @@ export class Player extends AbstractEntity<Player> {
         throw e
       }
     }
-  }
-
-  /** retrieves multiple player ids by their name and indexes them by an identifier */
-  static async getPlayerIds(
-    names: Record<string, string|undefined>,
-    retrieve: (name: string) => Promise<Battlefield.Player|undefined>
-  ): Promise<Record<string, number|undefined>> {
-    //create the initial response data
-    const result: Record<string, number|undefined> = Object.fromEntries(Object.keys(names).map(id => [id, undefined]))
-    //retrieve all names which should be retrieves
-    const filtered = Object.keys(names)
-      .filter(id => typeof names[id] === "string")
-      //retrieves all names which should be fetched from database
-      .reduce((acc, id) => acc.includes(names[id] as string) ? acc : [...acc, names[id] as string], [] as string[])
-    //gets a list of players in the database
-    const players = await Player.findIdsByName(filtered)
-    //gets a list of all players which have not been found in the database
-    const inserts = filtered
-      //checks if a name has not been found
-      .filter(name => !players.some(p => p.name === name))
-      //do not insert duplicates
-      .reduce((acc, name) => acc.includes(name) ? acc : [...acc, name], [] as string[])
-    //insert all players which are not in our database
-    await Promise.all(inserts.map(async name => {
-      const data = await retrieve(name)
-      if (!data) return winston.verbose(`could not find player with name "${name}" in retrieve`)
-      try {
-        const { name, guid } = data
-        players.push(await this.createPlayerSave({ guid, name }))
-      } catch (e) {
-        winston.error(`could not insert player, name: "${data.name}", guid: "${data.guid}" `)
-        winston.error(e)
-      }
-    }))
-    Object.keys(names).forEach(id => {
-      const player = players.find(player => player.name === names[id])
-      if (!player) return
-      result[id] = player.id
-    })
-    return result
-
-
   }
 
 }

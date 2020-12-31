@@ -14,6 +14,10 @@ export class KillFeedManager {
     this.initialize()
   }
 
+  private get resolver() {
+    return this.parent.nameResolver
+  }
+
   private get id() {
     return this.parent.id
   }
@@ -49,7 +53,7 @@ export class KillFeedManager {
   }
 
   private async onKill(ev: PlayerOnKill) {
-    const { killer, killed } = await this.parent.getPlayerIdsByName({ killer: ev.killer, killed: ev.killed })
+    const { killer, killed } = await this.resolver.getPlayerIds({ killer: ev.killer, killed: ev.killed })
     if (!killed) return this.parent.log.error(`could not find killed player with name ${ev.killed}`)
     this.addKill(await Kill.from({ ...ev, killed, killer, instance: this.id }))
   }

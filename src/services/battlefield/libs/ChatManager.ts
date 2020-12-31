@@ -1,6 +1,5 @@
 import { Instance } from "./Instance"
 import { ChatMessage } from "@entity/ChatMessage"
-import { Player } from "@entity/Player"
 import { socketManager } from "@service/koa/socket"
 import { EventScope } from "@service/permissions/Scopes"
 import { PlayerOnChat } from "vu-rcon/lib/types/Event"
@@ -13,6 +12,10 @@ export class ChatManager {
   constructor(props: ChatManager.Props) {
     this.parent = props.instance
     this.initialize()
+  }
+
+  private get resolver() {
+    return this.parent.nameResolver
   }
 
   private get id() {
@@ -50,9 +53,9 @@ export class ChatManager {
   }
 
   private async onMessage(ev: PlayerOnChat) {
-    let player: Player|undefined
+    let player: number|undefined
     if (ev.player !== "server") {
-      player = await this.parent.getPlayerByName(ev.player)
+      player = (await this.resolver.get(ev.player)).id
     }
     this.addMessage(await ChatMessage.from({
       instance: this.id,

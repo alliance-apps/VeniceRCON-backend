@@ -11,6 +11,7 @@ import { ChatManager } from "./ChatManager"
 import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
 import { getScopesFromMask } from "@service/permissions/Scopes"
+import { NameResolverService } from "../util/NameResolverService"
 
 export class Instance {
 
@@ -21,6 +22,7 @@ export class Instance {
   readonly chat: ChatManager
   readonly kill: KillFeedManager
   readonly log: InstanceLogger
+  readonly nameResolver: NameResolverService
   private interval: any
   private intervalModulo = -1
   private syncInterval: number
@@ -37,6 +39,9 @@ export class Instance {
     this.syncInterval = props.entity.syncInterval
     this.readyPromise.resolver = new Promise(fulfill => {
       this.readyPromise.resolve = fulfill
+    })
+    this.nameResolver = new NameResolverService({
+      resolveName: this.getPlayerGuidByName.bind(this)
     })
     const { host, port, password } = props.entity
     this.connection = new Connection({
@@ -166,32 +171,17 @@ export class Instance {
     return getScopesFromMask(mask)
   }
 
-
-  /** retrieves a single player entity by its name */
-  async getPlayerByName(name: string) {
-    const player = await Player.findOne({ name })
-    return player ? player : this.createPlayerFromName(name)
-  }
-
-  /** creates a player entity from its name */
-  async createPlayerFromName(name: string) {
-    const player = Object.values(this.state.get("players")).find(p => p.name === name)
-    if (!player) return undefined
-    return Player.createPlayerSave(player)
-  }
-
   async getPlayerDataByName(name: string) {
-    let player = Object.values(this.state.get("players")).find(p => p.name === name)
-    if (!player) player = (await this.playerList()).find(p => p.name === name)
+    const search = (p: Battlefield.Player) => p.name === name
+    let player = Object.values(this.state.get("players")).find(search)
+    if (!player) player = (await this.playerList()).find(search)
     return player
   }
 
-  /** retrieves multiple player ids by their name */
-  async getPlayerIdsByName(names: Record<string, string|undefined>): Promise<Record<string, number|undefined>> {
-    return Player.getPlayerIds(
-      names,
-      this.getPlayerDataByName.bind(this)
-    )
+  async getPlayerGuidByName(name: string) {
+    const data = await this.getPlayerDataByName(name)
+    if (!data) throw new Error(`could not find player online with name ${name}`)
+    return data.guid
   }
 
   /** checks if the specified user has the specified scope for this instance */

@@ -55,7 +55,7 @@ export class Connection extends EventEmitter {
     if (error instanceof EventError) {
       this.parent.log.warn(`event handler in battlefield had an error in event ${error.event}: ${error.message}`)
     } else {
-      this.parent.log.error(`received error from battlefield socket ${error.message}`)
+      this.parent.log.error(`received error from battlefield socket: ${error.message}`)
       this.battlefield.quit()
     }
   }
