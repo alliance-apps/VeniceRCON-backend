@@ -34,6 +34,11 @@ export class PluginManager {
     return this.worker.isStopped
   }
 
+  /** sends a event to the worker */
+  sendPluginEvent(name: string, data: any) {
+    return this.worker.sendPluginEvent(name, data)
+  }
+
   toJSON() {
     return Promise.all(this.plugins.map(plugin => plugin.toJSON()))
   }

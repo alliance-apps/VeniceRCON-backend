@@ -39,12 +39,9 @@ export class Instance {
     this.readyPromise.resolver = new Promise(fulfill => {
       this.readyPromise.resolve = fulfill
     })
+    const { host, port, password } = props.entity
     this.connection = new Connection({
-      options: {
-        host: props.entity.host,
-        port: props.entity.port,
-        password: props.entity.password
-      },
+      options: { host, port, password },
       instance: this
     })
     this.chat = new ChatManager({ instance: this })
@@ -252,13 +249,30 @@ export class Instance {
     }, 500)
   }
 
+  async updateVariables(vars: Record<string, any>) {
+    let changes: Record<string, any> = {}
+    ;(await Promise.allSettled(
+      Object.keys(vars) .map(k => this.updateVariable(k, vars[k]))
+    )).forEach(result => {
+      if (result.status === "rejected") return this.log.warn(`could not update a variable: ${result.reason}`)
+      changes = { ...changes, ...Object.fromEntries(result.value) }
+    })
+    if (Object.keys(changes).length > 0) {
+      this.plugin.sendPluginEvent("varsChanged", { changes })
+    }
+    return this.state.get("vars")
+  }
+
   /** updates a single variable on the server */
   async updateVariable(key: string, value: any) {
     let val: any
     let varStore: Variable<any>
     if (Instance.VAR_SETTER_BF3.includes(key)) {
       varStore = this.battlefield.var
-    } else if (Instance.VAR_SETTER_VU.includes(key)) {
+    } else if (
+      Instance.VAR_SETTER_VU.includes(key) &&
+      this.state.get("version") === InstanceContainer.Version.VU
+    ) {
       varStore = this.battlefield.vu
     } else {
       throw new Error(`unknown variable ${key}`)

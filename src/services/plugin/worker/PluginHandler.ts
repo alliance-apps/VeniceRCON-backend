@@ -23,6 +23,7 @@ export class PluginHandler {
     this.messenger.on("startPlugin", this.onStartPlugin.bind(this))
     this.messenger.on("executeRoute", this.executeRoute.bind(this))
     this.messenger.on("pluginState", this.onPluginState.bind(this))
+    this.messenger.on("eventData", this.onEventData.bind(this))
     this.messenger.on("PING", ev => ev.message.done("PONG"))
     this.state = WorkerState.INIT
     this.init(props.rcon)
@@ -107,6 +108,13 @@ export class PluginHandler {
     } catch (e) {
       message.except(e)
     }
+  }
+
+  /** emits event from the main thread */
+  private async onEventData({ message }: Messenger.Event<{ name: string, data: any }>) {
+    const { name, data } = message.data
+    this.plugins.forEach(p => p.engine.emit(name, data))
+    message.done()
   }
 }
 

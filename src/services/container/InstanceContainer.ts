@@ -61,8 +61,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
    */
   updateVars(entries: Record<string, any>) {
     const { vars } = this.get()
-    this.update({ vars: { ...vars, ...entries } })
-    return this
+    return this.update({ vars: { ...vars, ...entries } })
   }
 
   /**

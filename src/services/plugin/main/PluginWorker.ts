@@ -215,6 +215,11 @@ export class PluginWorker {
     return this.messenger.send(action, data)
   }
 
+  /** sends a event to the worker */
+  sendPluginEvent(name: string, data: any) {
+    return this.sendMessage("eventData", { name, data })
+  }
+
   /** dispatches the plugin to the worker thread */
   private async sendStartPlugin(plugin: Plugin) {
     this.instance.log.info(`starting plugin`, LogMessage.Source.PLUGIN, plugin.name)

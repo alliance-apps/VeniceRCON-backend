@@ -22,7 +22,6 @@ api.route({
     body: Joi.object(
       Object.fromEntries([
         ...Instance.VAR_SETTER_BF3,
-        ...Instance.VAR_SETTER_VU,
         ...Instance.VAR_SETTER_VU
       ].map(k => [k, Joi.alternatives(Joi.string().allow(""), Joi.number(), Joi.boolean()).optional()]
       ))
@@ -30,14 +29,7 @@ api.route({
   },
   pre: perm(VariableScope.MODIFY),
   handler: async ctx => {
-    const { instance } = ctx.state
-    const result = await Promise.allSettled(
-      Object.keys(ctx.request.body!)
-        .map(k => instance!.updateVariable(k, ctx.request.body[k]))
-    )
-    result.filter(({ status }) => status === "rejected")
-      .forEach(res => ctx.state.instance!.log.error(`could not update a variable: ${(res as PromiseRejectedResult).reason}`))
-    ctx.body = instance!.state.get("vars")
+    ctx.body = await ctx.state.instance!.updateVariables(ctx.request.body!)
   }
 })
 

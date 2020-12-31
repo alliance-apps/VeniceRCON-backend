@@ -1,4 +1,4 @@
-@id=4
+@id=6
 
 ### lists all available variables
 GET {{$dotenv url}}/api/instances/{{id}}/vars
