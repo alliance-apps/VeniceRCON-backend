@@ -13,7 +13,7 @@ export const httpRequestDuration = new client.Histogram({
   name: `${prefix}http_request_duration`,
   help: "http request durations",
   labelNames: ["method", "url", "statusCode"],
-  buckets: [0.1, 0.25, 0.5, 1, 2, 5, 10]
+  buckets: [0.05, 0.1, 0.25, 0.5, 0.75, 1, 3, 5]
 })
 
 export const instancePlayerOnlineStats = new client.Gauge({

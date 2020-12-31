@@ -125,6 +125,7 @@ export class PluginWorker {
       worker.once("message", async msg => {
         if (msg !== WorkerState.INIT) throw new Error(`expected message to be "ready" received ${msg}`)
         messenger = await Messenger.create(p => worker.postMessage(p, [p]))
+        if (this.messenger) this.messenger!.removeAllListeners()
         this.messenger = messenger
         this.messenger.once("STATE", ({ message }) => {
           this.state = WorkerState.READY
