@@ -319,13 +319,7 @@ export class Instance {
       )
     }
     if (result["vars.ranked"] === "true") {
-      result = {
-        ...result,
-        ...Object.fromEntries(
-          //@ts-ignore
-          Object.keys(Instance.VAR_BF3_RANKED).map(k => [k, Instance.VAR_BF3_RANKED[k]])
-        )
-      }
+      result = { ...result, ...Instance.VAR_BF3_RANKED }
     } else {
       result = {
         ...result,

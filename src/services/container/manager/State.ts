@@ -31,7 +31,7 @@ export class State<T extends State.Type> {
   >(changes: T, path: string[] = []) {
     const paths: [string, State.Primitives][] = []
     Object.keys(changes).forEach(k => {
-      const currPath = [...path, k]
+      const currPath = [...path, k.replace(/\./g, "_")]
       const value = changes[k]
       if (typeof value === "object" && !Array.isArray(value)) {
         paths.push(...this.getPaths(<any>value, currPath))
