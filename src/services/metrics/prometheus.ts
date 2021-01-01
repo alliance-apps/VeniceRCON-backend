@@ -9,11 +9,10 @@ const host = config.metrics ? config.metrics.prometheus.instance : "default"
 client.register.setDefaultLabels({ host })
 client.collectDefaultMetrics({ prefix })
 
-export const httpRequestDuration = new client.Histogram({
-  name: `${prefix}http_request_duration`,
-  help: "http request durations",
-  labelNames: ["method", "url", "statusCode"],
-  buckets: [0.05, 0.1, 0.25, 0.5, 0.75, 1, 3, 5]
+export const httpRequestCounter = new client.Counter({
+  name: `${prefix}http_request_count`,
+  help: "http request counts",
+  labelNames: ["method", "url", "statusCode"]
 })
 
 export const instancePlayerOnlineStats = new client.Gauge({

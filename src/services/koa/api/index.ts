@@ -13,7 +13,7 @@ import { perm } from "../permission"
 import { isEnabled } from "@service/mail"
 import auth from "koa-basic-auth"
 import client from "prom-client"
-import { httpRequestDuration } from "@service/metrics/prometheus"
+import { httpRequestCounter } from "@service/metrics/prometheus"
 
 export async function createRoute() {
   const router = Router()
@@ -21,12 +21,11 @@ export async function createRoute() {
   //prometheus metrics collection
   if (config.metrics && config.metrics.prometheus.enable) {
     router.use(async (ctx, next) => {
-      const stop = httpRequestDuration.startTimer()
       try {
         await next()
-        stop({ method: ctx.method.toUpperCase(), url: ctx.url, statusCode: String(ctx.status) })
+        httpRequestCounter.labels(ctx.method.toUpperCase(), ctx.url, String(ctx.status)).inc()
       } catch (e) {
-        stop({ method: ctx.method.toUpperCase(), url: ctx.url, statusCode: String(ctx.status) })
+        httpRequestCounter.labels(ctx.method.toUpperCase(), ctx.url, String(ctx.status)).inc()
         throw e
       }
     })
