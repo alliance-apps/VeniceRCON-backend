@@ -38,29 +38,17 @@ export class Messenger extends EventEmitter {
 
   /** send data */
   send<T = any>(action: string, data?: T, timeout: number = 2000) {
-    const ack = this.createAcknowledgeItem(timeout, JSON.stringify({ action, data }))
-    this.post(<Messenger.DataMessage>{
-      type: Messenger.MessageType.DATA,
-      id: ack.id,
-      action,
-      data
-    })
-    return ack.promise
+    const { id, promise } = this.createAcknowledgeItem(timeout, JSON.stringify({ action, data }))
+    this.post({ type: Messenger.MessageType.DATA, id, action, data })
+    return promise
   }
 
   sendAck(id: number, data?: any) {
-    return this.post(<Messenger.AckMessage>{
-      type: Messenger.MessageType.ACK,
-      id,
-      data
-    })
+    return this.post({ type: Messenger.MessageType.ACK, id, data })
   }
 
   sendErrorAck(id: number, message: string, stack?: string) {
-    return this.post(<Messenger.ErrorAckMessage>{
-      type: Messenger.MessageType.ERROR_ACK,
-      id, message, stack
-    })
+    return this.post({ type: Messenger.MessageType.ERROR_ACK, id, message, stack })
   }
 
   /** receive data from the message port */
@@ -89,31 +77,32 @@ export class Messenger extends EventEmitter {
     return this.resolver.fulfill()
   }
 
+  /** removes an acknowledge item and  */
+  private removeAcknowledgeItem(id: number) {
+    const item = this.acks[id]
+    if (!item) throw new Error(`received unknown acknowledge for ${id}`)
+    clearTimeout(item.timeout)
+    delete this.acks[id]
+    return item
+  }
+
   /** handles an incoming acknowledge message */
   private handleAck(ev: Messenger.AckMessage) {
-    const { id } = ev
-    if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id} for action ${ev.action}`)
-    clearTimeout(this.acks[id].timeout)
-    this.acks[id].fulfill(ev.data)
-    return delete this.acks[id]
+    this.removeAcknowledgeItem(ev.id).fulfill(ev.data)
   }
 
   /** handles an incoming acknowledge message with an exception */
   private handleErrorAck(ev: Messenger.ErrorAckMessage) {
-    const { id } = ev
-    if (!this.acks[id]) throw new Error(`received unknown acknowledge ${id}`)
-    clearTimeout(this.acks[id].timeout)
     const error = new Error(ev.message)
-    error.stack = [error.stack!.split("\n")[0], ...ev.stack.split("\n").slice(1)].join("\n")
-    this.acks[id].reject(error)
-    return delete this.acks[id]
+    error.stack = [error.stack!.split("\n")[0], ...(ev.stack||"").split("\n").slice(1)].join("\n")
+    this.removeAcknowledgeItem(ev.id).reject(error)
   }
 
   /** handles an incoming message */
   private handleMessage(ev: Messenger.DataMessage) {
     const message = new Message({ messenger: this, message: ev })
     this.emit(ev.action, { message })
-    this.emit("*", {  message })
+    this.emit("*", { message })
   }
 
   /** creates an acknowledgeable item */
@@ -123,12 +112,10 @@ export class Messenger extends EventEmitter {
     item.promise = new Promise<any>((fulfill, reject) => {
       item.fulfill = fulfill
       item.reject = reject
-      item.timeout = setTimeout(() => {
-        reject(new Error(`message timeout: id=${id} meta=${meta}`))
-      }, timeout)
+      item.timeout = setTimeout(() => reject(new Error(`message timeout: id=${id} meta=${meta}`)), timeout)
     })
     this.acks[id] = item as Messenger.AcknowledgeItem
-    return item as Messenger.AcknowledgeItem
+    return this.acks[id]
   }
 
   /** creates a new messenger instance and sends the port via a given channel */
@@ -192,7 +179,7 @@ export namespace Messenger {
 
   export interface AckMessage {
     type: MessageType.ACK
-    action: string
+    action?: string
     id: number
     data: any
   }
@@ -201,7 +188,7 @@ export namespace Messenger {
     type: MessageType.ERROR_ACK
     id: number
     message: string
-    stack: string
+    stack: string|undefined
   }
 
   export interface DataMessage {
