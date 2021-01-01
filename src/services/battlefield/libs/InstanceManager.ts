@@ -21,6 +21,11 @@ export class InstanceManager {
     )
   }
 
+  /** checks if the server is already on this venicercon */
+  hostAlreadyUsed(host: string, port: number) {
+    return InstanceEntity.findOne({ host, port })
+  }
+
   /**
    * adds a new battlefield instance
    * @param props

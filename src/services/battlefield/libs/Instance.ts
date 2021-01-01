@@ -61,20 +61,24 @@ export class Instance {
       prependTimeout: this.syncInterval * 1
     })
     this.registerEvents()
-    this.connection.on("disconnected", async () => {
-      this.stopUpdateInterval()
-      await this.plugin.stop()
-    })
-    this.connection.on("connected", async () => {
-      this.startUpdateInterval()
-      await this.plugin.start()
-    })
+    this.connection.on("disconnected", this.onDisconnect.bind(this))
+    this.connection.on("connected", this.onConnect.bind(this))
     if (props.entity.autostart) {
       this.doAutostart()
         .catch(() => this.readyPromise.resolve())
     } else {
       this.readyPromise.resolve()
     }
+  }
+
+  private async onDisconnect() {
+    this.stopUpdateInterval()
+    await this.plugin.stop()
+  }
+
+  private async onConnect() {
+    this.startUpdateInterval()
+    await this.plugin.start()
   }
 
   get ready() {
