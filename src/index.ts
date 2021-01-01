@@ -10,8 +10,8 @@ const cleanup = register({
   }
 })
 
-
-;(async () => {
+;
+(async () => {
 
   //check arguments
   const args: Record<string, string> = {}

@@ -26,7 +26,6 @@ api.get("/", async ctx => {
   ctx.body = ctx.state.instance!.state.get()
 })
 
-
 api.route({
   method: "PATCH",
   path: "/",
@@ -50,7 +49,6 @@ api.route({
   }
 })
 
-
 api.patch("/start", perm(InstanceScope.UPDATE), async ctx => {
   try {
     await ctx.state.instance!.start()
@@ -70,7 +68,6 @@ api.patch("/stop", perm(InstanceScope.UPDATE), async ctx => {
     ctx.body = { message: e.message }
   }
 })
-
 
 api.route({
   method: "POST",
@@ -93,7 +90,6 @@ api.route({
     }
   }
 })
-
 
 api.route({
   method: "POST",
@@ -129,7 +125,6 @@ api.route({
     ctx.status = 200
   }
 })
-
 
 api.route({
   method: "PATCH",

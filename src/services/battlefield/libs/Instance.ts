@@ -244,9 +244,8 @@ export class Instance {
 
   async updateVariables(vars: Record<string, any>) {
     let changes: Record<string, any> = {}
-    ;(await Promise.allSettled(
-      Object.keys(vars) .map((k: any) => this.updateVariable(k, vars[k]))
-    )).forEach(result => {
+    const results = await Promise.allSettled(Object.keys(vars) .map((k: any) => this.updateVariable(k, vars[k])))
+    results.forEach(result => {
       if (result.status === "rejected") return this.log.warn(`could not update a variable: ${result.reason}`)
       changes = { ...changes, ...Object.fromEntries(result.value) }
     })

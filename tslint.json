@@ -15,7 +15,17 @@
     "radix": true,
     "no-console": [true, "log", "warn"],
     "no-angle-bracket-type-assertion": false,
-    "no-shadowed-variable": false
+    "no-shadowed-variable": false,
+    "no-debugger": true,
+    "no-eval": true,
+    "no-string-throw": true,
+    "triple-equals": true,
+    "use-isnan": true,
+    "prefer-const": true,
+    "class-name": true,
+    "align": [true, "parameters", "statements"],
+    "no-consecutive-blank-lines": [true, 2],
+    "no-irregular-whitespace": true
   },
   "rulesDirectory": []
 }

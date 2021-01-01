@@ -30,7 +30,7 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
   protected setRelation(name: keyof T, id: number|{ id: number }) {
     if (typeof this.id !== "number")
       throw new Error(`can not create relation, id is not a number (has the entity been saved?)`)
-      return getRepository(this.entityClass)
+    return getRepository(this.entityClass)
         .createQueryBuilder()
         .relation(this.entityClass, name as string)
         .of({ id: this.id })
@@ -50,7 +50,7 @@ export abstract class AbstractEntity<T extends AbstractEntity<any>> extends Base
   protected delRelation(name: keyof T, id: number|{ id: number }) {
     if (typeof this.id !== "number")
       throw new Error(`can not remove relation, id is not a number (has the entity been saved?)`)
-      return getRepository(this.entityClass)
+    return getRepository(this.entityClass)
         .createQueryBuilder()
         .relation(this.entityClass, name as string)
         .of({ id: this.id })
