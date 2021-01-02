@@ -62,7 +62,7 @@ export class Invite extends AbstractEntity<Invite> {
   async isConsumeable(user?: User) {
     if (!this.instanceId) return Invite.Consumeable.NO_INSTANCE
     if (this.userId) return Invite.Consumeable.ALREADY_ISSUED
-    if (!user || await permissionManager.hasInstanceAccess(user, this.instanceId))
+    if (user && await permissionManager.hasInstanceAccess(user, this.instanceId))
       return Invite.Consumeable.USER_HAS_PERMISSIONS
     return Invite.Consumeable.OK
   }
