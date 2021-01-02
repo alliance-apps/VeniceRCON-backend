@@ -40,11 +40,13 @@ api.route({
   pre: perm(InstanceScope.UPDATE),
   handler: async ctx => {
     const { host, port, password } = ctx.request.body
-    if (instanceManager.hostAlreadyUsed(host, port)) {
+    const instance = ctx.state.instance!
+    const entity = await instanceManager.hostAlreadyUsed(host, port)
+    if (entity && entity.id !== instance.id) {
       ctx.body = { message: `${host}:${port} already exists` }
       return ctx.status = 400
     }
-    await ctx.state.instance!.updateConnection({ host, port, password })
+    await instance.updateConnection({ host, port, password })
     ctx.status = 200
   }
 })

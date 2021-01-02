@@ -54,7 +54,7 @@ export class ChatManager {
 
   private async onMessage(ev: PlayerOnChat) {
     let player: number|undefined
-    if (ev.player !== "server") {
+    if (ev.player.toLowerCase() !== "server") {
       player = (await this.resolver.get(ev.player)).id
     }
     this.addMessage(await ChatMessage.from({
