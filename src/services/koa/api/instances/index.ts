@@ -22,7 +22,7 @@ api.route({
   pre: perm(InstanceScope.CREATE),
   handler: async ctx => {
     const { test, ...props } = ctx.request.body
-    if (instanceManager.hostAlreadyUsed(props.host, props.port)) {
+    if (await instanceManager.hostAlreadyUsed(props.host, props.port)) {
       ctx.body = { message: `${props.host}:${props.port} already exists` }
       return ctx.status = 400
     }
