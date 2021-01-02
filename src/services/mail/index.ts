@@ -5,7 +5,7 @@ import { config } from "@service/config"
  * retrieves the smtp transport
  */
 export function getTransport() {
-  if (!isEnabled) throw new Error("smtp features not enabled!")
+  if (!isEnabled()) throw new Error("smtp features not enabled!")
   return nodemailer.createTransport(config.smtp.options)
 }
 
