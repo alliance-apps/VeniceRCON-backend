@@ -34,6 +34,7 @@ export async function initialize(args: Record<string, string>) {
       packageInfo,
       basepath
     }
+    console.log(config)
     updateLogLevel(config.logging.level)
   } catch (e) {
     winston.error("could not validate configuration! please check your config.yaml against config.dist.yaml!")

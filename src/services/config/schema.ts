@@ -40,8 +40,8 @@ export const schema = Joi.object({
         branch: Joi.string().optional().default("master"),
         headers: Joi.any()
       })).optional().default([])
-    })
-  }),
+    }).default()
+  }).default(),
   smtp: Joi.object({
     enable: Joi.boolean().optional().default(false),
     senderAddress: Joi.string().optional().default("foo@example.com"),
@@ -50,7 +50,7 @@ export const schema = Joi.object({
       subject: Joi.string().optional().default("Forgot Password request"),
       text: Joi.string().optional().default("Hello %username%,\na password reset has been requested for your account!\nYour new password is:\n\n%password%")
     })
-  }),
+  }).default(),
   metrics: Joi.object({
     prometheus: Joi.object({
       enable: Joi.boolean().optional().default(false),
@@ -59,8 +59,8 @@ export const schema = Joi.object({
         name: Joi.string(),
         pass: Joi.string()
       }),
-    }).default({ enable: false, instance: "default" })
-  }).default({ prometheus: { enable: false, instance: "default" }})
+    }).default()
+  }).default()
 })
 
 export type PackageInfo = {
