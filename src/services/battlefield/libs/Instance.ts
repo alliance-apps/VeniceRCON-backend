@@ -41,7 +41,7 @@ export class Instance {
       this.readyPromise.resolve = fulfill
     })
     this.nameResolver = new NameResolverService({
-      resolveName: this.getPlayerGuidByName.bind(this)
+      resolveName: (name: string) => this.getPlayerGuidByName(name)
     })
     const { host, port, password } = props.entity
     this.connection = new Connection({
@@ -184,7 +184,7 @@ export class Instance {
 
   async getPlayerGuidByName(name: string) {
     const data = await this.getPlayerDataByName(name)
-    if (!data) throw new Error(`could not find player online with name ${name}`)
+    if (!data) throw new Error(`could not find player online with name "${name}" in instance ${this.id}`)
     return data.guid
   }
 
