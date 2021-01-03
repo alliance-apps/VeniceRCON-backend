@@ -68,6 +68,7 @@ export class State<T extends State.Type> {
           }
         }
       } else {
+        if ((k as string).includes(".")) k = (k as string).replace(/\./g, "_")
         if (current[k] === <any>value) return
         if (value === undefined) {
           delete current[k]
