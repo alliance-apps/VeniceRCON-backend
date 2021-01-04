@@ -218,6 +218,7 @@ export class PluginWorker {
 
   /** sends a event to the worker */
   sendPluginEvent(name: string, data: any) {
+    if (!this.isRunning) return
     return this.sendMessage("eventData", { name, data })
   }
 

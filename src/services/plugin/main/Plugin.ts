@@ -20,6 +20,7 @@ export class Plugin {
     this.manager = props.parent
     this.meta = props.meta
     this.entity = props.entity
+    this.config = props.entity.getConfig()
   }
 
   get instance() {

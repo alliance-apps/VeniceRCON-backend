@@ -37,7 +37,6 @@ export async function migrations(connection: Connection) {
     }
     winston.info(`DATABASE MIGRATION ${version} OK`)
   }
-  await synchronize(connection)
 }
 
 //migration maps, the key is the version it gets upgraded to
