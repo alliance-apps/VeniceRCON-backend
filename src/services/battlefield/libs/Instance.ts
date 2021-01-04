@@ -442,7 +442,8 @@ export namespace Instance {
     "vu.SpectatorCount",
     "vu.SunFlareEnabled",
     "vu.ColorCorrectionEnabled",
-    "vu.SquadSize"
+    "vu.SquadSize",
+    "vu.TimeScale"
   ]
 
   export const VAR_VU_SETTER: Battlefield.BattlefieldVariables[] = [
