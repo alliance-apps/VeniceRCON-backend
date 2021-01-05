@@ -1,67 +1,35 @@
 import { Joi } from "koa-joi-router"
 
 const baseVarSchema = Joi.object({
+  type: Joi.string().valid("string", "number", "boolean", "strings", "select", "array").required(),
   title: Joi.string().allow("").optional().default(""),
   name: Joi.string().required(),
   description: Joi.string().required(),
   conditions: Joi.array().items(
     Joi.object().pattern(/.*/, Joi.any())
-  ).default([]).optional()
-})
+  ).default([]).optional(),
+  default: Joi.when("type", {
+    switch: [
+      { is: "string", then: Joi.string().allow("").default("").optional() },
+      { is: "number", then: Joi.number().default(0).optional() },
+      { is: "boolean", then: Joi.boolean().default(false).optional() },
+      { is: "strings", then: Joi.array().items(Joi.string().allow("")).default([]).optional() },
+      { is: "select", then: Joi.string().allow("").default("").optional() },
+      { is: "array", then: Joi.array().default([]).optional() },
+    ]
+  }),
+  //string
+  multiline: Joi.when("type", { is: "string", then: Joi.boolean().default(false).optional() }),
+  //number
+  //boolean
+  //strings
+  //select
+  options: Joi.when("type", { is: "select", then: Joi.object().pattern(/.*/, Joi.string()).required() }),
+  //array
+  vars: Joi.when("type", { is: "array", then: Joi.array().items(Joi.link("#baseVariableSchema")).required() }),
+}).unknown(true).id("baseVariableSchema")
 
-/** allows simple strings */
-export const stringSchema = baseVarSchema.keys({
-  type: Joi.string().valid("string").required(),
-  default: Joi.string().default("").allow("").optional(),
-  multiline: Joi.boolean().default(false).optional()
-})
-
-/** allows integers and floats */
-export const numberSchema = baseVarSchema.keys({
-  type: Joi.string().valid("number").required(),
-  default: Joi.number().default(0).optional()
-})
-
-/** allows true / false */
-export const booleanSchema = baseVarSchema.keys({
-  type: Joi.string().valid("boolean").required(),
-  default: Joi.boolean().default(false).optional()
-})
-
-/** allows an array of strings */
-export const stringsSchema = baseVarSchema.keys({
-  type: Joi.string().valid("strings").required(),
-  default: Joi.array().items(Joi.string().allow("")).default([]).optional()
-})
-
-/** allows multiple options */
-export const selectSchema = baseVarSchema.keys({
-  type: Joi.string().valid("select").required(),
-  options: Joi.object().pattern(/.*/, Joi.string()).required(),
-  default: Joi.array().items(Joi.string()).default("").optional()
-})
-
-const baseSchemas = [
-  stringSchema,
-  numberSchema,
-  booleanSchema,
-  stringsSchema,
-  selectSchema
-]
-
-/** allows an array of strings */
-export const arraySchema = baseVarSchema.keys({
-  type: Joi.string().valid("array").required(),
-  vars: Joi.array().items(Joi.link("#self"), ...baseSchemas).required(),
-  default: Joi.array().default([]).optional()
-}).id("self")
-
-
-/** create schema early so it can be required a circular dependency */
-export const varSchema = Joi.array()
-  .items(arraySchema, ...baseSchemas)
-  .default([])
-  .optional()
+export const varSchema = Joi.array().items(baseVarSchema).default([]).optional()
 
 export const metaSchema = Joi.object({
   name: Joi.string().min(3).required(),
@@ -73,7 +41,7 @@ export const metaSchema = Joi.object({
   dependency: Joi.array().items(Joi.string()).optional().default([]),
   optionalDependency: Joi.array().items(Joi.string()).optional().default([]),
   vars: varSchema
-})
+}).unknown(true)
 
 export function checkVariableSchema(vars: PluginVariable[], data: Record<string, any>) {
   return buildVariableSchema(vars).validateAsync(data)

@@ -31,6 +31,7 @@ export async function connect(args: Record<string, string>) {
     logging: config.logging.orm,
     maxQueryExecutionTime: 200,
     ...config.database[config.database.use] as any,
+    charset: "utf8mb4",
     logger: new WinstonLogger(),
     entities: [
       Instance,
