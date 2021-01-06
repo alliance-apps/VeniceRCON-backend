@@ -12,6 +12,7 @@ import { KillFeedManager } from "./KillFeedManager"
 import { InstanceLogger } from "./InstanceLogger"
 import { getScopesFromMask } from "@service/permissions/Scopes"
 import { NameResolverService } from "../util/NameResolverService"
+import { SystemLoad } from "../../../util/SystemLoad"
 
 export class Instance {
 
@@ -23,10 +24,11 @@ export class Instance {
   readonly kill: KillFeedManager
   readonly log: InstanceLogger
   readonly nameResolver: NameResolverService
-  private interval: any
+  private interval: Record<string, NodeJS.Timeout> = {}
   private intervalModulo = -1
   private syncInterval: number
   private playerListAction: PrependAction<Battlefield.PlayerList>
+  private load: SystemLoad = new SystemLoad()
   private readyPromise: { resolver: Promise<void>, resolve: () => void } = {
     resolver: new Promise(() => null),
     resolve: () => null
@@ -146,8 +148,8 @@ export class Instance {
 
   /** starts the update interval */
   private async startUpdateInterval() {
-    clearInterval(this.interval)
-    this.interval = setInterval(this.updateInterval.bind(this), this.syncInterval)
+    this.stopUpdateInterval()
+    this.interval.base = setInterval(this.updateInterval.bind(this), this.syncInterval)
     this.playerListAction.unpause()
     await Promise.all([
       this.playerListAction.execute(),
@@ -160,7 +162,7 @@ export class Instance {
   /** stopts the update interval */
   private stopUpdateInterval() {
     this.playerListAction.pause()
-    clearInterval(this.interval)
+    Object.keys(this.interval).forEach(key => clearInterval(this.interval[key]))
   }
 
   /** gets permission scopes for a specific guid in this instance */
@@ -196,16 +198,30 @@ export class Instance {
   /** runs the update tick */
   private async updateInterval() {
     this.intervalModulo++
-    if (this.intervalModulo % 100 === 0) {
-      const updates = [
-        this.mapList(),
-        this.getDefaultVariables()
-      ]
+    const updates: Promise<any>[] = []
+    if (this.intervalModulo % 25 === 0) {
+      updates.push(this.mapList())
+      updates.push(this.getDefaultVariables())
       if (this.state.get("version") === InstanceContainer.Version.VU)
         updates.push(this.getVuVariables())
-      await Promise.all(updates)
     }
-    await this.serverInfo()
+    if (this.state.get("version") === InstanceContainer.Version.VU)
+      updates.push(this.monitorServerFPS())
+    updates.push(this.serverInfo())
+    await Promise.all(updates)
+  }
+
+  /**
+   * monitors VU Server FPS
+   */
+  private async monitorServerFPS() {
+    //dummy function
+    const current = parseInt((Math.random() * 150).toFixed(2), 10)
+    this.load.set(current)
+    this.state.update({
+      fpsLast: current,
+      load: this.load.get()
+    })
   }
 
   /** starts the connection to the battlefield server */
