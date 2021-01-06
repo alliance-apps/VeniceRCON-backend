@@ -55,9 +55,9 @@ export class LogMessage extends AbstractEntity<LogMessage> {
     instanceId: number,
     filter: LogMessage.Filter = {}
   ) {
-    const date = filter.from instanceof Date ? filter.from : new Date(filter.from || Date.now())
+    const date = filter.from instanceof Date ? filter.from : new Date(filter.from || Date.now() - 24 * 60 * 60 * 1000)
     const where: Record<string, any> = {
-      created: MoreThan(date.getTime()),
+      created: MoreThan(date),
       instanceId
     }
     if (typeof filter.source === "number") {
