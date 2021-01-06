@@ -16,8 +16,7 @@ export class InstanceContainer extends StreamingContainer<InstanceContainer.Stat
       port: props.entity.port,
       state: Instance.State.DISCONNECTED,
       name: props.parent.name,
-      fpsLast: 0,
-      load: ["0", "0", "0"],
+      fps: ["0", "0", "0", "0"],
       serverinfo: props.serverinfo || {},
       players: {},
       maps: [],
@@ -174,8 +173,7 @@ export namespace InstanceContainer {
     port: number
     state: Instance.State
     name: string
-    fpsLast: number,
-    load: [string, string, string],
+    fps: [string, string, string, string],
     serverinfo: Partial<Battlefield.ServerInfo>
     players: Record<string, Battlefield.Player>
     maps: Battlefield.MapList

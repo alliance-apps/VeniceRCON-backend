@@ -218,10 +218,7 @@ export class Instance {
     //dummy function
     const current = parseInt((Math.random() * 150).toFixed(2), 10)
     this.load.set(current)
-    this.state.update({
-      fpsLast: current,
-      load: this.load.get()
-    })
+    this.state.update({ fps: [current.toFixed(2), ...this.load.get()] })
   }
 
   /** starts the connection to the battlefield server */
