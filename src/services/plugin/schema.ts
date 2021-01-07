@@ -5,6 +5,8 @@ const baseVarSchema = Joi.object({
   title: Joi.string().allow("").optional().default(""),
   name: Joi.string().required(),
   description: Joi.string().required(),
+  unit: Joi.string().allow("").optional(),
+  indent: Joi.number().min(0).default(0).optional(),
   conditions: Joi.array().items(
     Joi.object().pattern(/.*/, Joi.any())
   ).default([]).optional(),
@@ -94,6 +96,8 @@ export interface PluginBaseVariable {
   title: string
   name: string
   description: string
+  unit?: string
+  indent: number
   conditions?: {
     [key: string]: string|number|boolean
   }[]

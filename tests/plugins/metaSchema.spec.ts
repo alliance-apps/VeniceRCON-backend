@@ -56,6 +56,7 @@ describe("MetaSchema", () => {
       name: "foo",
       title: "",
       description: "description of foo",
+      indent: 0,
       type,
       conditions: [],
       ...data
@@ -101,6 +102,7 @@ describe("MetaSchema", () => {
         .toEqual([{
           title: "",
           name: "foo",
+          indent: 0,
           description: "description of foo",
           type: "array",
           default: [],
@@ -108,6 +110,7 @@ describe("MetaSchema", () => {
           vars: [{
             title: "",
             name: "foo",
+            indent: 0,
             description: "description of foo",
             type: "string",
             multiline: false,
@@ -122,6 +125,7 @@ describe("MetaSchema", () => {
     const varSchema = (): PluginVariable[] => ([{
       name: "fooString",
       title: "foo string title",
+      indent: 0,
       description: "",
       type: "string",
       multiline: false,
@@ -129,24 +133,28 @@ describe("MetaSchema", () => {
     }, {
       name: "fooNumber",
       title: "foo number title",
+      indent: 0,
       description: "",
       type: "number",
       default: 123
     }, {
       name: "fooBoolean",
       title: "foo boolean title",
+      indent: 0,
       description: "",
       type: "boolean",
       default: true
     }, {
       name: "fooStrings",
       title: "foo strings title",
+      indent: 0,
       description: "",
       type: "strings",
       default: ["foo", "bar"]
     }, {
       name: "fooSelect",
       title: "foo select title",
+      indent: 0,
       description: "",
       type: "select",
       options: {
@@ -193,10 +201,12 @@ describe("MetaSchema", () => {
         title: "foo title",
         name: "fooArray",
         description: "descriptor",
+        indent: 0,
         type: "array",
         vars: [{
           name: "bar",
           title: "bar title",
+          indent: 0,
           description: "descriptor",
           type: "string"
         }]
