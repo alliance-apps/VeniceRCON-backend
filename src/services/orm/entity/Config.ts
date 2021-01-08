@@ -1,6 +1,7 @@
 import { Entity, Column } from "typeorm"
 import { AbstractEntity } from "./Abstract"
 import { randomBytes } from "crypto"
+import { CURRENT_DB_VERSION } from "../migrations"
 
 
 @Entity()
@@ -42,7 +43,7 @@ export namespace Config {
     public: false
   }, {
     name: "dbversion",
-    value: "2",
+    value: `${CURRENT_DB_VERSION}`,
     public: false
   }]
 }

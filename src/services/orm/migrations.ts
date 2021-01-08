@@ -3,23 +3,23 @@ import { config } from "@service/config"
 import { Config } from "./entity/Config"
 import winston from "winston"
 import { PluginStore, PluginStoreType } from "./entity/PluginStore"
+import { Plugin } from "./entity/Plugin"
+
+
+export const CURRENT_DB_VERSION = 3
 
 /**
  * runs a custom migration on a database with final synchronisation
  * @param connection typeorm connection
  */
 export async function migrations(connection: Connection) {
-  const entry = Config.DEFAULTS.find(c => c.name === "dbversion")
-  if (!entry) throw new Error(`could not find dbversion in configuration entry`)
-  const currentVersion = parseInt(entry.value, 10)
-  if (isNaN(currentVersion)) throw new Error("invalid current dbversion found")
   const queryRunner = connection.createQueryRunner()
   if (!await queryRunner.hasTable("config")) return synchronize(connection)
   const { value } = await queryRunner.manager.getRepository(Config).findOneOrFail({ name: "dbversion" })
   let version = parseInt(value, 10)
   if (isNaN(version)) throw new Error(`received invalid value from db version "${value}"`)
-  if (version > currentVersion) throw new Error("current db version is too high for this application")
-  while (version++ < currentVersion) {
+  if (version > CURRENT_DB_VERSION) throw new Error("current db version is too high for this application")
+  while (version++ < CURRENT_DB_VERSION) {
     winston.info(`DATABASE MIGRATION (${version-1} -> ${version})`)
     const cb = migrationMap[version]
     if (typeof cb !== "function") throw new Error(`invalid migration version ${version}`)
@@ -42,10 +42,12 @@ export async function migrations(connection: Connection) {
 //migration maps, the key is the version it gets upgraded to
 export const migrationMap: Record<number, (runner: QueryRunner) => Promise<void>> = {
   /** includes refactor of plugin store */
-  2: toV2
+  2: toV2,
+  /** includes resize of configuration entry */
+  3: toV3,
 }
 
-export async function toV2(runner: QueryRunner) {
+async function toV2(runner: QueryRunner) {
   const stores = await runner.query("SELECT * FROM plugin_store")
   const formatted = stores.map((store: any) => {
     const { url, branch, type } = store
@@ -68,14 +70,36 @@ export async function toV2(runner: QueryRunner) {
       .getRepository(PluginStore)
       .createQueryBuilder()
       .update()
-      //@ts-ignore
-      .set({ _options: options, type: PluginStoreType.GITHUB })
+      .set({
+        //@ts-ignore
+        _options: options,
+        type: PluginStoreType.GITHUB
+      })
       .where({ id })
       .execute()
   }))
   await runner.dropColumn("plugin_store", "url")
   await runner.dropColumn("plugin_store", "headers")
   await runner.dropColumn("plugin_store", "branch")
+}
+
+async function toV3(runner: QueryRunner) {
+  const configs = await runner.manager
+    .getRepository(Plugin)
+    .createQueryBuilder()
+    .select("id, config")
+    .getRawMany()
+  await runner.changeColumn("plugin", "config", new TableColumn({
+    name: "config", default: "'{}'", type: "text"
+  }))
+  await Promise.all(configs.map(({ config, id }) => {
+    return runner.manager.getRepository(Plugin)
+      .createQueryBuilder()
+      .update()
+      .set({ config })
+      .where({ id })
+      .execute()
+  }))
 }
 
 export async function synchronize(connection: Connection) {

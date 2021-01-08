@@ -37,7 +37,7 @@ export class Plugin extends AbstractEntity<Plugin> {
   @Column({ default: false })
   start!: boolean
 
-  @Column({ default: "{}" })
+  @Column({ default: "{}", type: "text" })
   config!: string
 
   getConfig() {
