@@ -22,7 +22,7 @@ export class WorkerPlugin {
     this.parent = props.parent
     this.basePath = props.basePath
     this.info = props.info
-    this.engine = new PluginEngine({ messenger: this.parent.messenger })
+    this.engine = new PluginEngine({ messenger: this.parent.messenger, battlefield: this.parent.battlefield })
     this.logger = new PluginLogger(this.parent.messenger, this.info.name)
   }
 
